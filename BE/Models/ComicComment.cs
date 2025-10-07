@@ -1,0 +1,52 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+
+namespace TruyenCV.Models;
+
+[Table("comic_comments")]
+[Index(nameof(comic_id))]
+[Index(nameof(comic_chapter_id))]
+[Index(nameof(user_id))]
+[Index(nameof(reply_id))]
+public class ComicComment : BaseEntity
+{
+	[Required]
+	public required long comic_id { get; set; }
+
+	public long? comic_chapter_id { get; set; }
+
+	[Required]
+	public required long user_id { get; set; }
+
+	[Required]
+	public required string comment { get; set; }
+
+	public int like { get; set; } = 0;
+
+	public long? reply_id { get; set; }
+
+	public bool is_rate { get; set; } = false;
+
+	public int? rate_star { get; set; }
+
+	[JsonIgnore]
+	[ForeignKey(nameof(comic_id))]
+	public Comic? Comic { get; set; }
+
+	[JsonIgnore]
+	[ForeignKey(nameof(comic_chapter_id))]
+	public ComicChapter? ComicChapter { get; set; }
+
+	[JsonIgnore]
+	[ForeignKey(nameof(user_id))]
+	public User? User { get; set; }
+
+	[JsonIgnore]
+	[ForeignKey(nameof(reply_id))]
+	public ComicComment? ReplyTo { get; set; }
+
+	[JsonIgnore]
+	public ICollection<ComicComment>? Replies { get; set; }
+}

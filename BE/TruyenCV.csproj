@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);NU1507</NoWarn> <!-- NuGet package version constraint warning -->
+    <NoWarn>$(NoWarn);CS1998</NoWarn> <!-- For async methods without await -->
+    <NoWarn>$(NoWarn);CS8618</NoWarn> <!-- Non-nullable field must contain a non-null value -->
+    <NoWarn>$(NoWarn);CS8604</NoWarn> <!-- Possible null reference argument -->
+    <NoWarn>$(NoWarn);CS8602</NoWarn> <!-- Dereference of a possibly null reference -->
+    <NoWarn>$(NoWarn);CS8601</NoWarn> <!-- Possible null reference assignment -->
+    <NoWarn>$(NoWarn);CS8600</NoWarn> <!-- Converting null literal or possible null value to non-nullable type -->
+    <NoWarn>$(NoWarn);CS8981</NoWarn> <!-- The type name only contains lower-cased ascii characters -->
+    <NoWarn>$(NoWarn);CA1050</NoWarn> <!-- IDE -->
+    <NoWarn>$(NoWarn);IDE0028</NoWarn> <!-- IDE -->
+    <NoWarn>$(NoWarn);IDE0037</NoWarn> <!-- IDE -->
+    <NoWarn>$(NoWarn);IDE0090</NoWarn> <!-- IDE -->
+    <NoWarn>$(NoWarn);IDE0290</NoWarn> <!-- IDE -->
+    <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- IDE -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.9" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.5" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.20" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+  </ItemGroup>
+</Project>
