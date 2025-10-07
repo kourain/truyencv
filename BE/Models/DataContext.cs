@@ -17,21 +17,28 @@ public class DataContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<ComicChapter> ComicChapters { get; set; }
     public DbSet<ComicComment> ComicComments { get; set; }
     public DbSet<ComicHaveCategory> ComicHaveCategories { get; set; }
+    public static readonly DateTime defaultDate = DateTime.Parse("2025-09-23T00:00:00Z").ToUniversalTime();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var system = new User
+        var system = new User()
         {
+            id = -1,
             name = "System",
             email = "ht.kourain@gmail.com",
             password = Bcrypt.HashPassword("159753"),
-            phone = "0000000000"
+            phone = "0000000000",
+            created_at = defaultDate,
+            updated_at = defaultDate
         };
-        var baseUser = new User
+        var baseUser = new User()
         {
+            id = 1,
             name = "kourain",
             email = "maiquyen16503@gmail.com",
             password = Bcrypt.HashPassword("1408"), // Nên mã hóa mật khẩu trong thực tế!
             phone = "0123456789",
+            created_at = defaultDate,
+            updated_at = defaultDate
         };
         modelBuilder.Entity<User>().HasData([system, baseUser]);
         modelBuilder.Entity<UserHasRole>().HasData(
@@ -40,13 +47,17 @@ public class DataContext : Microsoft.EntityFrameworkCore.DbContext
             {
                 user_id = baseUser.id,
                 role_name = Roles.Admin,
-                assigned_by = system.id
+                assigned_by = system.id,
+                created_at = defaultDate,
+                updated_at = defaultDate
             },
             new UserHasRole
             {
                 user_id = system.id,
                 role_name = Roles.System,
-                assigned_by = system.id
+                assigned_by = system.id,
+                created_at = defaultDate,
+                updated_at = defaultDate
             }
         ]
         );
@@ -98,11 +109,11 @@ public class DataContext : Microsoft.EntityFrameworkCore.DbContext
         return await base.SaveChangesAsync(cancellationToken);
     }
 }
-[PrimaryKey(nameof(id)), Index(nameof(id), IsUnique = true)]
+[PrimaryKey(nameof(id)), Index(nameof(id))]
 public abstract class BaseEntity
 {
     public long id { get; set; } = SnowflakeIdGenerator.NextId();
-    public DateTime? deleted_at { get; set; }
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
+    public DateTime? deleted_at { get; set; }
 }

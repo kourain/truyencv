@@ -2,6 +2,11 @@
 
 Luôn luôn trả lời bằng tiếng Việt
 
+# Cấm
+
+Nghiêm cấm tự ý tạo file mới hoặc chỉnh sửa file không thuộc phạm vi của bạn. Chỉ được phép chỉnh sửa các file được giao.
+Nghiêm cấm tự ý tạo file *.md
+
 # CMS Base API - AI Coding Instructions
 
 Đây là dự án ASP.NET Core 8.0 Web API với mô hình kiến trúc, mẫu thiết kế và quy ước code cụ thể. Khi làm việc với dự án, cần tuân thủ các quy tắc sau:

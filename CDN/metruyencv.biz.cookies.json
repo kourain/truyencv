@@ -1,0 +1,103 @@
+[
+  {
+    "name": "_ga",
+    "value": "GA1.1.1660056633.1759551216",
+    "domain": ".metruyencv.biz",
+    "path": "/",
+    "expires": 1794111261.705636,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "webgl",
+    "value": "4eb1d8a55fff3f21a20d42653ac37328cff8bc35",
+    "domain": "metruyencv.biz",
+    "path": "/",
+    "expires": 1793715215,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "accessToken",
+    "value": "5809237|9XapOnwLkWmrXVCNwCiaeFjOfp0Xt6IovkHqfTMD",
+    "domain": "metruyencv.biz",
+    "path": "/",
+    "expires": 1762143246,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "XSRF-TOKEN",
+    "value": "eyJpdiI6IkdPMTFQT0duUUFucmxRRkQ2U0dpM3c9PSIsInZhbHVlIjoiTzBQU1JWWEVEMUFtcHIxNGh6cVljNjEySnFzSkxOTDV5RmJQVVJZYWdObTJHSTRXaWNqbzNiV290S24yRDR2bEFKbWpXL0tWQTBUQ3BWcTY0Y2twdGVYVFJCQUNSRXdMbXFGaStIaHdLc1dtZEFOSWMzZTdKZzhFQk0vTlB4MmsiLCJtYWMiOiIxNmNmZmU4NGQ3OTk3MGQ2YjBlNzVkMDljNDM2MTRkZjQ0OGJjYmE2N2Q2M2ZkZmI5MDI2MjBlODM5OTBlNThiIiwidGFnIjoiIn0%3D",
+    "domain": "metruyencv.biz",
+    "path": "/",
+    "expires": 1759558459.42947,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "me_truyen_chu_session",
+    "value": "eyJpdiI6InVQMXJBaEdmeXlJdXdaTnhIK0Yzd0E9PSIsInZhbHVlIjoibkgrZzJzRmptZUpYdnoxZHFxTGV2dVlNa2MyZzAzTkpuSDRTeU11ZUVCamloUjFtbmdoeTFSVG96K3RwVnVMSmRwWm1rSWR5MlM3QXVDanVVMmZ3NjNOMzhCZmlHbjFMR3B1Uk1GOS9XZEdWYWpKWTFhUGk0SW9SRUxHR0czSzUiLCJtYWMiOiJkNzA3ZDA1NWM0NjdkMjk2ZTNhODNjY2E1ZTlhZDc5NTIxNjkwNDAxMjFjOGU1NDc4NDhkYjFlM2EwMDc0YTNiIiwidGFnIjoiIn0%3D",
+    "domain": "metruyencv.biz",
+    "path": "/",
+    "expires": 1759558459.42993,
+    "httpOnly": true,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_ga_4DJDXE5Y4B",
+    "value": "GS2.1.s1759551215$o1$g1$t1759551259$j16$l0$h2000694351",
+    "domain": ".metruyencv.biz",
+    "path": "/",
+    "expires": 1794111259.88243,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "_ga_HZWFD49FEQ",
+    "value": "GS2.1.s1759550222$o1$g1$t1759551260$j15$l0$h0",
+    "domain": ".metruyencv.biz",
+    "path": "/",
+    "expires": 1794111260.465202,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "_ga_YK1DBCH766",
+    "value": "GS2.1.s1759550263$o1$g1$t1759551261$j14$l0$h0",
+    "domain": ".metruyencv.biz",
+    "path": "/",
+    "expires": 1794111261.705322,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "jiyakeji_uuid",
+    "value": "9ab52bf0-a0d8-11f0-8733-2d8584dc2014",
+    "domain": "metruyencv.biz",
+    "path": "/",
+    "expires": 1791087261,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "FCNEC",
+    "value": "%5B%5B%22AKsRol-YRm3JDJANeOJdvjlIWWF4e-D4aRdySTHU9SvZ0aH9t2dNLelJir7dtDKFNbGih_APc5OvKdtU05UKiMMFwGkzCYFv8zYrYB5Q2OYr6CUIWcUQ1kzeEsAHkK5_yvCWwMCX2Cc3C31iyCMJzUzEqDKTwzaRUw%3D%3D%22%5D%5D",
+    "domain": ".metruyencv.biz",
+    "path": "/",
+    "expires": 1791087262,
+    "httpOnly": false,
+    "secure": false
+  },
+  {
+    "name": "cto_bundle",
+    "value": "ts12_V9HeVJIdUxGa3hYM0EydE5XOEF5S013RllLQmpSUkU5YU9VOFQ4N2dIUGZYSEwlMkZzN0pLVmN5RjAwcE5ZS3RicHdDOEtHUlFhcmFhRUg5NDRKNyUyRmgzdUFGMHlsJTJCcmExcmhVOTFYY2hOZXZwQXZDUXBiT09rMzEwWHZtZklPb3U1TzNYSVptMFFIZ08zR2tYSVV1SHRkVkVacHVrcjlkeVdDJTJGRGwwdzlKbEUwZyUzRA",
+    "domain": ".metruyencv.biz",
+    "path": "/",
+    "expires": 1793247321,
+    "httpOnly": false,
+    "secure": false
+  }
+]

@@ -2,7 +2,9 @@ using TruyenCV.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Net;
-
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace TruyenCV
 {
     public class Program
@@ -26,8 +28,8 @@ namespace TruyenCV
             {
                 option.AddDefaultPolicy(policy =>
                 policy.WithOrigins(
-                    "https://admin.TruyenCV.cơm",
-                    "https://FE.TruyenCV.cháo"
+                    "https://admin-truyencv.cdms.io.vn",
+                    "https://truyencv.cdms.io.vn"
                 )
                 .AllowAnyMethod()
                 .AllowAnyHeader());
@@ -43,14 +45,12 @@ namespace TruyenCV
             if (IPAddress.TryParse(host, out IPAddress address))
                 try
                 {
+                    Log.Information($"INFO: [REDIS] Testing Redis connection to {connectionString}");
                     client.Connect(address, port);
-                    Console.WriteLine("RedisConnection open, host active");
                     isConnected = true;
                 }
-                catch (System.Net.Sockets.SocketException ex)
-                {
-                    Console.WriteLine("RedisConnection could not be established due to: \n" + ex.Message);
-                }
+                catch (System.Net.Sockets.SocketException _)
+                { }
                 finally
                 {
                     client.Close();
@@ -106,7 +106,11 @@ namespace TruyenCV
                     optionsBuilder.UseNpgsql(connectionString, options =>
                     {
                         options.EnableRetryOnFailure(50);
-                    });
+                    }).ConfigureWarnings(warnings =>
+                    {
+                        warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
+                    })
+                    .EnableDetailedErrors();
                 });
 
             var (redisConnectionString, redisInstanceName) = GetRedisConnectionString(builder);
@@ -149,16 +153,7 @@ namespace TruyenCV
             }
             else
             {
-                builder.Services.AddCors(option =>
-                {
-                    option.AddDefaultPolicy(policy =>
-                    policy.WithOrigins(
-                        "https://admin.TruyenCV.cơm",
-                        "https://FE.TruyenCV.cháo"
-                    )
-                    .AllowAnyMethod()
-                    .AllowAnyHeader());
-                });
+                AddCorsPolicy(builder);
             }
             var app = builder.Build();
 
