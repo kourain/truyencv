@@ -1,0 +1,44 @@
+using TruyenCV.Models;
+
+namespace TruyenCV.Repositories;
+
+/// <summary>
+/// Interface repository cho Comic entity
+/// </summary>
+public interface IComicRepository : IRepository<Comic>
+{
+	/// <summary>
+	/// Lấy comic theo id
+	/// </summary>
+	/// <param name="id">ID của comic</param>
+	/// <returns>Comic nếu tìm thấy, null nếu không tìm thấy</returns>
+	Task<Comic?> GetByIdAsync(long id);
+
+	/// <summary>
+	/// Lấy comic theo slug
+	/// </summary>
+	/// <param name="slug">Slug của comic</param>
+	/// <returns>Comic nếu tìm thấy, null nếu không tìm thấy</returns>
+	Task<Comic?> GetBySlugAsync(string slug);
+
+	/// <summary>
+	/// Tìm kiếm comic theo từ khóa
+	/// </summary>
+	/// <param name="keyword">Từ khóa tìm kiếm</param>
+	/// <returns>Danh sách comic</returns>
+	Task<IEnumerable<Comic>> SearchAsync(string keyword);
+
+	/// <summary>
+	/// Lấy danh sách comic theo tác giả
+	/// </summary>
+	/// <param name="author">Tên tác giả</param>
+	/// <returns>Danh sách comic</returns>
+	Task<IEnumerable<Comic>> GetByAuthorAsync(string author);
+
+	/// <summary>
+	/// Lấy danh sách comic theo trạng thái
+	/// </summary>
+	/// <param name="status">Trạng thái comic</param>
+	/// <returns>Danh sách comic</returns>
+	Task<IEnumerable<Comic>> GetByStatusAsync(ComicStatus status);
+}

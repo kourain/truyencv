@@ -17,6 +17,18 @@ Luôn luôn trả lời bằng tiếng Việt
 **Mô Hình**: Areas-based API + Redis caching + Entity Framework Core with MySQL
 
 - **Areas**: `Admin/` và `User/` phân chia controllers theo quyền truy cập API
+- **Controllers**: thuộc folder 'Controllers' không thuộc Areas nào, Chứa các endpoints API, sử dụng attribute routing, dành cho các request không yêu cầu phân quyền riêng biệt
+- **Services**: Chứa logic nghiệp vụ, tương tác với repositories
+- **Repositories**: Chứa các phương thức truy cập dữ liệu, tương tác với DbContext
+- **DataContext**: Quản lý kết nối cơ sở dữ liệu và cấu hình
+- **Models**: Định nghĩa các entity và cấu hình EF Core
+- **DTOs**: Chứa các lớp Data Transfer Objects cho request và response
+- **Extensions**: Chứa các extension methods cho mapping DTO, Redis caching, và các tiện ích khác
+- **Middleware**: Xử lý các yêu cầu HTTP, bao gồm logging, error handling, và routing dựa trên area
+- **Const**: Chứa các hằng số và enum dùng trong toàn bộ ứng dụng
+- **Redis Caching**: Sử dụng Redis để cache dữ liệu truy vấn nhằm cải thiện hiệu suất
+- **Dependency Injection**: Sử dụng DI để quản lý các dịch vụ, repositories, và DbContext
+- **Error Handling**: Middleware để xử lý lỗi toàn cục và trả về phản hồi phù hợp
 - **Partial Classes**: Extensions được chia thành nhiều tệp
 - **Redis Cache-Aside**: Sử dụng extension methods cho các truy vấn EF với cache tự động
 - **DTO Pattern**: Tách biệt Request/Response DTOs với extension methods cho việc mapping

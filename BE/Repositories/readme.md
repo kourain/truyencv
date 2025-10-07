@@ -12,17 +12,17 @@ Thư mục này chứa các repository cho việc truy cập dữ liệu theo m�
 ## Cấu trúc thư mục
 
 ```
-├── Interface      # chứa các interface
-├──> *.cs      # PUT methods
-├── Repository      # chứa các repository
-├──> *.cs      # PUT methods
+├── Interfaces      # chứa các interface
+├──> *.cs
+├── Implements      # chứa các repository
+├──> *.cs
 └── Register.cs # nơi đăng ký các repository
 ```
 
-## Quy Ước Redis Caching
+## Quy Ước sử dụng Redis Caching và Truy vấn
 
 Tất cả các repository đều sử dụng Redis cache pattern từ `Extensions/Redis/Redis.cs`:
-
+### lấy 1 Entity
 ```csharp
 // Lấy entity theo ID
 return await _redisCache.GetFromRedisAsync<Entity>(
@@ -30,19 +30,55 @@ return await _redisCache.GetFromRedisAsync<Entity>(
     $"{id}",
     DefaultCacheMinutes
 );
-
+```
+### lấy nhiều entity
+KHÔNG SỬ DỤNG
+```csharp
+public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(long chapterId)
+{
+    return await _redisCache.GetFromRedisAsync<ComicComment>(
+        _dbSet.AsNoTracking()
+            .Where(c => c.comic_chapter_id == chapterId)
+            .OrderByDescending(c => c.created_at)
+            .ToListAsync(),
+        $"chapter:{chapterId}",
+        DefaultCacheMinutes
+    );
+}
+```
+Hãy sử dụng
+```csharp
+public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(long chapterId)
+{
+    return await _redisCache.GetFromRedisAsync<ComicComment>(
+        _dbSet.AsNoTracking()
+            .Where(c => c.comic_chapter_id == chapterId)
+            .OrderByDescending(c => c.created_at)
+            .ToListAsync(),
+        $"chapter:{chapterId}",
+        DefaultCacheMinutes
+    );
+}
+```
+### Có phân trang
+```csharp
 // Lấy danh sách có phân trang
 return await _redisCache.GetFromRedisAsync<Entity>(
     _dbSet.AsNoTracking().Skip(offset).Take(limit).ToListAsync(),
     offset, limit,
     DefaultCacheMinutes
 );
-
-// Lấy tất cả
-return await _redisCache.GetFromRedisAsync<T>(
-   _dbSet.AsNoTracking().ToListAsync(),
-   DefaultCacheMinutes
-  );
+```
+### Lấy tất cả
+```csharp
+public async Task<IEnumerable<ComicCategory>> GetAllAsync()
+{
+    var result = await _redisCache.GetFromRedisAsync<ComicCategory>(
+        _dbSet.AsNoTracking().ToListAsync(),
+        DefaultCacheMinutes
+    );
+    return result ?? [];
+}
 ```
 
 ## Quy Ước Key Cache
@@ -69,7 +105,10 @@ public async Task<UserResponse> GetUserById(long id)
     var user = await _userRepository.GetByIdAsync(id);
     if (user == null)
         throw new NotFoundException("User not found");
-        
+
     return user.ToRespDTO();
 }
 ```
+
+## Cấm sử dụng
+Nghiêm cấm sử dụng `.ContinueWith()` trong repository

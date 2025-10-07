@@ -3,9 +3,10 @@
 Thư mục này chứa các service cho việc xử lý logic nghiệp vụ trong ứng dụng.
 
 ## Cấu Trúc
-
-- `Interface/`: Chứa các interface định nghĩa các service
-- `Service/`: Chứa các implementation của các interface
+├── Interfaces      # chứa các interface
+├──> *.cs
+├── Implements # Chứa các implementation của các interface
+├──> *.cs
 
 ## Nguyên Tắc Thiết Kế
 
@@ -40,20 +41,24 @@ Service được inject vào controller thông qua constructor:
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
-    
+
     public UserController(IUserService userService)
     {
         _userService = userService;
     }
-    
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(long id)
     {
         var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
             return NotFound();
-            
+
         return Ok(user);
     }
 }
 ```
+
+## Cấm
+
+Nghiêm cấm sử dụng .ContinueWith()

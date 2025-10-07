@@ -4,6 +4,10 @@
 
 Tất cả Entity class đều phải được kế thừa từ class TruyenCV.Models.BaseEntity
 
+## Coding
+
+Mỗt khi tạo Entity mới, bắt buộc phải tạo Repository("../Repositories"), Service("../Services"), Controller("../Controlers","../Areas/Admin/Controllers","../Areas/User/Controllers"), DTOs("../DTOs") tương ứng
+
 ## [Required] attribute và required
 
 [Required] khiến trường trong bảng được tạo ra từ ``dotnet ef migrate`` ``not null``

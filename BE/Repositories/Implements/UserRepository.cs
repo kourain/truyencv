@@ -13,7 +13,7 @@ public class UserRepository : Repository<User>, IUserRepository
     public UserRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
     {
     }
-    
+
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _redisCache.GetFromRedisAsync<User>(
@@ -22,7 +22,7 @@ public class UserRepository : Repository<User>, IUserRepository
 			DefaultCacheMinutes
         );
     }
-    
+
     public async Task<User?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<User>(
