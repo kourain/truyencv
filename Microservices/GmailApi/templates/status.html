@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Trạng thái gửi email - Gmail Bulk Sender{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4><i class="fas fa-chart-line"></i> Trạng thái gửi email hàng loạt</h4>
+            </div>
+            <div class="card-body">
+                <!-- Status Cards -->
+                <div class="row status-cards mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-primary">Tổng số</h5>
+                                <h2 id="total-emails" class="text-primary">0</h2>
+                                <i class="fas fa-envelope fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-success">Đã gửi</h5>
+                                <h2 id="sent-emails" class="text-success">0</h2>
+                                <i class="fas fa-check-circle fa-2x text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-danger">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-danger">Thất bại</h5>
+                                <h2 id="failed-emails" class="text-danger">0</h2>
+                                <i class="fas fa-exclamation-circle fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-warning">Tỷ lệ thành công</h5>
+                                <h2 id="success-rate" class="text-warning">0%</h2>
+                                <i class="fas fa-percentage fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">Tiến trình gửi email:</span>
+                        <span id="progress-text">0 / 0</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <!-- Status Indicator -->
+                <div class="alert" id="status-alert" style="display: none;">
+                    <div class="d-flex align-items-center">
+                        <div id="status-icon" class="me-3"></div>
+                        <div>
+                            <strong id="status-title"></strong>
+                            <div id="status-message"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="mb-4">
+                    <button class="btn btn-primary" onclick="refreshStatus()">
+                        <i class="fas fa-sync-alt"></i> Làm mới
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportLogs()">
+                        <i class="fas fa-download"></i> Xuất log
+                    </button>
+                    <a href="{{ url_for('compose') }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Gửi email mới
+                    </a>
+                </div>
+
+                <!-- Logs -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list"></i> Chi tiết log gửi email</h5>
+                        <div class="form-check form-switch float-end">
+                            <input class="form-check-input" type="checkbox" id="auto-refresh" checked>
+                            <label class="form-check-label" for="auto-refresh">
+                                Tự động làm mới
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="logs-container" style="max-height: 400px; overflow-y: auto;">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-info-circle"></i> Chưa có log nào
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let refreshInterval;
+
+function updateStatus(status) {
+    // Update counts
+    document.getElementById('total-emails').textContent = status.total;
+    document.getElementById('sent-emails').textContent = status.sent;
+    document.getElementById('failed-emails').textContent = status.failed;
+    
+    // Calculate and update success rate
+    const successRate = status.total > 0 ? Math.round((status.sent / status.total) * 100) : 0;
+    document.getElementById('success-rate').textContent = successRate + '%';
+    
+    // Update progress bar
+    const progress = status.total > 0 ? Math.round(((status.sent + status.failed) / status.total) * 100) : 0;
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.style.width = progress + '%';
+    progressBar.textContent = progress + '%';
+    
+    // Update progress text
+    document.getElementById('progress-text').textContent = `${status.sent + status.failed} / ${status.total}`;
+    
+    // Update status alert
+    const statusAlert = document.getElementById('status-alert');
+    const statusIcon = document.getElementById('status-icon');
+    const statusTitle = document.getElementById('status-title');
+    const statusMessage = document.getElementById('status-message');
+    
+    if (status.in_progress) {
+        statusAlert.className = 'alert alert-info';
+        statusAlert.style.display = 'block';
+        statusIcon.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x text-info"></i>';
+        statusTitle.textContent = 'Đang gửi email...';
+        statusMessage.textContent = 'Quá trình gửi email đang được thực hiện. Vui lòng đợi.';
+        progressBar.classList.add('progress-bar-animated');
+    } else if (status.total > 0) {
+        const isComplete = (status.sent + status.failed) >= status.total;
+        if (isComplete) {
+            if (status.failed === 0) {
+                statusAlert.className = 'alert alert-success';
+                statusIcon.innerHTML = '<i class="fas fa-check-circle fa-2x text-success"></i>';
+                statusTitle.textContent = 'Hoàn thành thành công!';
+                statusMessage.textContent = `Đã gửi thành công ${status.sent} email.`;
+            } else {
+                statusAlert.className = 'alert alert-warning';
+                statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle fa-2x text-warning"></i>';
+                statusTitle.textContent = 'Hoàn thành với lỗi';
+                statusMessage.textContent = `Gửi thành công ${status.sent} email, thất bại ${status.failed} email.`;
+            }
+            progressBar.classList.remove('progress-bar-animated');
+        }
+        statusAlert.style.display = 'block';
+    } else {
+        statusAlert.style.display = 'none';
+    }
+    
+    // Update logs
+    updateLogs(status.logs);
+}
+
+function updateLogs(logs) {
+    const logsContainer = document.getElementById('logs-container');
+    
+    if (!logs || logs.length === 0) {
+        logsContainer.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="fas fa-info-circle"></i> Chưa có log nào
+            </div>
+        `;
+        return;
+    }
+    
+    let logsHtml = '';
+    logs.forEach(log => {
+        const logClass = log.status === 'success' ? 'log-success' : 'log-error';
+        const icon = log.status === 'success' ? 'fas fa-check-circle text-success' : 'fas fa-times-circle text-danger';
+        
+        logsHtml += `
+            <div class="log-entry ${logClass}">
+                <div class="d-flex align-items-start">
+                    <i class="${icon} me-2 mt-1"></i>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <strong>${log.recipient}</strong>
+                            <small class="text-muted">${log.timestamp}</small>
+                        </div>
+                        <small>${log.message}</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    logsContainer.innerHTML = logsHtml;
+    
+    // Auto scroll to bottom
+    logsContainer.scrollTop = logsContainer.scrollHeight;
+}
+
+function refreshStatus() {
+    fetch('/api/status')
+        .then(response => response.json())
+        .then(status => updateStatus(status))
+        .catch(error => {
+            console.error('Error fetching status:', error);
+            const statusAlert = document.getElementById('status-alert');
+            statusAlert.className = 'alert alert-danger';
+            statusAlert.style.display = 'block';
+            statusAlert.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Lỗi kết nối</strong> Không thể lấy trạng thái hiện tại.
+            `;
+        });
+}
+
+function exportLogs() {
+    fetch('/api/status')
+        .then(response => response.json())
+        .then(status => {
+            if (!status.logs || status.logs.length === 0) {
+                alert('Không có log để xuất');
+                return;
+            }
+            
+            let csvContent = "Timestamp,Recipient,Status,Message\n";
+            status.logs.forEach(log => {
+                csvContent += `"${log.timestamp}","${log.recipient}","${log.status}","${log.message}"\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `email_logs_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => {
+            console.error('Error exporting logs:', error);
+            alert('Lỗi khi xuất logs');
+        });
+}
+
+function startAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+    
+    refreshInterval = setInterval(() => {
+        if (document.getElementById('auto-refresh').checked) {
+            refreshStatus();
+        }
+    }, 2000); // Refresh every 2 seconds
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    refreshStatus();
+    startAutoRefresh();
+    
+    // Handle auto-refresh toggle
+    document.getElementById('auto-refresh').addEventListener('change', function() {
+        if (this.checked) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
+    });
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', stopAutoRefresh);
+</script>
+{% endblock %}

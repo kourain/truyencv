@@ -1,0 +1,311 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.container,
+.container-svs {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #2d2d2d;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+h1 {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.service-card {
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    background: #3a3a3a;
+}
+
+.service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.service-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-running { 
+    background-color: #28a745; 
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.status-stopped { 
+    background-color: #dc3545; 
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.status-unknown { 
+    background-color: #6c757d; 
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.service-command {
+    font-family: 'Courier New', monospace;
+    background: #404040;
+    color: #e0e0e0;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    border-left: 4px solid #007bff;
+    font-size: 14px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.btn-start { 
+    background-color: #28a745; 
+    color: white; 
+}
+
+.btn-stop { 
+    background-color: #dc3545; 
+    color: white; 
+}
+
+.btn-restart { 
+    background-color: #ffc107; 
+    color: #212529; 
+}
+
+.btn-status { 
+    background-color: #17a2b8; 
+    color: white; 
+}
+
+.btn:hover { 
+    opacity: 0.8; 
+}
+
+.btn:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+}
+
+.process-info {
+    background: #404040;
+    color: #e0e0e0;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 12px;
+    display: none;
+}
+
+.refresh-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.system-info {
+    background: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.system-info h3 {
+    margin-top: 0;
+    color: #ffffff;
+}
+
+.system-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #007bff;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #b0b0b0;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* Services Table */
+.services-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #3a3a3a;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.services-table th,
+.services-table td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #555;
+    vertical-align: middle;
+    color: #e0e0e0;
+}
+
+.services-table th {
+    background-color: #2d2d2d;
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.services-table td {
+    font-size: 14px;
+}
+
+.services-table tr:hover {
+    background-color: #404040;
+}
+
+.services-table #total-row {
+    background-color: #2d2d2d !important;
+    border-top: 2px solid #555 !important;
+    font-weight: bold !important;
+}
+
+.services-table #total-row:hover {
+    background-color: #404040 !important;
+}
+
+.service-name-cell {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.working-dir-cell {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #b0b0b0;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-cell {
+    text-align: center;
+}
+
+.cpu-cell,
+.ram-cell,
+.ram-percent-cell {
+    text-align: left;
+    font-weight: bold;
+}
+
+.cpu-value {
+    color: #5bc0de;
+}
+
+.ram-value {
+    color: #5cb85c;
+}
+
+.ram-percent-value {
+    color: #f0ad4e;
+}
+
+.actions-cell {
+    text-align: center;
+}
+
+.btn-small {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0 2px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container ,
+	.container-svs {
+		padding: 15px;
+	}
+    
+	.services-table {
+        font-size: 12px;
+    }
+    
+    .services-table th,
+    .services-table td {
+        padding: 8px 4px;
+    }
+    
+    .working-dir-cell {
+        max-width: 100px;
+    }
+    
+    .btn-small {
+        padding: 3px 6px;
+        font-size: 10px;
+        margin: 0 1px;
+    }
+    
+    .system-stats {
+        grid-template-columns: 1fr;
+    }
+}

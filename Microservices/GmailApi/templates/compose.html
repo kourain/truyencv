@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Soạn email - Gmail Bulk Sender{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-edit"></i> Soạn và gửi email hàng loạt</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('send_emails') }}" enctype="multipart/form-data">
+                    <!-- Thông tin gửi -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="sender_email" class="form-label">Email người gửi *</label>
+                            <input type="email" class="form-control" id="sender_email" name="sender_email" required
+                                   placeholder="your.email@gmail.com">
+                            <div class="form-text">Email này phải được xác thực với Gmail API</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="delay" class="form-label">Delay giữa các email (giây)</label>
+                            <input type="number" class="form-control" id="delay" name="delay" 
+                                   value="1" min="0" max="10">
+                            <div class="form-text">Tránh bị rate limit từ Gmail</div>
+                        </div>
+                    </div>
+
+                    <!-- Tiêu đề email -->
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Tiêu đề email *</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required
+                               placeholder="Nhập tiêu đề email">
+                    </div>
+
+                    <!-- Danh sách email -->
+                    <div class="mb-3">
+                        <label class="form-label">Danh sách người nhận *</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="email_list_type" 
+                                           id="manual" value="manual" checked onchange="toggleEmailInput()">
+                                    <label class="form-check-label" for="manual">
+                                        <i class="fas fa-keyboard"></i> Nhập thủ công
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="email_list_type" 
+                                           id="file" value="file" onchange="toggleEmailInput()">
+                                    <label class="form-check-label" for="file">
+                                        <i class="fas fa-file-upload"></i> Upload file
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Input thủ công -->
+                        <div id="manual_input" class="mt-3">
+                            <textarea class="form-control" name="email_list" rows="5" 
+                                      placeholder="Nhập danh sách email, mỗi email một dòng:&#10;example1@gmail.com&#10;example2@gmail.com&#10;example3@gmail.com"></textarea>
+                        </div>
+
+                        <!-- Upload file -->
+                        <div id="file_input" class="mt-3" style="display: none;">
+                            <input type="file" class="form-control" name="email_file" 
+                                   accept=".xlsx,.xls,.csv">
+                            <div class="form-text">
+                                Hỗ trợ file Excel (.xlsx, .xls) và CSV. 
+                                Email phải ở cột đầu tiên hoặc cột có tên 'email'
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nội dung email -->
+                    <div class="mb-3">
+                        <label for="text_content" class="form-label">Nội dung email (Text) *</label>
+                        <textarea class="form-control" id="text_content" name="text_content" 
+                                  rows="8" required placeholder="Nhập nội dung email dạng text..."></textarea>
+                    </div>
+
+                    <!-- Nội dung HTML (tùy chọn) -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enable_html" 
+                                   onchange="toggleHtmlInput()">
+                            <label class="form-check-label" for="enable_html">
+                                <i class="fas fa-code"></i> Sử dụng nội dung HTML
+                            </label>
+                        </div>
+                        <div id="html_input" class="mt-3" style="display: none;">
+                            <label for="html_content" class="form-label">Nội dung email (HTML)</label>
+                            <textarea class="form-control" id="html_content" name="html_content" 
+                                      rows="10" placeholder="Nhập nội dung email dạng HTML..."></textarea>
+                            <div class="form-text">
+                                Nếu có nội dung HTML, email sẽ được gửi dưới dạng multipart với cả text và HTML
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-info" onclick="previewEmail()">
+                            <i class="fas fa-eye"></i> Xem trước email
+                        </button>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                            <i class="fas fa-eraser"></i> Xóa form
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Gửi email hàng loạt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal preview -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem trước email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Từ:</strong> <span id="preview_sender"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Tiêu đề:</strong> <span id="preview_subject"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Nội dung:</strong>
+                    <div id="preview_content" class="border p-3 mt-2"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleEmailInput() {
+    const manualRadio = document.getElementById('manual');
+    const manualInput = document.getElementById('manual_input');
+    const fileInput = document.getElementById('file_input');
+    
+    if (manualRadio.checked) {
+        manualInput.style.display = 'block';
+        fileInput.style.display = 'none';
+    } else {
+        manualInput.style.display = 'none';
+        fileInput.style.display = 'block';
+    }
+}
+
+function toggleHtmlInput() {
+    const htmlCheckbox = document.getElementById('enable_html');
+    const htmlInput = document.getElementById('html_input');
+    
+    htmlInput.style.display = htmlCheckbox.checked ? 'block' : 'none';
+}
+
+function previewEmail() {
+    const sender = document.getElementById('sender_email').value;
+    const subject = document.getElementById('subject').value;
+    const textContent = document.getElementById('text_content').value;
+    const htmlContent = document.getElementById('html_content').value;
+    const enableHtml = document.getElementById('enable_html').checked;
+    
+    document.getElementById('preview_sender').textContent = sender || 'Chưa nhập';
+    document.getElementById('preview_subject').textContent = subject || 'Chưa nhập';
+    
+    const previewContent = document.getElementById('preview_content');
+    if (enableHtml && htmlContent.trim()) {
+        previewContent.innerHTML = htmlContent;
+    } else {
+        previewContent.innerHTML = textContent.replace(/\n/g, '<br>') || 'Chưa nhập nội dung';
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+}
+
+function clearForm() {
+    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ nội dung form?')) {
+        document.querySelector('form').reset();
+        toggleEmailInput();
+        toggleHtmlInput();
+    }
+}
+
+// Tự động save draft
+let saveTimer;
+function autoSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+        const formData = {
+            sender_email: document.getElementById('sender_email').value,
+            subject: document.getElementById('subject').value,
+            text_content: document.getElementById('text_content').value,
+            html_content: document.getElementById('html_content').value
+        };
+        localStorage.setItem('email_draft', JSON.stringify(formData));
+    }, 2000);
+}
+
+// Load draft khi trang load
+window.addEventListener('load', () => {
+    const draft = localStorage.getItem('email_draft');
+    if (draft) {
+        try {
+            const data = JSON.parse(draft);
+            document.getElementById('sender_email').value = data.sender_email || '';
+            document.getElementById('subject').value = data.subject || '';
+            document.getElementById('text_content').value = data.text_content || '';
+            document.getElementById('html_content').value = data.html_content || '';
+        } catch (e) {
+            console.log('Could not load draft');
+        }
+    }
+    
+    // Add auto-save listeners
+    ['sender_email', 'subject', 'text_content', 'html_content'].forEach(id => {
+        document.getElementById(id).addEventListener('input', autoSave);
+    });
+});
+</script>
+{% endblock %}

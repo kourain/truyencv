@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-surface text-surface-foreground antialiased;
+}
+
+main {
+  @apply min-h-screen;
+}

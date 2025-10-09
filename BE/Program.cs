@@ -49,8 +49,7 @@ namespace TruyenCV
                     client.Connect(address, port);
                     isConnected = true;
                 }
-                catch (System.Net.Sockets.SocketException _)
-                { }
+                catch { }
                 finally
                 {
                     client.Close();

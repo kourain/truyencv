@@ -1,0 +1,54 @@
+{
+	"version": "1.0",
+	"commands": {
+		"lge-ssh": {
+			"command": "python app.py",
+			"workingDirectory": "~/home/lge-ssh",
+			"name": "LGE-SSH"
+		},
+		"cloudflared": {
+			"command": "cloudflared tunnel run --token eyJhIjoiM2U4ZWViMGRkNDAyNTllMzFhYjI4ZmZmZDNhOWJiNTkiLCJ0IjoiYWQxZDAzYzMtNmYwYi00MmM4LWE0ZmMtZGE1ZTljZmJkMzFlIiwicyI6Ik1qZGhNRGRsTVRndE1EYzFNaTAwWlRjMUxUbG1Nekl0TXpWa01HWXdOemhtWW1ZMCJ9",
+			"workingDirectory": "~/",
+			"name": "Cloudflared Tunnel"
+		},
+		"proto-info": {
+			"env": {},
+			"command": "uvicorn main:app --host 0.0.0.0 --port 8888",
+			"workingDirectory": "~/protoinfo",
+			"name": "Proto Info"
+		},
+		"kourain-web": {
+			"env": {
+				"ASPNETCORE_ENVIRONMENT": "Production",
+				"ASPNETCORE_URLS": "http://+:5000"
+			},
+			"command": "dotnet kourain.dll --url=http://localhost:5000",
+			"workingDirectory": "~/home/kourain-web",
+			"name": "Kourain ASP.NET"
+		},
+		"HMT-web": {
+			"env": {
+				"ASPNETCORE_ENVIRONMENT": "Production",
+				"ASPNETCORE_URLS": "http://+:5005"
+			},
+			"command": "dotnet HMT.dll --url=http://localhost:5005",
+			"workingDirectory": "~/home/hmt-web",
+			"name": "HMT ASP.NET"
+		},
+		"kourain-web-dev": {
+			"env": {
+				"ASPNETCORE_ENVIRONMENT": "Development",
+				"ASPNETCORE_URLS": "http://+:5000"
+			},
+			"command": "dotnet kourain.dll --url=http://localhost:5000",
+			"workingDirectory": "~/home/kourain-web",
+			"name": "Kourain ASP.NET DEV"
+		}
+	},
+	"reload-by-netw-interval": 15,
+	"reload-by-netw": {
+		"cloudflared": {
+			"url": "https://lge-allsv.maiquyen.name.vn/status"
+		}
+	}
+}

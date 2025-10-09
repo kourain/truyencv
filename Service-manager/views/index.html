@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Service Manager</title>
+	<link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+	<div class="container">
+		<div style="width: 100%;">
+			<a href="/logout">
+				<button class="refresh-button" style="float: right; font-weight: bold; font-size:large">🔄 Đăng
+					xuất</button>
+			</a>
+		</div>
+		<h1>🔧 Service Manager</h1>
+		<div class="system-info" id="system-info">
+			<h3>📊 Thông tin hệ thống</h3>
+			<div class="system-stats" id="system-stats">
+				<!-- System stats will be populated here -->
+			</div>
+		</div>
+		<div id="services-container">
+			Loading...
+		</div>
+	</div>
+
+	<script src="/static/js/app.js"></script>
+</body>
+
+</html>
