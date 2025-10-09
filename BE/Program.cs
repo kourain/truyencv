@@ -1,6 +1,7 @@
 using TruyenCV.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -22,17 +23,50 @@ namespace TruyenCV
             var instanceName = builder.Configuration.GetSection("Redis:RedisInstanceName").Value ?? "TruyenCV";
             return (connection, instanceName);
         }
-        protected static void AddCorsPolicy(WebApplicationBuilder builder)
+        protected static void AddDefaultCorsPolicy(WebApplicationBuilder builder)
         {
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]?>();
+
+            if (allowedOrigins is null || allowedOrigins.Length == 0)
+            {
+                allowedOrigins = new[]
+                {
+                    "*"
+                };
+            }
+
             builder.Services.AddCors(option =>
             {
                 option.AddDefaultPolicy(policy =>
-                policy.WithOrigins(
+                    policy.WithOrigins(allowedOrigins)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+            });
+        }
+        protected static void AddCorsPolicy(WebApplicationBuilder builder)
+        {
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]?>();
+
+            if (allowedOrigins is null || allowedOrigins.Length == 0)
+            {
+                allowedOrigins = new[]
+                {
+                    "http://localhost:3000",
                     "https://admin-truyencv.cdms.io.vn",
                     "https://truyencv.cdms.io.vn"
-                )
-                .AllowAnyMethod()
-                .AllowAnyHeader());
+                };
+            }
+
+            builder.Services.AddCors(option =>
+            {
+                option.AddDefaultPolicy(policy =>
+                    policy.WithOrigins(allowedOrigins)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
             });
         }
         protected static bool TestRedisConnection(string connectionString)
@@ -149,6 +183,7 @@ namespace TruyenCV
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
+                AddDefaultCorsPolicy(builder);
             }
             else
             {

@@ -1,7 +1,7 @@
 appsettings.Development.json
 appsettings.json
 *vscode*/
-*test*
+*test[_.]*
 # .dockerignore
 
 # .NET build artifacts

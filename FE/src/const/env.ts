@@ -1,7 +1,6 @@
 export type AppEnvironment = {
-  backendUrl: string;
-  cdnUrl: string;
-  fePort: number;
+  BACKEND_URL: string;
+  CDN_URL: string;
 };
 
 const fallbackUrl = (value?: string | null) => {
@@ -19,16 +18,15 @@ const parsePort = (value?: string | null) => {
 };
 
 export const appEnv: AppEnvironment = {
-  backendUrl: fallbackUrl(process.env.NEXT_PUBLIC_BACKEND_URL),
-  cdnUrl: fallbackUrl(process.env.NEXT_PUBLIC_CDN_URL),
-  fePort: parsePort(process.env.NEXT_PUBLIC_FE_PORT)
+  BACKEND_URL: fallbackUrl(process.env.NEXT_PUBLIC_BACKEND_URL),
+  CDN_URL: fallbackUrl(process.env.NEXT_PUBLIC_CDN_URL),
 };
 
 export const isBrowser = typeof window !== "undefined";
 
 export const withBaseUrl = (path: string) => {
   if (!path) {
-    return appEnv.backendUrl;
+    return appEnv.BACKEND_URL;
   }
 
   if (/^https?:\/\//i.test(path)) {
@@ -36,7 +34,7 @@ export const withBaseUrl = (path: string) => {
   }
 
   const trimmedPath = path.startsWith("/") ? path : `/${path}`;
-  const base = appEnv.backendUrl.replace(/\/+$/, "");
+  const base = appEnv.BACKEND_URL.replace(/\/+$/, "");
 
   return `${base}${trimmedPath}`;
 };

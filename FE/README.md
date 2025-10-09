@@ -4,6 +4,8 @@ Cấu trúc thư mục:
 |-> public                 # chứa public file như css/js/img/v.v.
 |-> src/
 |---> app/*.tsx             # cấu trúc giao diện
+|------> admin/*.tsx            # cấu trúc giao diện quản trị viên
+|------> user/*.tsx             # cấu trúc giao diện người dùng
 |---> const/*.ts            # các hằng số sử dụng chung trong ứng dụng
 |---> components/*/*.tsx    # các components của giao diện
 |---> helpers/*.ts          # các thư viện hỗ trợ, bao gồm cấu hình axios và tanstackquery
@@ -21,11 +23,11 @@ Css: Tailwindcss
 Đa ngôn ngữ: Không
 ## Admin
 
-Route: /Admin
+Route: /admin
 
 ## User
 
-Route: /User
+Route: /aser
 
 ## .env
 

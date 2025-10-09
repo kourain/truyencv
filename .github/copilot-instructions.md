@@ -4,8 +4,9 @@ Luôn luôn trả lời bằng tiếng Việt
 
 # Cấm
 
+Nghiêm cấm tự ý tạo file mới có cùng chức năng với 1 file cũ hoặc là bản nâng cấm của một file cũ, Hãy chỉnh sửa trực tiếp lên file đó.
 Nghiêm cấm tự ý tạo file mới hoặc chỉnh sửa file không thuộc phạm vi của bạn. Chỉ được phép chỉnh sửa các file được giao.
-Nghiêm cấm tự ý tạo file *.md
+Nghiêm cấm tự ý tạo file *.md. Hãy hỏi tôi trước khi tạo.
 
 # CMS Base API - AI Coding Instructions
 
@@ -19,7 +20,7 @@ Nghiêm cấm tự ý tạo file *.md
 
 ## Kiến Trúc Tổng Quan
 
-**Mô Hình**: Areas-based API + Redis caching + Entity Framework Core with MySQL
+**Mô Hình**: Areas-based API + Redis caching + Entity Framework Core with PostgreSQL
 
 - **Areas**: `Admin/` và `User/` phân chia controllers theo quyền truy cập API
 - **Controllers**: thuộc folder 'Controllers' không thuộc Areas nào, Chứa các endpoints API, sử dụng attribute routing, dành cho các request không yêu cầu phân quyền riêng biệt
@@ -162,3 +163,15 @@ Luôn sử dụng `namespace TruyenCV;`
 **EF Type Mismatches**: Sử dụng returns kiểu `IEnumerable<T>`, chuyển đổi kiểu rõ ràng cho Redis cache methods
 **Cache Serialization**: Thêm `[JsonIgnore]` vào navigation properties để tránh circular references
 **Json**: Luôn sử dụng snake_case cho JSON properties trong DTOs và schema cơ sở dữ liệu. Luôn sử dụng Newtonsoft.Json thay cho thư viện mặc định System.Text.Json
+
+# FrontEnd Coding
+
+tên thư mục đều viết ở dạng lower_case
+tất cả route đều lower_case
+tất cả component đều viết ở dạng PascalCase
+thư mục app/*.tsx là thư mục chứa các tệp tin SSR
+thư mục components/*.tsx là thư mục chứa các component dùng chung, không chứa các tệp tin SSR, chỉ chứa các component tái sử dụng CSR
+
+# Mock Data
+Backend: đặt nó vào bên trong repository
+FrontEnd: đặt nó vào bên trong services, nơi thường dùng để gọi API tới BackEnd

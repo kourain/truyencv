@@ -27,7 +27,7 @@ public class Comic : BaseEntity
 	[StringLength(500)]
 	public string? embedded_from_url { get; set; }
 
-	public int chap_count { get; set; } = 0;
+	public int chapter_count { get; set; } = 0;
 
 	public float rate { get; set; } = 0;
 

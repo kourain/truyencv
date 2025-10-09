@@ -12,5 +12,10 @@ namespace TruyenCV.Controllers
 		{
 			return Ok(new { message = "Pong" });
 		}
+		[HttpGet("/HEAD")]
+		public async Task<IActionResult> Head()
+		{
+			return Ok(HttpContext.Request.Headers);
+		}
 	}
 }

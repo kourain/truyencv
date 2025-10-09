@@ -36,7 +36,7 @@ namespace TruyenCV.Controllers
             var roles = await _authService.GetUserRolesAsync(user.id);
 
             // Tạo token
-            var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(user.id, roles);
+            var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(user, roles);
 
             // Trả về thông tin
             return Ok(new

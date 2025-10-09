@@ -61,7 +61,7 @@ public class ComicChapterService : IComicChapterService
 		var newChapter = await _chapterRepository.AddAsync(chapter);
 
 		// Cập nhật số lượng chapter của comic
-		comic.chap_count++;
+		comic.chapter_count++;
 		await _comicRepository.UpdateAsync(comic);
 		await _redisCache.AddOrUpdateInRedisAsync(comic, comic.id);
 
@@ -101,7 +101,7 @@ public class ComicChapterService : IComicChapterService
 		var comic = await _comicRepository.GetByIdAsync(chapter.comic_id);
 		if (comic != null)
 		{
-			comic.chap_count = Math.Max(0, comic.chap_count - 1);
+			comic.chapter_count = Math.Max(0, comic.chapter_count - 1);
 			await _comicRepository.UpdateAsync(comic);
 			await _redisCache.AddOrUpdateInRedisAsync(comic, comic.id);
 		}

@@ -1,25 +1,25 @@
-export interface CreateComicCategoryRequest {
+interface CreateComicCategoryRequest {
 	name: string;
 }
 
-export interface UpdateComicCategoryRequest {
+interface UpdateComicCategoryRequest {
 	id: number;
 	name: string;
 }
 
-export interface CreateComicHaveCategoryRequest {
+interface CreateComicHaveCategoryRequest {
 	comic_id: number;
 	comic_category_id: number;
 }
 
-export interface UpdateComicHaveCategoryRequest {
+interface UpdateComicHaveCategoryRequest {
 	comic_id: number;
 	comic_category_id: number;
 	new_comic_id: number;
 	new_comic_category_id: number;
 }
 
-export interface ComicCategoryResponse {
+interface ComicCategoryResponse {
 	id: number;
 	name: string;
 	created_at: string;

@@ -1,17 +1,17 @@
-export interface CreateComicChapterRequest {
+interface CreateComicChapterRequest {
 	comic_id: number;
 	chapter: number;
 	content: string;
 }
 
-export interface UpdateComicChapterRequest {
+interface UpdateComicChapterRequest {
 	id: number;
 	comic_id: number;
 	chapter: number;
 	content: string;
 }
 
-export interface ComicChapterResponse {
+interface ComicChapterResponse {
 	id: number;
 	comic_id: number;
 	chapter: number;

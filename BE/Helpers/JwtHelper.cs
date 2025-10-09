@@ -8,11 +8,11 @@ namespace TruyenCV.Helpers
 {
     public static class JwtHelper
     {
-        public static string GenerateAccessToken(long userId, IEnumerable<string> roles, string secretKey, string issuer, string audience, int expireMinutes = 60)
+        public static string GenerateAccessToken(Models.User user, IEnumerable<string> roles, string secretKey, string issuer, string audience, int expireMinutes = 60)
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.id.ToString()),
 				new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
@@ -22,7 +22,7 @@ namespace TruyenCV.Helpers
 			{
 				claims.Add(new Claim(ClaimTypes.Role, role));
             }
-
+            
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

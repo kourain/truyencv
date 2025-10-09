@@ -1,17 +1,17 @@
-export interface CreateUserHasRoleRequest {
+interface CreateUserHasRoleRequest {
 	role_name: string;
 	user_id: number;
 	assigned_by: number;
 }
 
-export interface UpdateUserHasRoleRequest {
+interface UpdateUserHasRoleRequest {
 	id: number;
 	role_name: string;
 	user_id: number;
 	assigned_by: number;
 }
 
-export interface UserHasRoleResponse {
+interface UserHasRoleResponse {
 	id: number;
 	role_name: string;
 	user_id: number;

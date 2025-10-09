@@ -1,4 +1,4 @@
-export interface CreateComicCommentRequest {
+interface CreateComicCommentRequest {
 	comic_id: number;
 	comic_chapter_id?: number | null;
 	user_id: number;
@@ -9,7 +9,7 @@ export interface CreateComicCommentRequest {
 	rate_star?: number | null;
 }
 
-export interface UpdateComicCommentRequest {
+interface UpdateComicCommentRequest {
 	id: number;
 	comic_id: number;
 	comic_chapter_id?: number | null;
@@ -21,7 +21,7 @@ export interface UpdateComicCommentRequest {
 	rate_star?: number | null;
 }
 
-export interface ComicCommentResponse {
+interface ComicCommentResponse {
 	id: number;
 	comic_id: number;
 	comic_chapter_id: number | null;

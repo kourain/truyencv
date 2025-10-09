@@ -15,7 +15,7 @@ namespace TruyenCV.Services
             _configuration = configuration;
         }
 
-        public async Task<(string accessToken, string refreshToken)> GenerateTokensAsync(long userId, List<string> roles)
+        public async Task<(string accessToken, string refreshToken)> GenerateTokensAsync(User user, List<string> roles)
         {
             var jwtSettings = _configuration.GetSection("JWT");
             var secretKey = jwtSettings["SecretKey"]!;
@@ -25,14 +25,14 @@ namespace TruyenCV.Services
             var refreshTokenExpiry = int.Parse(jwtSettings["RefreshTokenExpiryDays"]!);
 
             // Sinh Access Token
-            var accessToken = JwtHelper.GenerateAccessToken(userId, roles, secretKey, issuer, audience, accessTokenExpiry);
+            var accessToken = JwtHelper.GenerateAccessToken(user, roles, secretKey, issuer, audience, accessTokenExpiry);
 
             // Sinh Refresh Token
             var refreshTokenValue = JwtHelper.GenerateRefreshToken();
             var refreshToken = new RefreshToken
             {
                 token = refreshTokenValue,
-                user_id = userId,
+                user_id = user.id,
                 expires_at = DateTime.UtcNow.AddDays(refreshTokenExpiry),
                 created_at = DateTime.UtcNow
             };
@@ -56,7 +56,7 @@ namespace TruyenCV.Services
             var roles = await GetUserRolesAsync(refreshToken.user_id);
 
             // Tạo token mới
-            var newTokens = await GenerateTokensAsync(refreshToken.user_id, roles);
+            var newTokens = await GenerateTokensAsync(refreshToken.User, roles);
 
             // Revoke refresh token cũ
             refreshToken.revoked_at = DateTime.UtcNow;

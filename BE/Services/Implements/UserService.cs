@@ -90,7 +90,7 @@ namespace TruyenCV.Services
             return true;
         }
 
-        public async Task<UserResponse?> AuthenticateAsync(string email, string password)
+        public async Task<User?> AuthenticateAsync(string email, string password)
         {
             // Lấy user từ database
             var user = await _userRepository.GetByEmailAsync(email);
@@ -101,7 +101,7 @@ namespace TruyenCV.Services
             if (!Bcrypt.VerifyPassword(password, user.password))
                 return null;
 
-            return user.ToRespDTO();
+            return user;
         }
     }
 }

@@ -1,5 +1,6 @@
 using TruyenCV.DTO.Request;
 using TruyenCV.DTO.Response;
+using TruyenCV.Models;
 
 namespace TruyenCV.Services
 {
@@ -51,6 +52,6 @@ namespace TruyenCV.Services
         /// <param name="email">Email</param>
         /// <param name="password">Mật khẩu</param>
         /// <returns>Thông tin người dùng nếu xác thực thành công, ngược lại là null</returns>
-        Task<UserResponse?> AuthenticateAsync(string email, string password);
+        Task<User?> AuthenticateAsync(string email, string password);
     }
 }
