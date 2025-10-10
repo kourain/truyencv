@@ -12,37 +12,36 @@ public class SnowflakeIdGenerator
 
     private const ulong MaxMachineId = 1023;
     private const ulong MaxSequence = 4095;
-
+    private static uint MachineId = 0;
     private const int MachineIdShift = 12;
     private const int TimestampShift = 22;
-	public static void Init()
-	{
-		for (int i = 0; i < _lock.Length; i++)
-		{
-			_lock[i] = new object();
-		}
-	}
-    public static ulong NextId(ulong machineId = 0)
+    public static void Init(uint _machineId)
     {
-        if (machineId < 0 || machineId > MaxMachineId)
+        MachineId = _machineId;
+        for (int i = 0; i < _lock.Length; i++)
+        {
+            _lock[i] = new object();
+        }
+    }
+    public static ulong NextId()
+    {
+        if (MachineId < 0 || MaxMachineId - MachineId < 0)
             throw new ArgumentException($"MachineId phải nằm trong khoảng 0 - {MaxMachineId}");
-        lock (_lock[machineId])
+        lock (_lock[MachineId])
         {
             var timestamp = GetCurrentTimestamp();
-            if (timestamp == _lastTimestamp[machineId])
+            if (timestamp == _lastTimestamp[MachineId])
             {
-                _sequence[machineId] = (_sequence[machineId] + 1) & MaxSequence;
+                _sequence[MachineId] = (_sequence[MachineId] + 1) & MaxSequence;
             }
             else
             {
-                _sequence[machineId] = 0;
+                _sequence[MachineId] = 0;
             }
 
-            _lastTimestamp[machineId] = timestamp;
+            _lastTimestamp[MachineId] = timestamp;
 
-            return ((timestamp << TimestampShift) |
-                    (machineId << MachineIdShift) |
-                    _sequence[machineId]);
+            return ((timestamp << TimestampShift) | (MachineId << MachineIdShift) | _sequence[MachineId]);
         }
     }
 

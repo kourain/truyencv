@@ -11,15 +11,11 @@ const defaultConfig: AxiosRequestConfig = {
 };
 
 const redirectToLogin = () => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
   const { pathname, search } = window.location;
   const currentUrl = `${pathname}${search}`;
   const normalizedPath = pathname.toLowerCase();
-  const isAdminScope = normalizedPath.startsWith("/admin") || normalizedPath.startsWith("/admin/login");
-  const loginBase = isAdminScope ? "/admin/login" : "/user/login";
+  const isAdminScope = window.location.hostname === new URL(appEnv.FE_ADMIN).hostname || window.location.hostname.startsWith("localhost");
+  const loginBase = isAdminScope ? "/admin/auth/login" : "/user/auth/login";
   const normalizedLoginBase = loginBase.toLowerCase();
   const shouldAppendRedirect = currentUrl && !normalizedPath.startsWith(normalizedLoginBase);
   const loginUrl = shouldAppendRedirect
@@ -65,16 +61,15 @@ httpClient.interceptors.response.use(
       const originalRequest = config ?? error.config;
 
       if (originalRequest?.url?.includes("/auth/refresh-token")) {
-        clearAuthTokens();
+        await clearAuthTokens();
         return Promise.reject(error);
       }
 
-      if (status === 401 && originalRequest && !(originalRequest as AxiosRequestConfig & { _retry?: boolean })._retry) {
+      if (status === 401) {
         const retriableRequest = originalRequest as AxiosRequestConfig & { _retry?: boolean };
         const refreshToken = getRefreshToken();
-
         if (!refreshToken) {
-          clearAuthTokens();
+          await clearAuthTokens();
           redirectToLogin();
           console.error("[API ERROR] Missing refresh token for re-authentication");
           return Promise.reject(error);
@@ -83,13 +78,13 @@ httpClient.interceptors.response.use(
         retriableRequest._retry = true;
 
         try {
-          const refreshResponse = await httpClient.post<{ access_token: string; refresh_token: string }>(
+          const refreshResponse = await httpClient.post<JWT_REFRESH_RESPONSE>(
             "/auth/refresh-token",
             { refresh_token: refreshToken }
           );
-
-          const { access_token, refresh_token } = refreshResponse.data;
-          setAuthTokens(access_token, refresh_token);
+          console.log("[API] Tokens refreshed successfully");
+          const { access_token, refresh_token, access_token_minutes, refresh_token_days } = refreshResponse.data;
+          setAuthTokens(access_token, refresh_token, access_token_minutes, refresh_token_days);
 
           if (retriableRequest.headers) {
             retriableRequest.headers.Authorization = `Bearer ${access_token}`;
@@ -98,9 +93,9 @@ httpClient.interceptors.response.use(
           return httpClient(retriableRequest);
         } catch (refreshError) {
           if (refreshError instanceof AxiosError) {
-            if (refreshError.response?.status == 403) {
+            if (refreshError.response?.status === 403) {
               console.error("[API ERROR] Refresh token expired or invalid, logging out");
-              clearAuthTokens();
+              await clearAuthTokens();
               redirectToLogin();
             } else {
               console.error("[API ERROR] Failed to refresh tokens:", refreshError.response?.data || refreshError.message);

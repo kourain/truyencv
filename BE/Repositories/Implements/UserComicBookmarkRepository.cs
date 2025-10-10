@@ -10,7 +10,7 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserComicBookmarkRepository
 {
-    public UserComicBookmarkRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    public UserComicBookmarkRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
     {
     }
 

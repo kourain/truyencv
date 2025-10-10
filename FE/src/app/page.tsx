@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-const IndexPage = () => {
+const IndexPage = async () => {
 	redirect("/user");
 };
 

@@ -6,9 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import { BookOpen, CalendarClock, Filter, Search as SearchIcon, Star, Tag } from "lucide-react";
 
-import UserHomeNavbar from "@components/user/home/UserHomeNavbar";
 import EmptyState from "@components/user/home/EmptyState";
-import { clearAuthTokens } from "@helpers/authTokens";
 import { formatNumber, formatRelativeTime } from "@helpers/format";
 import { useComicSearchQuery, type SearchComicResult } from "@services/user/search.service";
 
@@ -54,16 +52,6 @@ export const UserSearchContent = () => {
     },
     [handleSearch, searchValue]
   );
-
-  const handleLogout = useCallback(() => {
-    clearAuthTokens();
-    router.push("/user/login");
-  }, [router]);
-
-  const handleOpenSettings = useCallback(() => {
-    router.push("/user");
-  }, [router]);
-
   const handleChangePage = useCallback(
     (page: number) => {
       const href = buildSearchRoute(keywordParam, page);
@@ -76,40 +64,13 @@ export const UserSearchContent = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-surface via-surface-muted to-surface">
-      <UserHomeNavbar
-        onSearch={(keyword) => handleSearch(keyword.trim())}
-        onLogout={handleLogout}
-        onOpenSettings={handleOpenSettings}
-        initialKeyword={keywordParam}
-      />
-
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
         <header className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-xl">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
             <div className="flex-1">
               <label htmlFor="search" className="text-xs uppercase tracking-[0.4em] text-surface-foreground/60">
-                Tìm kiếm truyện tranh
+                Tìm kiếm truyện
               </label>
-              <div className="mt-2 flex items-center gap-3">
-                <div className="relative flex-1">
-                  <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-foreground/50" />
-                  <input
-                    id="search"
-                    type="search"
-                    value={searchValue}
-                    onChange={(event) => setSearchValue(event.target.value)}
-                    placeholder="Nhập tên truyện, tác giả, thể loại..."
-                    className="w-full rounded-full border border-surface-muted/80 bg-surface px-10 py-2 text-sm text-surface-foreground shadow-inner outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:shadow-glow"
-                >
-                  <SearchIcon className="h-4 w-4" />
-                  Tìm kiếm
-                </button>
-              </div>
             </div>
             <div className="flex items-center gap-3 text-xs text-surface-foreground/60">
               <Filter className="h-4 w-4" />

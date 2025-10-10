@@ -20,4 +20,11 @@ public interface IComicCategoryRepository : IRepository<ComicCategory>
 	/// <param name="name">Tên category</param>
 	/// <returns>Category nếu tìm thấy, null nếu không tìm thấy</returns>
 	Task<ComicCategory?> GetByNameAsync(string name);
+
+	/// <summary>
+	/// Lấy danh sách category mới nhất
+	/// </summary>
+	/// <param name="limit">Số lượng category cần lấy</param>
+	/// <returns>Danh sách category theo thứ tự thời gian tạo</returns>
+	Task<IEnumerable<ComicCategory>> GetLatestAsync(int limit);
 }

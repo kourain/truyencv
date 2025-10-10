@@ -10,7 +10,7 @@ namespace TruyenCV.Repositories;
 public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRepository
 {
     public override double DefaultCacheMinutes => 5; // Mặc định cache 5 phút
-    public RefreshTokenRepository(DataContext context, IDistributedCache redisCache)
+    public RefreshTokenRepository(AppDataContext context, IDistributedCache redisCache)
         : base(context, redisCache)
     {
     }

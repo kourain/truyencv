@@ -6,7 +6,9 @@ import Link from "next/link";
 import { AlertCircle, Lock, Mail, Shield } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@services/auth.service";
-import { clearAuthTokens, hasValidTokens, tokenHasRole } from "@helpers/authTokens";
+import { clearAuthTokens } from "@helpers/authTokens";
+import { useAuth } from "@hooks/useAuth";
+import { UserRole } from "@const/role";
 
 export const AdminLoginContent = () => {
   const router = useRouter();
@@ -17,15 +19,20 @@ export const AdminLoginContent = () => {
 
   const redirectParam = searchParams?.get("redirect") as Route | null;
   const fallback = redirectParam ?? ("/admin" as Route);
+  const auth = useAuth();
 
+  if (auth?.isAuthenticated && auth?.roles.includes(UserRole.Admin)) {
+    router.replace(fallback);
+  }
   const loginMutation = useMutation({
     mutationFn: (payload: LoginRequest) => login(payload),
-    onSuccess: () => {
+    onSuccess: async (response) => {
       setError(null);
+      await auth.updateAuthStateFromAccessToken(response.access_token);
       router.replace(fallback);
     },
-    onError: (mutationError: unknown) => {
-      clearAuthTokens();
+    onError: async (mutationError: unknown) => {
+      await clearAuthTokens();
       if (typeof mutationError === "object" && mutationError !== null && "response" in mutationError) {
         const apiError = mutationError as {
           response?: { data?: { message?: string } };
@@ -51,8 +58,6 @@ export const AdminLoginContent = () => {
     loginMutation.mutate({ email, password });
   };
 
-  const isLoggedIn = hasValidTokens() && tokenHasRole("Admin");
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface text-surface-foreground">
       <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-surface-muted bg-surface/70 shadow-glow backdrop-blur-xl">
@@ -68,16 +73,6 @@ export const AdminLoginContent = () => {
               <h1 className="text-2xl font-semibold text-primary-foreground">Đăng nhập quản trị</h1>
             </div>
           </div>
-
-          {isLoggedIn && !loginMutation.isPending && (
-            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-              Bạn đã đăng nhập. Bấm
-              <Link href={"/admin" as Route} className="mx-1 underline">
-                vào đây
-              </Link>
-              để chuyển tới trang quản trị.
-            </div>
-          )}
 
           {error && (
             <div className="flex items-start gap-3 rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
@@ -142,7 +137,7 @@ export const AdminLoginContent = () => {
           </p>
 
           <p className="text-center text-xs text-surface-foreground/60">
-            Bạn là người đọc? <Link href={"/user/login" as Route} className="underline">Đăng nhập dành cho người dùng</Link>.
+            Bạn là người đọc? <Link href={"/user/auth/login" as Route} className="underline">Đăng nhập dành cho người dùng</Link>.
           </p>
         </div>
       </div>

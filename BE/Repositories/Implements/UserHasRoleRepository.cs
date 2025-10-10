@@ -9,7 +9,7 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class UserHasRoleRepository : Repository<UserHasRole>, IUserHasRoleRepository
 {
-    public UserHasRoleRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    public UserHasRoleRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
     {
     }
 

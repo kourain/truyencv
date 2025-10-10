@@ -2,6 +2,8 @@ export type AppEnvironment = {
   BACKEND_URL: string;
   CDN_URL: string;
   JWT_SECRET: string;
+  FE_USER: string;
+  FE_ADMIN: string;
 };
 
 const fallbackUrl = (value?: string | null) => {
@@ -12,16 +14,12 @@ const fallbackUrl = (value?: string | null) => {
   return value.trim().replace(/\/$/, "");
 };
 
-const parsePort = (value?: string | null) => {
-  const port = Number(value ?? "");
-
-  return Number.isFinite(port) && port > 0 ? port : 3000;
-};
-
 export const appEnv: AppEnvironment = {
   BACKEND_URL: fallbackUrl(process.env.NEXT_PUBLIC_BACKEND_URL),
   CDN_URL: fallbackUrl(process.env.NEXT_PUBLIC_CDN_URL),
   JWT_SECRET: fallbackUrl(process.env.NEXT_PUBLIC_JWT_SECRET),
+  FE_USER: fallbackUrl(process.env.NEXT_PUBLIC_FE_USER).replace(/http[s]:\/\//, ""),
+  FE_ADMIN: fallbackUrl(process.env.NEXT_PUBLIC_FE_ADMIN).replace(/http[s]:\/\//, ""),
 };
 
 export const isBrowser = typeof window !== "undefined";

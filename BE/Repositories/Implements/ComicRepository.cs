@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -9,7 +11,7 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class ComicRepository : Repository<Comic>, IComicRepository
 {
-	public ComicRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+	public ComicRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
 	{
 	}
 
@@ -62,5 +64,25 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 			$"status:{status}",
 			DefaultCacheMinutes
 		);
+	}
+
+	public async Task<IEnumerable<Comic>> GetTopRatedAsync(int limit)
+	{
+		limit = Math.Clamp(limit, 1, 50);
+		return await _redisCache.GetFromRedisAsync<Comic>(
+			_dbSet.AsNoTracking()
+				.OrderByDescending(c => c.rate)
+				.ThenByDescending(c => c.updated_at)
+				.Take(limit)
+				.ToListAsync(),
+			$"top-rated:{limit}",
+			DefaultCacheMinutes
+		);
+	}
+
+	public async Task<long> SumBookmarkCountAsync()
+	{
+		return await _dbSet.AsNoTracking()
+			.SumAsync(c => (long)c.bookmark_count);
 	}
 }

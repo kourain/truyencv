@@ -1,4 +1,7 @@
 export enum UserRole {
+  System = "System",
   User = "User",
-  Admin = "Admin"
+  Admin = "Admin",
+  Moderator = "Moderator",
+  Converter = "Converter"
 }

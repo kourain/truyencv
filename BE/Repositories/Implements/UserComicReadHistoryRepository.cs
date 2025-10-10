@@ -10,7 +10,7 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, IUserComicReadHistoryRepository
 {
-    public UserComicReadHistoryRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    public UserComicReadHistoryRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
     {
     }
 

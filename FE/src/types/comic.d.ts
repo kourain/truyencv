@@ -1,4 +1,4 @@
-import { ComicStatus } from "../const/comic-status";
+import { ComicStatus } from "@const/comic-status";
 
 export interface CreateComicRequest {
 	name: string;

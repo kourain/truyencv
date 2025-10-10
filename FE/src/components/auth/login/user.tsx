@@ -7,9 +7,15 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
+import { useAuth } from "@hooks/useAuth";
+import { UserRole } from "@const/role";
 
 export const UserLoginContent = () => {
   const router = useRouter();
+  const auth = useAuth();
+  if (auth?.isAuthenticated && auth?.roles.includes(UserRole.User)) {
+    router.replace("/user" as Route);
+  }
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,13 +29,14 @@ export const UserLoginContent = () => {
 
   const loginMutation = useMutation({
     mutationFn: (payload: LoginRequest) => login(payload),
-    onSuccess: () => {
+    onSuccess: async (response) => {
       setError(null);
       setSuccess(null);
+      await auth.updateAuthStateFromAccessToken(response.access_token);
       router.replace(fallback);
     },
-    onError: (mutationError: unknown) => {
-      clearAuthTokens();
+    onError: async (mutationError: unknown) => {
+      await clearAuthTokens();
       setSuccess(null);
       if (typeof mutationError === "object" && mutationError !== null && "response" in mutationError) {
         const apiError = mutationError as {
@@ -56,7 +63,6 @@ export const UserLoginContent = () => {
     loginMutation.mutate({ email, password });
   };
 
-  const isLoggedIn = hasValidTokens() && tokenHasRole("User");
 
   useEffect(() => {
     if (registered) {
@@ -84,16 +90,6 @@ export const UserLoginContent = () => {
               <h1 className="text-2xl font-semibold text-primary-foreground">Đăng nhập người dùng</h1>
             </div>
           </div>
-
-          {isLoggedIn && !loginMutation.isPending && (
-            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-              Bạn đã đăng nhập. Bấm
-              <Link href={"/" as Route} className="mx-1 underline">
-                vào đây
-              </Link>
-              để quay về trang chủ.
-            </div>
-          )}
 
           {success && (
             <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
@@ -175,7 +171,7 @@ export const UserLoginContent = () => {
           </p>
 
           <p className="text-center text-xs text-surface-foreground/60">
-            Bạn là quản trị viên? <Link href={"/admin/login" as Route} className="underline">Đăng nhập khu vực quản trị</Link>.
+            Bạn là quản trị viên? <Link href={"/admin/auth/login" as Route} className="underline">Đăng nhập khu vực quản trị</Link>.
           </p>
         </div>
       </div>

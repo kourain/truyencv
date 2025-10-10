@@ -5,13 +5,13 @@ namespace TruyenCV.BackgroundServices
     public class TemplateBackgroundService : BackgroundService
     {
         private readonly ILogger<TemplateBackgroundService> _logger;
-        private readonly DataContext _dataContext = null!;
+        private readonly AppDataContext _dataContext = null!;
         private readonly static object _lock = new();
         private readonly static Queue<Func<Task>> _tasks = new();
         public TemplateBackgroundService(ILogger<TemplateBackgroundService> logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
-            _dataContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<DataContext>();
+            _dataContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDataContext>();
         }
         public static void EnqueueTask(Func<Task> task)
         {

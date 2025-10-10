@@ -9,7 +9,7 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class ComicCommentRepository : Repository<ComicComment>, IComicCommentRepository
 {
-	public ComicCommentRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+	public ComicCommentRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
 	{
 	}
 

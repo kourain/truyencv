@@ -10,17 +10,17 @@ type MessageResponse = BaseResponse;
 export const register = async (payload: RegisterRequest, config?: AxiosRequestConfig) => {
 	const client = getHttpClient();
 	const response = await client.post<RegisterResponse>("/auth/register", payload, config);
-	const { access_token, refresh_token } = response.data;
-	setAuthTokens(access_token, refresh_token);
+	const { access_token, refresh_token, access_token_minutes, refresh_token_days } = response.data;
+	setAuthTokens(access_token, refresh_token, access_token_minutes, refresh_token_days);
 	return response.data;
 };
 
 export const login = async (payload: LoginRequest, config?: AxiosRequestConfig) => {
 	const client = getHttpClient();
 	const response = await client.post<LoginResponse>("/auth/login", payload, config);
-	const { access_token, refresh_token } = response.data;
+	const { access_token, refresh_token, access_token_minutes, refresh_token_days } = response.data;
 
-	setAuthTokens(access_token, refresh_token);
+	setAuthTokens(access_token, refresh_token, access_token_minutes, refresh_token_days);
 
 	return response.data;
 };
@@ -39,7 +39,7 @@ export const refreshTokens = async (payload?: RefreshTokenPayload, config?: Axio
 		config
 	);
 
-	setAuthTokens(response.data.access_token, response.data.refresh_token);
+	setAuthTokens(response.data.access_token, response.data.refresh_token, response.data.access_token_minutes, response.data.refresh_token_days);
 
 	return response.data;
 };
@@ -49,7 +49,7 @@ export const logout = async (payload?: RefreshTokenPayload, config?: AxiosReques
 	const refresh_token = payload?.refresh_token ?? getRefreshToken();
 
 	if (!refresh_token) {
-		clearAuthTokens();
+		await clearAuthTokens({ from_logout: true });
 		return { message: "Đăng xuất thành công" } satisfies MessageResponse;
 	}
 
@@ -62,20 +62,25 @@ export const logout = async (payload?: RefreshTokenPayload, config?: AxiosReques
 
 		return response.data;
 	} finally {
-		clearAuthTokens();
+		await clearAuthTokens({ from_logout: true });
 	}
 };
 
 export const logoutAll = async (config?: AxiosRequestConfig) => {
 	const client = getHttpClient();
+	const refresh_token = getRefreshToken();
 
-	try {
-		const response = await client.post<MessageResponse>("/auth/logout-all", null, config);
-
-		return response.data;
-	} finally {
-		clearAuthTokens();
+	if (!refresh_token) {
+		throw new Error("Không tìm thấy refresh token để đăng xuất các thiết bị khác");
 	}
+
+	const response = await client.post<MessageResponse>(
+		"/auth/logout-all",
+		{ refresh_token },
+		config
+	);
+
+	return response.data;
 };
 
 export const requestPasswordReset = async (payload: RequestPasswordResetRequest, config?: AxiosRequestConfig) => {

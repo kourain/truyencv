@@ -1,0 +1,22 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="favicon-gradient" x1="8" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="55%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#0EA5E9" />
+    </linearGradient>
+    <radialGradient id="favicon-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(18 18) rotate(45) scale(36)">
+      <stop stop-color="#FFFFFF" stop-opacity="0.48" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#favicon-gradient)" />
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#favicon-glow)" />
+  <rect x="9" y="10" width="46" height="44" rx="14" stroke="rgba(255,255,255,0.16)" stroke-width="2" />
+
+  <path d="M18 40C20.5 44 25 46.5 32 46.5C39 46.5 43.5 44 46 40" stroke="rgba(255,255,255,0.32)" stroke-width="2.2" stroke-linecap="round" />
+
+  <text x="32" y="30" text-anchor="middle" font-size="20" font-family="'Inter','Segoe UI',sans-serif" font-weight="700" fill="#F8FAFC" letter-spacing="0.14em">TR</text>
+  <text x="32" y="48" text-anchor="middle" font-size="18" font-family="'Inter','Segoe UI',sans-serif" font-weight="600" fill="#E0F2FE" letter-spacing="0.22em">CV</text>
+</svg>

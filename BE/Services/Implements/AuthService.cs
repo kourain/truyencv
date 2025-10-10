@@ -6,28 +6,18 @@ namespace TruyenCV.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly DataContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly AppDataContext _context;
 
-        public AuthService(DataContext context, IConfiguration configuration)
+        public AuthService(AppDataContext context)
         {
             _context = context;
-            _configuration = configuration;
         }
 
-        public async Task<(string accessToken, string refreshToken)> GenerateTokensAsync(User user, List<string> roles)
+        public async Task<(string accessToken, string refreshToken)> GenerateTokensAsync(User user)
         {
-            var jwtSettings = _configuration.GetSection("JWT");
-            var secretKey = jwtSettings["SecretKey"]!;
-            var issuer = jwtSettings["ValidIssuer"]!;
-            var audience = jwtSettings["ValidAudience"]!;
-            var accessTokenExpiry = int.Parse(jwtSettings["AccessTokenExpiryMinutes"]!);
-            var refreshTokenExpiry = int.Parse(jwtSettings["RefreshTokenExpiryDays"]!);
-
-            var permissions = await GetUserPermissionsAsync(user.id);
 
             // Sinh Access Token
-            var accessToken = JwtHelper.GenerateAccessToken(user, roles, permissions, secretKey, issuer, audience, accessTokenExpiry);
+            var accessToken = JwtHelper.GenerateAccessToken(user, user.Roles.Select(r => r.role_name), user.Permissions.Select(p => p.permissions));
 
             // Sinh Refresh Token
             var refreshTokenValue = JwtHelper.GenerateRefreshToken();
@@ -35,8 +25,7 @@ namespace TruyenCV.Services
             {
                 token = refreshTokenValue,
                 user_id = user.id,
-                expires_at = DateTime.UtcNow.AddDays(refreshTokenExpiry),
-                created_at = DateTime.UtcNow
+                expires_at = DateTime.UtcNow.AddDays(JwtHelper.RefreshTokenExpiryDays),
             };
 
             _context.RefreshTokens.Add(refreshToken);
@@ -49,6 +38,8 @@ namespace TruyenCV.Services
         {
             var refreshToken = await _context.RefreshTokens
                 .Include(rt => rt.User)
+                .Include(rt => rt.User.Roles)
+                .Include(rt => rt.User.Permissions)
                 .FirstOrDefaultAsync(rt => rt.token == refreshTokenValue);
 
             if (refreshToken == null || !refreshToken.is_active)
@@ -58,7 +49,7 @@ namespace TruyenCV.Services
             var roles = await GetUserRolesAsync(refreshToken.user_id);
 
             // Tạo token mới
-            var newTokens = await GenerateTokensAsync(refreshToken.User, roles);
+            var newTokens = await GenerateTokensAsync(refreshToken.User);
 
             // Revoke refresh token cũ
             refreshToken.revoked_at = DateTime.UtcNow;
@@ -80,34 +71,37 @@ namespace TruyenCV.Services
             return true;
         }
 
-        public async Task<bool> RevokeAllUserTokensAsync(ulong userId)
+        public async Task<bool> RevokeAllUserTokensAsync(ulong userId, string? exceptRefreshToken = null)
         {
-            var userTokens = await _context.RefreshTokens
-                .Where(rt => rt.user_id == userId && rt.revoked_at == null)
-                .ToListAsync();
+            var query = _context.RefreshTokens
+                .Where(rt => rt.user_id == userId && rt.revoked_at == null);
+
+            if (!string.IsNullOrWhiteSpace(exceptRefreshToken))
+            {
+                query = query.Where(rt => rt.token != exceptRefreshToken);
+            }
+
+            var userTokens = await query.ToListAsync();
 
             foreach (var token in userTokens)
             {
                 token.revoked_at = DateTime.UtcNow;
             }
 
-            await _context.SaveChangesAsync();
+            if (userTokens.Count > 0)
+            {
+                await _context.SaveChangesAsync();
+            }
+
             return true;
         }
 
         public async Task<List<string>> GetUserRolesAsync(ulong userId)
         {
-            // Tạm thời hardcode roles, sau này có thể lấy từ database
-            // Có thể tạo bảng UserRoles hoặc thêm role_id vào bảng Users
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null) return new List<string>();
-
-            // Logic xác định role dựa trên userId hoặc từ database
-            // Ví dụ: Admin có userId = 1, còn lại là User
-            if (userId == 1)
-                return new List<string> { "Admin", "User" };
-            else
-                return new List<string> { "User" };
+            return await _context.UserHasRoles
+                .Where(role => role.user_id == userId && role.deleted_at == null)
+                .Select(role => role.role_name.ToString())
+                .ToListAsync();
         }
 
         public async Task<List<string>> GetUserPermissionsAsync(ulong userId)

@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace TruyenCV.Models;
 
-public class DataContext : Microsoft.EntityFrameworkCore.DbContext
+public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
 {
-    public DataContext(DbContextOptions<DataContext> options) : base(options) { }
+    public AppDataContext(DbContextOptions<AppDataContext> options) : base(options) { }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<ComicCategory> ComicCategories { get; set; }
     public DbSet<Comic> Comics { get; set; }
@@ -24,6 +24,16 @@ public class DataContext : Microsoft.EntityFrameworkCore.DbContext
     public static readonly DateTime defaultDate = DateTime.Parse("2025-09-23T00:00:00Z").ToUniversalTime();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>()
+                .HasMany(u => u.Roles)
+                .WithOne(ur => ur.User)
+                .HasForeignKey(ur => ur.user_id)
+                .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<User>()
+                .HasMany(u => u.Permissions)
+                .WithOne(up => up.User)
+                .HasForeignKey(up => up.user_id)
+                .OnDelete(DeleteBehavior.Cascade);
         var system = new User()
         {
             id = SystemUser.id,
@@ -65,7 +75,7 @@ public class DataContext : Microsoft.EntityFrameworkCore.DbContext
         ]
         );
     }
-    public override int SaveChanges()
+    private void Save()
     {
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
@@ -79,36 +89,32 @@ public class DataContext : Microsoft.EntityFrameworkCore.DbContext
                     entry.Entity.updated_at = DateTime.UtcNow;
                     break;
                 case EntityState.Deleted:
-                    entry.State = EntityState.Modified;
-                    entry.Entity.deleted_at = DateTime.UtcNow;
+                    if (isSoftDelete)
+                    {
+                        entry.State = EntityState.Modified;
+                        entry.Entity.deleted_at = DateTime.UtcNow;
+                    }
                     break;
                 default:
                     break;
             }
         }
+        isSoftDelete = true;
+    }
+    public bool isSoftDelete { get; set; } = true;
+    public override int SaveChanges()
+    {
+        Save();
         return base.SaveChanges();
+    }
+    public AppDataContext NotSoftDelete()
+    {
+        isSoftDelete = false;
+        return this;
     }
     public override async System.Threading.Tasks.Task<int> SaveChangesAsync(System.Threading.CancellationToken cancellationToken = default)
     {
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
-        {
-            switch (entry.State)
-            {
-                case EntityState.Added:
-                    entry.Entity.created_at = DateTime.UtcNow;
-                    entry.Entity.updated_at = DateTime.UtcNow;
-                    break;
-                case EntityState.Modified:
-                    entry.Entity.updated_at = DateTime.UtcNow;
-                    break;
-                case EntityState.Deleted:
-                    entry.State = EntityState.Modified;
-                    entry.Entity.deleted_at = DateTime.UtcNow;
-                    break;
-                default:
-                    break;
-            }
-        }
+        Save();
         return await base.SaveChangesAsync(cancellationToken);
     }
 }

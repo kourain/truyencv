@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Linq.Expressions;
 using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +12,7 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class UserRepository : Repository<User>, IUserRepository
 {
-    public UserRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    public UserRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
     {
     }
 
@@ -30,5 +32,18 @@ public class UserRepository : Repository<User>, IUserRepository
             $"{id}",
 			DefaultCacheMinutes
 		);
+    }
+
+    public async Task<IEnumerable<User>> GetRecentUsersAsync(int limit)
+    {
+        limit = Math.Clamp(limit, 1, 50);
+        return await _redisCache.GetFromRedisAsync<User>(
+            _dbSet.AsNoTracking()
+                .OrderByDescending(u => u.created_at)
+                .Take(limit)
+                .ToListAsync(),
+            $"recent:{limit}",
+            DefaultCacheMinutes
+        );
     }
 }

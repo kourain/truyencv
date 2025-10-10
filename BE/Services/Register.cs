@@ -26,6 +26,7 @@ public static class ServicesRegisterExtensions
 		Services.AddScoped<TruyenCV.Services.IUserComicBookmarkService, TruyenCV.Services.UserComicBookmarkService>();
 		Services.AddScoped<TruyenCV.Services.IUserComicReadHistoryService, TruyenCV.Services.UserComicReadHistoryService>();
 		Services.AddScoped<TruyenCV.Services.IPasswordResetService, TruyenCV.Services.PasswordResetService>();
+		Services.AddScoped<TruyenCV.Services.IAdminDashboardService, TruyenCV.Services.AdminDashboardService>();
 		return Services;
 	}
 }

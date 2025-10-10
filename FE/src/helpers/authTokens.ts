@@ -1,10 +1,8 @@
+import { logout } from "@services/auth.service";
 import { Buffer } from "buffer";
 
 const ACCESS_TOKEN_COOKIE = "truyencv_access_token";
 const REFRESH_TOKEN_COOKIE = "truyencv_refresh_token";
-
-const ACCESS_TOKEN_MAX_AGE = 7 * 60; // 7 phút
-const REFRESH_TOKEN_MAX_AGE = 30 * 24 * 60 * 60; // 30 ngày
 
 const isBrowser = () => typeof window !== "undefined" && typeof document !== "undefined";
 
@@ -121,20 +119,25 @@ const getPermissionsFromPayload = (payload: JWT | null) => {
 		return [] as string[];
 	}
 
-	return normalizeClaim(payload.Permissions);
+	return normalizeClaim(payload.permissions);
 };
 
-export const setAuthTokens = (accessToken: string, refreshToken: string) => {
+export const setAuthTokens = (accessToken: string, refreshToken: string, accessTokenExpiryMinutes: number, refreshTokenExpiryDays: number) => {
 	if (accessToken) {
-		setCookie(ACCESS_TOKEN_COOKIE, accessToken, ACCESS_TOKEN_MAX_AGE);
+		setCookie(ACCESS_TOKEN_COOKIE, accessToken, accessTokenExpiryMinutes * 60);
 	}
 
 	if (refreshToken) {
-		setCookie(REFRESH_TOKEN_COOKIE, refreshToken, REFRESH_TOKEN_MAX_AGE);
+		setCookie(REFRESH_TOKEN_COOKIE, refreshToken, refreshTokenExpiryDays * 24 * 60 * 60);
 	}
 };
 
-export const clearAuthTokens = () => {
+export const clearAuthTokens = async ({ from_logout = false } = {}) => {
+  try {
+    if (from_logout) await logout();
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
 	deleteCookie(ACCESS_TOKEN_COOKIE);
 	deleteCookie(REFRESH_TOKEN_COOKIE);
 };

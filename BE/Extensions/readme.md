@@ -12,7 +12,7 @@ public static partial class Extensions
   {
     foreach (var item in source)
     {
-    action(item);
+      action(item);
     }
   }
 }
@@ -29,7 +29,7 @@ public static partial class Extensions
   {
     foreach (var item in source)
     {
-    action(item);
+      action(item);
     }
   }
 }

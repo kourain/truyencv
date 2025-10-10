@@ -9,12 +9,12 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 {
-	private readonly DataContext _context;
+	private readonly AppDataContext _context;
 	private readonly DbSet<ComicHaveCategory> _dbSet;
 	private readonly IDistributedCache _redisCache;
 	private const double DefaultCacheMinutes = 30;
 
-	public ComicHaveCategoryRepository(DataContext context, IDistributedCache redisCache)
+	public ComicHaveCategoryRepository(AppDataContext context, IDistributedCache redisCache)
 	{
 		_context = context;
 		_dbSet = context.Set<ComicHaveCategory>();

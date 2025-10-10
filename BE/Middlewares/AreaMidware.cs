@@ -7,11 +7,11 @@ namespace TruyenCV.Middleware
 	public class AreaMiddleware
 	{
 		private readonly RequestDelegate _next;
-		private readonly DataContext _db;
+		private readonly AppDataContext _db;
 		public AreaMiddleware(RequestDelegate next, IServiceProvider provider)
 		{
 			_next = next;
-			_db = provider.CreateScope().ServiceProvider.GetRequiredService<DataContext>();
+			_db = provider.CreateScope().ServiceProvider.GetRequiredService<AppDataContext>();
 		}
 		public async Task InvokeAsync(HttpContext context)
 		{

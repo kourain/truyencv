@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
+using TruyenCV.Helpers;
+using Serilog;
 
 namespace TruyenCV.Controllers
 {
@@ -70,17 +72,17 @@ namespace TruyenCV.Controllers
                     return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể xác thực tài khoản vừa đăng ký" });
                 }
 
-                var roles = await _authService.GetUserRolesAsync(userEntity.id);
-                var permissions = await _authService.GetUserPermissionsAsync(userEntity.id);
-                var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(userEntity, roles);
+                var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(userEntity);
 
                 return Ok(new
                 {
                     access_token = accessToken,
                     refresh_token = refreshToken,
                     user = newUser,
-                    roles,
-                    permissions
+                    roles = userEntity.Roles,
+                    permissions = userEntity.Permissions,
+                    access_token_minutes = JwtHelper.AccessTokenExpiryMinutes,
+                    refresh_token_days = JwtHelper.RefreshTokenExpiryDays
                 });
             }
             catch (Exception ex)
@@ -107,21 +109,17 @@ namespace TruyenCV.Controllers
                 return Unauthorized(new { message = "Email hoặc mật khẩu không chính xác" });
             }
 
-            // Lấy vai trò của người dùng
-            var roles = await _authService.GetUserRolesAsync(user.id);
-
-            // Tạo token
-            var permissions = await _authService.GetUserPermissionsAsync(user.id);
-            var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(user, roles);
-
+            var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(user);
             // Trả về thông tin
             return Ok(new
             {
                 access_token = accessToken,
                 refresh_token = refreshToken,
+                access_token_minutes = JwtHelper.AccessTokenExpiryMinutes,
+                refresh_token_days = JwtHelper.RefreshTokenExpiryDays,
                 user = user,
-                roles,
-                permissions
+                roles = user.Roles,
+                permissions = user.Permissions
             });
         }
 
@@ -131,6 +129,7 @@ namespace TruyenCV.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
+            Log.Information($"Refreshing token for user {request.refresh_token}");
             var result = await _authService.RefreshTokenAsync(request.refresh_token);
             if (result == null)
             {
@@ -142,14 +141,15 @@ namespace TruyenCV.Controllers
             return Ok(new
             {
                 access_token = accessToken,
-                refresh_token = refreshToken
+                refresh_token = refreshToken,
+                access_token_minutes = JwtHelper.AccessTokenExpiryMinutes,
+                refresh_token_days = JwtHelper.RefreshTokenExpiryDays
             });
         }
 
         /// <summary>
         /// API đăng xuất - vô hiệu hóa refresh token
         /// </summary>
-        [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {
@@ -163,11 +163,11 @@ namespace TruyenCV.Controllers
         }
 
         /// <summary>
-        /// API đăng xuất khỏi tất cả các thiết bị - vô hiệu hóa tất cả refresh token
+        /// API đăng xuất khỏi tất cả các thiết bị - vô hiệu hóa tất cả refresh token ngoại trừ phiên hiện tại (nếu được cung cấp)
         /// </summary>
         [Authorize]
         [HttpPost("logout-all")]
-        public async Task<IActionResult> LogoutAll()
+        public async Task<IActionResult> LogoutAll([FromBody] RefreshTokenRequest? request)
         {
             // Lấy ID user từ claims của token
             var userId = User.GetUserId();
@@ -176,9 +176,15 @@ namespace TruyenCV.Controllers
                 return Unauthorized(new { message = "Không thể xác định người dùng" });
             }
 
-            await _authService.RevokeAllUserTokensAsync(userId.Value);
+            var currentRefreshToken = request?.refresh_token;
 
-            return Ok(new { message = "Đã đăng xuất khỏi tất cả thiết bị" });
+            await _authService.RevokeAllUserTokensAsync(userId.Value, currentRefreshToken);
+
+            var message = string.IsNullOrWhiteSpace(currentRefreshToken)
+                ? "Đã đăng xuất khỏi tất cả thiết bị"
+                : "Đã đăng xuất khỏi tất cả thiết bị, trừ phiên hiện tại";
+
+            return Ok(new { message });
         }
 
         /// <summary>

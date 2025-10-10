@@ -53,11 +53,11 @@ namespace TruyenCV
 
             if (allowedOrigins is null || allowedOrigins.Length == 0)
             {
-                allowedOrigins = new[]
+                allowedOrigins = new []
                 {
                     "http://localhost:3000",
-                    "https://admin-truyencv.cdms.io.vn",
-                    "https://truyencv.cdms.io.vn"
+                    "https://admin-truyencv.maiquyen.name.vn",
+                    "https://truyencv.maiquyen.name.vn"
                 };
             }
 
@@ -97,6 +97,9 @@ namespace TruyenCV
             var secretKey = jwtSettings["SecretKey"];
             var issuer = jwtSettings["ValidIssuer"];
             var audience = jwtSettings["ValidAudience"];
+            var accessTokenExpiry = int.Parse(jwtSettings["AccessTokenExpiryMinutes"]);
+            var refreshTokenExpiry = int.Parse(jwtSettings["RefreshTokenExpiryDays"]);
+            JwtHelper.Init(secretKey, issuer, audience, accessTokenExpiry, refreshTokenExpiry);
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
@@ -120,7 +123,7 @@ namespace TruyenCV
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            SnowflakeIdGenerator.Init(uint.Parse(builder.Configuration.GetSection("Snowflake:MachineId").Value));
             Directory.CreateDirectory("logs"); // Tạo thư mục logs nếu chưa tồn tại
             Log.Logger = new LoggerConfiguration()
                             .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose,
@@ -134,7 +137,7 @@ namespace TruyenCV
             // Cấu hình xác thực JWT
             AddJwtBearerAuthentication(builder);
             if (GetConnectionString(builder) is (string connectionString, bool enable) && enable)
-                builder.Services.AddDbContext<Models.DataContext>(optionsBuilder =>
+                builder.Services.AddDbContext<Models.AppDataContext>(optionsBuilder =>
                 {
                     optionsBuilder.UseNpgsql(connectionString, options =>
                     {
@@ -170,7 +173,6 @@ namespace TruyenCV
                 builder.Services.AddDistributedMemoryCache();
                 Log.Information("INFO: [CACHE] Using Memory Cache instead of Redis");
             }
-            SnowflakeIdGenerator.Init();
             builder.Services.AddHttpClient();
             // Đăng ký Background Services
             builder.Services.AddBackgroundServices();

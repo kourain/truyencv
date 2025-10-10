@@ -9,20 +9,58 @@ namespace TruyenCV.Helpers
 {
     public static class JwtHelper
     {
+        public static int AccessTokenExpiryMinutes { get; set; } = 10;
+        public static int RefreshTokenExpiryDays { get; set; } = 30;
+        public static string secretKey { get; set; } = "your_secret_key";
+        public static string issuer { get; set; } = "your_issuer";
+        public static string audience { get; set; } = "your_audience";
+        public static void Init(string? secretKey = null, string? issuer = null, string? audience = null, int? accessTokenExpiry = null, int? refreshTokenExpiry = null)
+        {
+            if (secretKey != null)
+            {
+                JwtHelper.secretKey = secretKey;
+            }
+
+            if (issuer != null)
+            {
+                JwtHelper.issuer = issuer;
+            }
+
+            if (audience != null)
+            {
+                JwtHelper.audience = audience;
+            }
+
+            if (accessTokenExpiry != null)
+            {
+                JwtHelper.AccessTokenExpiryMinutes = accessTokenExpiry.Value;
+            }
+
+            if (refreshTokenExpiry != null)
+            {
+                JwtHelper.RefreshTokenExpiryDays = refreshTokenExpiry.Value;
+            }
+        }
+
         public static string GenerateAccessToken(
             Models.User user,
             IEnumerable<string> roles,
-            IEnumerable<string> permissions,
-            string secretKey,
-            string issuer,
-            string audience,
-            int expireMinutes = 60)
+            IEnumerable<Permissions> permissions,
+            string? secretKey = null,
+            string? issuer = null,
+            string? audience = null,
+            int? expireMinutes = null)
         {
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Aud, audience ?? JwtHelper.audience),
+                new Claim(JwtRegisteredClaimNames.Iss, issuer ?? JwtHelper.issuer),
+                new Claim(JwtRegisteredClaimNames.Name, user.name),
+                new Claim(JwtRegisteredClaimNames.Email, user.email),
+                new Claim("avatar", user.avatar)
             };
 
             // Thêm nhiều role nếu có
@@ -35,22 +73,19 @@ namespace TruyenCV.Helpers
             }
 
             // Thêm permissions nếu có
-            foreach (var permission in permissions.Distinct(StringComparer.OrdinalIgnoreCase))
+            foreach (var permission in permissions)
             {
-                if (!string.IsNullOrWhiteSpace(permission))
-                {
-                    claims.Add(new Claim("Permissions", permission));
-                }
+                claims.Add(new Claim("permissions", permission.ToString()));
             }
-            
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? JwtHelper.secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes ?? AccessTokenExpiryMinutes),
                 signingCredentials: creds
             );
 
@@ -65,10 +100,10 @@ namespace TruyenCV.Helpers
             return Convert.ToBase64String(randomNumber);
         }
 
-        public static ClaimsPrincipal? ValidateToken(string token, string secretKey, string issuer, string audience)
+        public static ClaimsPrincipal? ValidateToken(string token, string? secretKey = null, string? issuer = null, string? audience = null)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(secretKey);
+            var key = Encoding.UTF8.GetBytes(secretKey ?? JwtHelper.secretKey);
             try
             {
                 var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
@@ -76,9 +111,9 @@ namespace TruyenCV.Helpers
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = true,
-                    ValidIssuer = issuer,
+                    ValidIssuer = issuer ?? JwtHelper.issuer,
                     ValidateAudience = true,
-                    ValidAudience = audience,
+                    ValidAudience = audience ?? JwtHelper.audience,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);

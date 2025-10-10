@@ -4,6 +4,8 @@ const {
   BACKEND_URL = "",
   COMIC_CDN_URL = "",
   JWT_SECRET = "",
+  FE_USER = "",
+  FE_ADMIN = "",
 } = process.env;
 
 const nextConfig: NextConfig = {
@@ -13,18 +15,37 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_BACKEND_URL: BACKEND_URL,
     NEXT_PUBLIC_CDN_URL: COMIC_CDN_URL,
     NEXT_PUBLIC_JWT_SECRET: JWT_SECRET,
+    NEXT_PUBLIC_FE_USER: FE_USER,
+    NEXT_PUBLIC_FE_ADMIN: FE_ADMIN,
   },
   redirects: async () => {
     return [
       // {
-      //   source: "/admin",
-      //   destination: "/admin/dashboard",
+      //   source: "/:path*",
+      //   has: [
+      //     {
+      //       type: "host",
+      //       value: FE_ADMIN,
+      //     },
+      //   ],
+      //   destination: "/admin/:path*",
+      //   permanent: true
+      // }, {
+      //   source: "/:path*",
+      //   has: [
+      //     {
+      //       type: "host",
+      //       value: FE_USER,
+      //     },
+      //   ],
+      //   destination: "/user/:path*",
       //   permanent: true
       // }
     ];
   },
   allowedDevOrigins: [
-    "truyencv.cdms.io.vn"
+    FE_ADMIN,
+    FE_USER
   ]
 };
 

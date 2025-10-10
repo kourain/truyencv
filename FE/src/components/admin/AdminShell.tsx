@@ -18,9 +18,6 @@ import {
     Users
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-
-import AdminAuthGuard from "../auth/guard/AdminAuthGuard";
-import { clearAuthTokens } from "@helpers/authTokens";
 import { logout, logoutAll } from "@services/auth.service";
 
 interface AdminShellProps {
@@ -59,9 +56,8 @@ const AdminShell = ({ children }: AdminShellProps) => {
 
     const logoutMutation = useMutation({
         mutationFn: () => logout(),
-        onSettled: () => {
-            clearAuthTokens();
-            router.replace("/admin/login" as Route);
+        onSettled: async () => {
+            router.replace("/admin/auth/login" as Route);
         }
     });
 

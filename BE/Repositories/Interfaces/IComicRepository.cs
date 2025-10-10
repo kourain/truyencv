@@ -41,4 +41,17 @@ public interface IComicRepository : IRepository<Comic>
 	/// <param name="status">Trạng thái comic</param>
 	/// <returns>Danh sách comic</returns>
 	Task<IEnumerable<Comic>> GetByStatusAsync(ComicStatus status);
+
+	/// <summary>
+	/// Lấy danh sách comic có điểm đánh giá cao nhất
+	/// </summary>
+	/// <param name="limit">Số lượng comic cần lấy</param>
+	/// <returns>Danh sách comic theo điểm đánh giá</returns>
+	Task<IEnumerable<Comic>> GetTopRatedAsync(int limit);
+
+	/// <summary>
+	/// Tổng số lượt bookmark của toàn bộ comic
+	/// </summary>
+	/// <returns>Tổng lượt bookmark</returns>
+	Task<long> SumBookmarkCountAsync();
 }

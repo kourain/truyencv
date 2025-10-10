@@ -10,7 +10,7 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserHasPermissionRepository
 {
-    public UserHasPermissionRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    public UserHasPermissionRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
     {
     }
 

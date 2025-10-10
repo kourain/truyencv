@@ -1,6 +1,6 @@
 import { getHttpClient } from "@helpers/httpClient";
 import { ComicStatus } from "@const/comic-status";
-import type { ComicResponse, CreateComicRequest, UpdateComicRequest } from "../../types/comic";
+import { ComicResponse, CreateComicRequest, UpdateComicRequest } from "../../types/comic";
 
 export type ComicListParams = {
 	offset?: number;

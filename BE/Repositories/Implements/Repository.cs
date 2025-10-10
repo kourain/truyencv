@@ -12,10 +12,10 @@ namespace TruyenCV.Repositories;
 public class Repository<T> : IRepository<T> where T : BaseEntity
 {
     public virtual double DefaultCacheMinutes => 5; // Mặc định cache 5 phút
-    protected readonly DataContext _dbcontext;
+    protected readonly AppDataContext _dbcontext;
     protected readonly IDistributedCache _redisCache;
     protected readonly DbSet<T> _dbSet;
-    public Repository(DataContext context, IDistributedCache redisCache)
+    public Repository(AppDataContext context, IDistributedCache redisCache)
     {
         _dbcontext = context;
         _redisCache = redisCache;

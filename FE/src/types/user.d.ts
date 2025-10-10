@@ -15,8 +15,10 @@ interface RegisterRequest {
 }
 
 interface RegisterResponse extends AuthTokensResponse {
-  user: UserResponse;
+	user: UserResponse;
 	message?: string;
+	access_token_minutes: number;
+	refresh_token_days: number;
 }
 interface UpdateUserRequest {
 	id: number;
@@ -29,10 +31,14 @@ interface UpdateUserRequest {
 interface AuthTokensResponse {
 	access_token: string;
 	refresh_token: string;
+	access_token_minutes: number;
+	refresh_token_days: number;
 }
 
 interface LoginResponse extends AuthTokensResponse {
 	user: UserResponse;
+	access_token_minutes: number;
+	refresh_token_days: number;
 }
 
 interface BaseResponse {

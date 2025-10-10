@@ -5,6 +5,7 @@ using TruyenCV.Helpers;
 using TruyenCV.Models;
 using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.EntityFrameworkCore;
 
 namespace TruyenCV.Services
 {
@@ -15,11 +16,12 @@ namespace TruyenCV.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IDistributedCache _redisCache;
-
-        public UserService(IUserRepository userRepository, IDistributedCache redisCache)
+        private readonly AppDataContext _dbcontext;
+        public UserService(IUserRepository userRepository, IDistributedCache redisCache, AppDataContext dbcontext)
         {
             _userRepository = userRepository;
             _redisCache = redisCache;
+            _dbcontext = dbcontext;
         }
 
         public async Task<UserResponse?> GetUserByIdAsync(ulong id)
@@ -94,14 +96,14 @@ namespace TruyenCV.Services
         public async Task<User?> AuthenticateAsync(string email, string password)
         {
             // Lấy user từ database
-            var user = await _userRepository.GetByEmailAsync(email);
-            if (user == null || user.deleted_at != null)
-                return null;
-
-            // Kiểm tra mật khẩu
-            if (!Bcrypt.VerifyPassword(password, user.password))
-                return null;
-
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(m=> m.email == email);
+            if (user != null && Bcrypt.VerifyPassword(password, user.password))
+            {
+                return await _dbcontext.Users
+                    .Include(u => u.Roles)
+                    .Include(u => u.Permissions)
+                    .FirstOrDefaultAsync(u => u.id == user.id);
+            }
             return user;
         }
 
@@ -129,9 +131,6 @@ namespace TruyenCV.Services
             }
 
             user.password = Bcrypt.HashPassword(newPassword);
-            user.updated_at = DateTime.UtcNow;
-            user.remember_token = null;
-
             await _userRepository.UpdateAsync(user);
 
             await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
