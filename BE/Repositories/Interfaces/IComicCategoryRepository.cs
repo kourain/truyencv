@@ -12,7 +12,7 @@ public interface IComicCategoryRepository : IRepository<ComicCategory>
 	/// </summary>
 	/// <param name="id">ID của category</param>
 	/// <returns>Category nếu tìm thấy, null nếu không tìm thấy</returns>
-	Task<ComicCategory?> GetByIdAsync(long id);
+	Task<ComicCategory?> GetByIdAsync(ulong id);
 
 	/// <summary>
 	/// Lấy category theo tên

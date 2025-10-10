@@ -97,8 +97,15 @@ httpClient.interceptors.response.use(
 
           return httpClient(retriableRequest);
         } catch (refreshError) {
-          clearAuthTokens();
-          redirectToLogin();
+          if (refreshError instanceof AxiosError) {
+            if (refreshError.response?.status == 403) {
+              console.error("[API ERROR] Refresh token expired or invalid, logging out");
+              clearAuthTokens();
+              redirectToLogin();
+            } else {
+              console.error("[API ERROR] Failed to refresh tokens:", refreshError.response?.data || refreshError.message);
+            }
+          }
           return Promise.reject(refreshError);
         }
       }

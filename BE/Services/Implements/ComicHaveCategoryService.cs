@@ -27,13 +27,13 @@ public class ComicHaveCategoryService : IComicHaveCategoryService
 		_redisCache = redisCache;
 	}
 
-	public async Task<IEnumerable<ComicCategoryResponse>> GetCategoriesByComicIdAsync(long comicId)
+	public async Task<IEnumerable<ComicCategoryResponse>> GetCategoriesByComicIdAsync(ulong comicId)
 	{
 		var categories = await _comicHaveCategoryRepository.GetCategoriesByComicIdAsync(comicId);
 		return categories.Select(c => c.ToRespDTO());
 	}
 
-	public async Task<IEnumerable<ComicResponse>> GetComicsByCategoryIdAsync(long categoryId)
+	public async Task<IEnumerable<ComicResponse>> GetComicsByCategoryIdAsync(ulong categoryId)
 	{
 		var comics = await _comicHaveCategoryRepository.GetComicsByCategoryIdAsync(categoryId);
 		return comics.Select(c => c.ToRespDTO());
@@ -61,7 +61,7 @@ public class ComicHaveCategoryService : IComicHaveCategoryService
 		return true;
 	}
 
-	public async Task<bool> RemoveComicFromCategoryAsync(long comicId, long categoryId)
+	public async Task<bool> RemoveComicFromCategoryAsync(ulong comicId, ulong categoryId)
 	{
 		// Xóa khỏi database
 		return await _comicHaveCategoryRepository.DeleteAsync(comicId, categoryId);

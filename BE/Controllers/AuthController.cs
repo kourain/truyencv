@@ -1,8 +1,11 @@
 using TruyenCV.DTO.Request;
 using TruyenCV.Services;
+using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace TruyenCV.Controllers
 {
@@ -12,11 +15,83 @@ namespace TruyenCV.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
+        private readonly IUserHasRoleService _userHasRoleService;
+        private readonly IPasswordResetService _passwordResetService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, IUserService userService)
+        public AuthController(
+            IAuthService authService,
+            IUserService userService,
+            IUserHasRoleService userHasRoleService,
+            IPasswordResetService passwordResetService,
+            ILogger<AuthController> logger)
         {
             _authService = authService;
             _userService = userService;
+            _userHasRoleService = userHasRoleService;
+            _passwordResetService = passwordResetService;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// API đăng ký người dùng mới - trả về access token và refresh token sau khi tạo tài khoản
+        /// </summary>
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var newUser = await _userService.CreateUserAsync(new CreateUserRequest
+                {
+                    name = request.name,
+                    user_name = request.user_name,
+                    email = request.email,
+                    password = request.password,
+                    phone = request.phone
+                });
+
+                // Gán quyền mặc định cho người dùng mới
+                await _userHasRoleService.CreateUserHasRoleAsync(new CreateUserHasRoleRequest
+                {
+                    role_name = Roles.User,
+                    user_id = newUser.id,
+                    assigned_by = SystemUser.id
+                });
+
+                var userEntity = await _userService.AuthenticateAsync(request.email, request.password);
+                if (userEntity == null)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể xác thực tài khoản vừa đăng ký" });
+                }
+
+                var roles = await _authService.GetUserRolesAsync(userEntity.id);
+                var permissions = await _authService.GetUserPermissionsAsync(userEntity.id);
+                var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(userEntity, roles);
+
+                return Ok(new
+                {
+                    access_token = accessToken,
+                    refresh_token = refreshToken,
+                    user = newUser,
+                    roles,
+                    permissions
+                });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("Email đã tồn tại", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Conflict(new { message = ex.Message });
+                }
+
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         /// <summary>
@@ -36,6 +111,7 @@ namespace TruyenCV.Controllers
             var roles = await _authService.GetUserRolesAsync(user.id);
 
             // Tạo token
+            var permissions = await _authService.GetUserPermissionsAsync(user.id);
             var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(user, roles);
 
             // Trả về thông tin
@@ -43,7 +119,9 @@ namespace TruyenCV.Controllers
             {
                 access_token = accessToken,
                 refresh_token = refreshToken,
-                user = user
+                user = user,
+                roles,
+                permissions
             });
         }
 
@@ -92,16 +170,91 @@ namespace TruyenCV.Controllers
         public async Task<IActionResult> LogoutAll()
         {
             // Lấy ID user từ claims của token
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.GetUserId();
             if (userId == null)
             {
                 return Unauthorized(new { message = "Không thể xác định người dùng" });
             }
 
-            var id = long.Parse(userId);
-            await _authService.RevokeAllUserTokensAsync(id);
+            await _authService.RevokeAllUserTokensAsync(userId.Value);
 
             return Ok(new { message = "Đã đăng xuất khỏi tất cả thiết bị" });
+        }
+
+        /// <summary>
+        /// Yêu cầu gửi OTP đặt lại mật khẩu qua email
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("password-reset/request")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var user = await _userService.GetUserEntityByEmailAsync(request.email);
+                if (user != null && user.deleted_at == null)
+                {
+                    await _passwordResetService.RequestPasswordResetAsync(user.email, user.name);
+                }
+                else
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(150));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể gửi OTP đặt lại mật khẩu cho {Email}", request.email);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể gửi mã OTP. Vui lòng thử lại sau." });
+            }
+
+            return Ok(new { message = "Nếu email tồn tại, mã OTP đã được gửi" });
+        }
+
+        /// <summary>
+        /// Xác nhận OTP và đặt lại mật khẩu
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("password-reset/confirm")]
+        public async Task<IActionResult> ConfirmPasswordReset([FromBody] ConfirmPasswordResetRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userService.GetUserEntityByEmailAsync(request.email);
+            if (user == null || user.deleted_at != null)
+            {
+                await _passwordResetService.InvalidateOtpAsync(request.email);
+                return BadRequest(new { message = "OTP không hợp lệ hoặc đã hết hạn" });
+            }
+
+            var isValid = await _passwordResetService.ValidateOtpAsync(request.email, request.otp);
+            if (!isValid)
+            {
+                return BadRequest(new { message = "OTP không hợp lệ hoặc đã hết hạn" });
+            }
+
+            try
+            {
+                await _userService.UpdatePasswordAsync(user.id, request.new_password);
+                await _authService.RevokeAllUserTokensAsync(user.id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Không thể cập nhật mật khẩu cho {Email}", request.email);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể đặt lại mật khẩu. Vui lòng thử lại sau." });
+            }
+            finally
+            {
+                await _passwordResetService.InvalidateOtpAsync(request.email);
+            }
+
+            return Ok(new { message = "Đặt lại mật khẩu thành công" });
         }
     }
 }

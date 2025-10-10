@@ -13,14 +13,14 @@ public interface IComicChapterService
 	/// </summary>
 	/// <param name="id">ID của chapter</param>
 	/// <returns>Thông tin chapter</returns>
-	Task<ComicChapterResponse?> GetChapterByIdAsync(long id);
+	Task<ComicChapterResponse?> GetChapterByIdAsync(ulong id);
 
 	/// <summary>
 	/// Lấy danh sách chapter của một comic
 	/// </summary>
 	/// <param name="comicId">ID của comic</param>
 	/// <returns>Danh sách chapter</returns>
-	Task<IEnumerable<ComicChapterResponse>> GetChaptersByComicIdAsync(long comicId);
+	Task<IEnumerable<ComicChapterResponse>> GetChaptersByComicIdAsync(ulong comicId);
 
 	/// <summary>
 	/// Lấy chapter theo comic id và số chapter
@@ -28,7 +28,7 @@ public interface IComicChapterService
 	/// <param name="comicId">ID của comic</param>
 	/// <param name="chapter">Số chapter</param>
 	/// <returns>Thông tin chapter</returns>
-	Task<ComicChapterResponse?> GetChapterByComicIdAndChapterAsync(long comicId, int chapter);
+	Task<ComicChapterResponse?> GetChapterByComicIdAndChapterAsync(ulong comicId, int chapter);
 
 	/// <summary>
 	/// Tạo chapter mới
@@ -43,12 +43,12 @@ public interface IComicChapterService
 	/// <param name="id">ID của chapter</param>
 	/// <param name="chapterRequest">Thông tin cập nhật</param>
 	/// <returns>Thông tin chapter đã cập nhật</returns>
-	Task<ComicChapterResponse?> UpdateChapterAsync(long id, UpdateComicChapterRequest chapterRequest);
+	Task<ComicChapterResponse?> UpdateChapterAsync(ulong id, UpdateComicChapterRequest chapterRequest);
 
 	/// <summary>
 	/// Xóa chapter
 	/// </summary>
 	/// <param name="id">ID của chapter</param>
 	/// <returns>True nếu xóa thành công, ngược lại là False</returns>
-	Task<bool> DeleteChapterAsync(long id);
+	Task<bool> DeleteChapterAsync(ulong id);
 }

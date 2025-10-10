@@ -1,0 +1,69 @@
+"use server";
+
+import "server-only";
+
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+type ClaimValue = string | string[] | undefined;
+
+export interface AccessTokenPayload extends JwtPayload {
+  sub?: string;
+  jti?: string;
+  Permissions?: string[] | string;
+  role?: string[] | string;
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string[] | string;
+}
+
+export interface VerifiedAccessToken {
+  userId: string | null;
+  roles: string[];
+  permissions: string[];
+  payload: AccessTokenPayload;
+}
+
+const normalizeClaim = (value: ClaimValue): string[] => {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => item?.toString() ?? "").filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  return [];
+};
+
+export const verifyAccessToken = (token: string): VerifiedAccessToken | null => {
+  if (!token) {
+    return null;
+  }
+
+  if (!JWT_SECRET) {
+    console.error("[AUTH] JWT_SECRET is not configured on the server environment");
+    return null;
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as AccessTokenPayload;
+    const roles = normalizeClaim(
+      decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ?? decoded.role
+    );
+    const permissions = normalizeClaim(decoded.Permissions);
+
+    return {
+      userId: decoded.sub ?? null,
+      roles,
+      permissions,
+      payload: decoded
+    };
+  } catch (error) {
+    console.error("[AUTH] Failed to verify access token", error);
+    return null;
+  }
+};

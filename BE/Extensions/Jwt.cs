@@ -3,9 +3,15 @@ using System.Security.Claims;
 
 public static partial class Extensions
 {
-    public static long? GetUserId(this ClaimsPrincipal User)
+    public static ulong? GetUserId(this ClaimsPrincipal User)
     {
-        return User.FindFirst(JwtRegisteredClaimNames.Sub).Value is string userIdStr && string.IsNullOrEmpty(userIdStr) && long.TryParse(userIdStr, out long userId) ? userId : null;
+        var claim = User.FindFirst(JwtRegisteredClaimNames.Sub) ?? User.FindFirst(ClaimTypes.NameIdentifier);
+        if (claim == null || string.IsNullOrWhiteSpace(claim.Value))
+        {
+            return null;
+        }
+
+        return ulong.TryParse(claim.Value, out var userId) ? userId : null;
     }
     public static IEnumerable<string> GetRoles(this ClaimsPrincipal User)
     {

@@ -18,6 +18,7 @@ public static partial class Extensions
 			embedded_from = request.embedded_from,
 			embedded_from_url = request.embedded_from_url,
 			chapter_count = request.chap_count,
+			bookmark_count = 0,
 			rate = request.rate,
 			status = request.status,
 			created_at = DateTime.UtcNow,
@@ -37,7 +38,8 @@ public static partial class Extensions
 			author = comic.author,
 			embedded_from = comic.embedded_from,
 			embedded_from_url = comic.embedded_from_url,
-			chap_count = comic.chapter_count,
+			chap_count = (int)comic.chapter_count,
+			bookmark_count = comic.bookmark_count,
 			rate = comic.rate,
 			status = comic.status,
 			created_at = comic.created_at,
@@ -54,7 +56,7 @@ public static partial class Extensions
 		comic.author = request.author;
 		comic.embedded_from = request.embedded_from;
 		comic.embedded_from_url = request.embedded_from_url;
-		comic.chapter_count = request.chap_count;
+		comic.chapter_count = (uint)request.chap_count;
 		comic.rate = request.rate;
 		comic.status = request.status;
 		comic.updated_at = DateTime.UtcNow;

@@ -21,7 +21,7 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 		_redisCache = redisCache;
 	}
 
-	public async Task<IEnumerable<ComicCategory>> GetCategoriesByComicIdAsync(long comicId)
+	public async Task<IEnumerable<ComicCategory>> GetCategoriesByComicIdAsync(ulong comicId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicCategory>(
 			_dbSet.AsNoTracking()
@@ -33,7 +33,7 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 		);
 	}
 
-	public async Task<IEnumerable<Comic>> GetComicsByCategoryIdAsync(long categoryId)
+	public async Task<IEnumerable<Comic>> GetComicsByCategoryIdAsync(ulong categoryId)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
 			_dbSet.AsNoTracking()
@@ -45,7 +45,7 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 		);
 	}
 
-	public async Task<ComicHaveCategory> AddAsync(long comicId, long categoryId)
+	public async Task<ComicHaveCategory> AddAsync(ulong comicId, ulong categoryId)
 	{
 		var entity = new ComicHaveCategory
 		{
@@ -63,7 +63,7 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 		return entity;
 	}
 
-	public async Task<bool> DeleteAsync(long comicId, long categoryId)
+	public async Task<bool> DeleteAsync(ulong comicId, ulong categoryId)
 	{
 		var entity = await _dbSet.FirstOrDefaultAsync(chc =>
 			chc.comic_id == comicId && chc.comic_category_id == categoryId);
@@ -81,7 +81,7 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 		return true;
 	}
 
-	public async Task<bool> ExistsAsync(long comicId, long categoryId)
+	public async Task<bool> ExistsAsync(ulong comicId, ulong categoryId)
 	{
 		return await _dbSet.AnyAsync(chc =>
 			chc.comic_id == comicId && chc.comic_category_id == categoryId);

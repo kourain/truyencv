@@ -4,14 +4,14 @@ namespace TruyenCV.DTO.Request;
 public class CreateUserHasRoleRequest
 {
 	public required string role_name { get; set; }
-	public required long user_id { get; set; }
-	public required long assigned_by { get; set; }
+	public required ulong user_id { get; set; }
+	public required ulong assigned_by { get; set; }
 }
 
 public class UpdateUserHasRoleRequest
 {
-	public required long id { get; set; }
+	public required ulong id { get; set; }
 	public required string role_name { get; set; }
-	public required long user_id { get; set; }
-	public required long assigned_by { get; set; }
+	public required ulong user_id { get; set; }
+	public required ulong assigned_by { get; set; }
 }

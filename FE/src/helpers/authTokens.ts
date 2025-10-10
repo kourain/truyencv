@@ -89,13 +89,39 @@ const parseJwtToken = (token: string): JWT | null => {
 	}
 };
 
+const normalizeClaim = (claim: unknown) => {
+	if (!claim) {
+		return [] as string[];
+	}
+
+	if (Array.isArray(claim)) {
+		return claim.map((value) => value?.toString?.() ?? "").filter(Boolean);
+	}
+
+	if (typeof claim === "string") {
+		return [claim];
+	}
+
+	return [] as string[];
+};
+
+export function getRoleFromJWT(jwt: JWT): string[] {
+	return normalizeClaim(jwt["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ?? jwt.role);
+}
 const getRolesFromPayload = (payload: JWT | null) => {
 	if (!payload) {
 		return [] as string[];
 	}
 
-	const roles = getRoleFromJWT(payload);
-	return Array.isArray(roles) ? roles : [];
+	return getRoleFromJWT(payload);
+};
+
+const getPermissionsFromPayload = (payload: JWT | null) => {
+	if (!payload) {
+		return [] as string[];
+	}
+
+	return normalizeClaim(payload.Permissions);
 };
 
 export const setAuthTokens = (accessToken: string, refreshToken: string) => {
@@ -128,6 +154,11 @@ export const getAccessTokenRoles = () => getRolesFromPayload(getAccessTokenPaylo
 
 export const tokenHasRole = (role: string) =>
 	getAccessTokenRoles().some((existingRole) => existingRole.toLowerCase() === role.toLowerCase());
+
+export const getAccessTokenPermissions = () => getPermissionsFromPayload(getAccessTokenPayload());
+
+export const tokenHasPermission = (permission: string) =>
+	getAccessTokenPermissions().some((existingPermission) => existingPermission.toLowerCase() === permission.toLowerCase());
 
 export const authCookieNames = {
 	access: ACCESS_TOKEN_COOKIE,

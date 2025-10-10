@@ -1,0 +1,58 @@
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using TruyenCV.Models;
+
+namespace TruyenCV.Repositories;
+
+/// <summary>
+/// Implementation repository cho UserHasPermission entity
+/// </summary>
+public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserHasPermissionRepository
+{
+    public UserHasPermissionRepository(DataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    {
+    }
+
+    public async Task<UserHasPermission?> GetByIdAsync(ulong id)
+    {
+        return await _redisCache.GetFromRedisAsync<UserHasPermission>(
+            _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.id == id && p.deleted_at == null),
+            $"{id}",
+            DefaultCacheMinutes
+        );
+    }
+
+    public async Task<IEnumerable<UserHasPermission>> GetByUserIdAsync(ulong userId)
+    {
+        var result = await _redisCache.GetFromRedisAsync<UserHasPermission>(
+            _dbSet.AsNoTracking()
+                .Where(p => p.user_id == userId && p.deleted_at == null)
+                .ToListAsync(),
+            $"user:{userId}",
+            DefaultCacheMinutes
+        );
+        return result ?? Enumerable.Empty<UserHasPermission>();
+    }
+
+    public async Task<IEnumerable<UserHasPermission>> GetByPermissionAsync(Permissions permission)
+    {
+        var result = await _redisCache.GetFromRedisAsync<UserHasPermission>(
+            _dbSet.AsNoTracking()
+                .Where(p => p.permissions == permission && p.deleted_at == null)
+                .ToListAsync(),
+            $"permission:{(int)permission}",
+            DefaultCacheMinutes
+        );
+        return result ?? Enumerable.Empty<UserHasPermission>();
+    }
+
+    public async Task<UserHasPermission?> GetByUserPermissionAsync(ulong userId, Permissions permission)
+    {
+        return await _redisCache.GetFromRedisAsync<UserHasPermission>(
+            _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.user_id == userId && p.permissions == permission && p.deleted_at == null),
+            $"user:{userId}:permission:{(int)permission}",
+            DefaultCacheMinutes
+        );
+    }
+}

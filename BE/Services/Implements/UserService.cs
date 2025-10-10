@@ -1,3 +1,4 @@
+using System;
 using TruyenCV.DTO.Request;
 using TruyenCV.DTO.Response;
 using TruyenCV.Helpers;
@@ -21,7 +22,7 @@ namespace TruyenCV.Services
             _redisCache = redisCache;
         }
 
-        public async Task<UserResponse?> GetUserByIdAsync(long id)
+        public async Task<UserResponse?> GetUserByIdAsync(ulong id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             return user?.ToRespDTO();
@@ -54,7 +55,7 @@ namespace TruyenCV.Services
             return newUser.ToRespDTO();
         }
 
-        public async Task<UserResponse?> UpdateUserAsync(long id, UpdateUserRequest userRequest)
+        public async Task<UserResponse?> UpdateUserAsync(ulong id, UpdateUserRequest userRequest)
         {
             // Lấy user từ database
             var user = await _userRepository.GetByIdAsync(id);
@@ -73,7 +74,7 @@ namespace TruyenCV.Services
             return user.ToRespDTO();
         }
 
-        public async Task<bool> DeleteUserAsync(long id)
+        public async Task<bool> DeleteUserAsync(ulong id)
         {
             // Lấy user từ database
             var user = await _userRepository.GetByIdAsync(id);
@@ -102,6 +103,39 @@ namespace TruyenCV.Services
                 return null;
 
             return user;
+        }
+
+        public async Task<User?> GetUserEntityByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return null;
+            }
+
+            return await _userRepository.GetByEmailAsync(email);
+        }
+
+        public async Task UpdatePasswordAsync(ulong userId, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new ArgumentException("Mật khẩu mới không hợp lệ", nameof(newPassword));
+            }
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("Người dùng không tồn tại");
+            }
+
+            user.password = Bcrypt.HashPassword(newPassword);
+            user.updated_at = DateTime.UtcNow;
+            user.remember_token = null;
+
+            await _userRepository.UpdateAsync(user);
+
+            await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
+            await _redisCache.RemoveAsync($"User:one:email:{user.email}");
         }
     }
 }

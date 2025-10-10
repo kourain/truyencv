@@ -14,6 +14,35 @@ export const fetchUsers = async (params: UserListParams = {}) => {
 	return response.data;
 };
 
+const createMockUsers = (limit = 6): UserResponse[] => {
+	const now = Date.now();
+	const total = Math.max(1, limit);
+
+	return Array.from({ length: total }).map((_, index) => ({
+		id: index + 1_000,
+		name: `Người dùng ${index + 1}`,
+		full_name: `Quản trị viên ${index + 1}`,
+		email: `admin${index + 1}@example.com`,
+		created_at: new Date(now - index * 28_800_000).toISOString()
+	}));
+};
+
+export const fetchUsersWithFallback = async (params: UserListParams = {}) => {
+	try {
+		const data = await fetchUsers(params);
+		return { data, isMock: false };
+	} catch (error) {
+		if (process.env.NODE_ENV !== "production") {
+			console.warn("[ADMIN][UserService] Sử dụng dữ liệu mock do lỗi API", error);
+		}
+
+		return {
+			data: createMockUsers(params.limit ?? 6),
+			isMock: true
+		};
+	}
+};
+
 export const fetchUserById = async (id: number) => {
 	const client = getHttpClient();
 	const response = await client.get<UserResponse>(`${resource}/${id}`);

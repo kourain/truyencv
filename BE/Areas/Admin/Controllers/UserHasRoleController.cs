@@ -25,7 +25,7 @@ public sealed class UserHasRoleController : ControllerBase
     /// Lấy thông tin user role theo ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(long id)
+    public async Task<IActionResult> GetById(ulong id)
     {
         var userHasRole = await _userHasRoleService.GetUserHasRoleByIdAsync(id);
         if (userHasRole == null)
@@ -38,7 +38,7 @@ public sealed class UserHasRoleController : ControllerBase
     /// Lấy danh sách role của user
     /// </summary>
     [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetByUserId(long userId)
+    public async Task<IActionResult> GetByUserId(ulong userId)
     {
         var userHasRoles = await _userHasRoleService.GetRolesByUserIdAsync(userId);
         return Ok(userHasRoles);
@@ -85,7 +85,7 @@ public sealed class UserHasRoleController : ControllerBase
     /// Cập nhật thông tin user role
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] UpdateUserHasRoleRequest request)
+    public async Task<IActionResult> Update(ulong id, [FromBody] UpdateUserHasRoleRequest request)
     {
         if (id != request.id)
             return BadRequest(new { message = "ID không khớp" });
@@ -108,7 +108,7 @@ public sealed class UserHasRoleController : ControllerBase
     /// Xóa user role
     /// </summary>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(long id)
+    public async Task<IActionResult> Delete(ulong id)
     {
         var result = await _userHasRoleService.DeleteUserHasRoleAsync(id);
         if (!result)

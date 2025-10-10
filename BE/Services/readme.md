@@ -48,7 +48,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(long id)
+    public async Task<IActionResult> GetUser(ulong id)
     {
         var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
@@ -58,6 +58,10 @@ public class UserController : ControllerBase
     }
 }
 ```
+
+## Đặc biệt
+
+Nếu sử dụng `assigned_by`, mặc định được cấp bởi System, thông tin được lưu ở Const/System.cs
 
 ## Cấm
 

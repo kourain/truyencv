@@ -7,6 +7,8 @@ export const formatRelativeTime = (isoString: string) => {
   const hour = 60 * minute;
   const day = 24 * hour;
   const week = 7 * day;
+  const month = 30 * day;
+  const MAX_MONTH = 3 * month;
 
   if (diff < minute) {
     return "vừa xong";
@@ -25,6 +27,14 @@ export const formatRelativeTime = (isoString: string) => {
   if (diff < week) {
     const count = Math.floor(diff / day);
     return `${count} ngày trước`;
+  }
+  if (diff < month) {
+    const count = Math.floor(diff / week);
+    return `${count} tuần trước`;
+  }
+  if (diff < MAX_MONTH) {
+    const count = Math.floor(diff / month);
+    return `${count} tháng trước`;
   }
 
   return date.toLocaleDateString("vi-VN", {

@@ -7,6 +7,14 @@ type RefreshTokenPayload = RefreshTokenRequest;
 
 type MessageResponse = BaseResponse;
 
+export const register = async (payload: RegisterRequest, config?: AxiosRequestConfig) => {
+	const client = getHttpClient();
+	const response = await client.post<RegisterResponse>("/auth/register", payload, config);
+	const { access_token, refresh_token } = response.data;
+	setAuthTokens(access_token, refresh_token);
+	return response.data;
+};
+
 export const login = async (payload: LoginRequest, config?: AxiosRequestConfig) => {
 	const client = getHttpClient();
 	const response = await client.post<LoginResponse>("/auth/login", payload, config);
@@ -68,4 +76,16 @@ export const logoutAll = async (config?: AxiosRequestConfig) => {
 	} finally {
 		clearAuthTokens();
 	}
+};
+
+export const requestPasswordReset = async (payload: RequestPasswordResetRequest, config?: AxiosRequestConfig) => {
+	const client = getHttpClient();
+	const response = await client.post<BaseResponse>("/auth/password-reset/request", payload, config);
+	return response.data;
+};
+
+export const confirmPasswordReset = async (payload: ConfirmPasswordResetRequest, config?: AxiosRequestConfig) => {
+	const client = getHttpClient();
+	const response = await client.post<BaseResponse>("/auth/password-reset/confirm", payload, config);
+	return response.data;
 };

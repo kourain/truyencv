@@ -1,6 +1,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 
@@ -8,19 +9,38 @@ namespace TruyenCV.Helpers
 {
     public static class JwtHelper
     {
-        public static string GenerateAccessToken(Models.User user, IEnumerable<string> roles, string secretKey, string issuer, string audience, int expireMinutes = 60)
+        public static string GenerateAccessToken(
+            Models.User user,
+            IEnumerable<string> roles,
+            IEnumerable<string> permissions,
+            string secretKey,
+            string issuer,
+            string audience,
+            int expireMinutes = 60)
         {
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.id.ToString()),
-				new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
-			// Thêm nhiều role nếu có
-			foreach (var role in roles)
-			{
-				claims.Add(new Claim(ClaimTypes.Role, role));
+            // Thêm nhiều role nếu có
+            foreach (var role in roles.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(role))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
+
+            // Thêm permissions nếu có
+            foreach (var permission in permissions.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(permission))
+                {
+                    claims.Add(new Claim("Permissions", permission));
+                }
             }
             
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -68,19 +88,6 @@ namespace TruyenCV.Helpers
             {
                 return null;
             }
-        }
-
-        public static long? GetUserIdFromToken(string token, string secretKey, string issuer, string audience)
-        {
-            var principal = ValidateToken(token, secretKey, issuer, audience);
-            if (principal == null) return null;
-
-            var userIdClaim = principal.FindFirst("user_id")?.Value;
-            if (long.TryParse(userIdClaim, out long userId))
-            {
-                return userId;
-            }
-            return null;
         }
     }
 }

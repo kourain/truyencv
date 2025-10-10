@@ -13,19 +13,19 @@ namespace TruyenCV.Models;
 public class ComicComment : BaseEntity
 {
 	[Required]
-	public required long comic_id { get; set; }
+	public required ulong comic_id { get; set; }
 
-	public long? comic_chapter_id { get; set; }
+	public ulong? comic_chapter_id { get; set; }
 
 	[Required]
-	public required long user_id { get; set; }
+	public required ulong user_id { get; set; }
 
 	[Required]
 	public required string comment { get; set; }
 
 	public int like { get; set; } = 0;
 
-	public long? reply_id { get; set; }
+	public ulong? reply_id { get; set; }
 
 	public bool is_rate { get; set; } = false;
 

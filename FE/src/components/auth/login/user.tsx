@@ -1,12 +1,12 @@
 "use client";
 import { clearAuthTokens, hasValidTokens, tokenHasRole } from "@helpers/authTokens";
 import { login } from "@services/auth.service";
-import { AlertCircle, Lock, Mail, User } from "lucide-react";
+import { AlertCircle, CheckCircle2, Lock, Mail, User } from "lucide-react";
 import { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 export const UserLoginContent = () => {
   const router = useRouter();
@@ -14,18 +14,23 @@ export const UserLoginContent = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const redirectParam = searchParams?.get("redirect") as Route | null;
+  const registered = searchParams?.get("registered") === "1";
+  const resetCompleted = searchParams?.get("reset") === "1";
   const fallback = redirectParam ?? ("/user" as Route);
 
   const loginMutation = useMutation({
     mutationFn: (payload: LoginRequest) => login(payload),
     onSuccess: () => {
       setError(null);
+      setSuccess(null);
       router.replace(fallback);
     },
     onError: (mutationError: unknown) => {
       clearAuthTokens();
+      setSuccess(null);
       if (typeof mutationError === "object" && mutationError !== null && "response" in mutationError) {
         const apiError = mutationError as {
           response?: { data?: { message?: string } };
@@ -53,6 +58,17 @@ export const UserLoginContent = () => {
 
   const isLoggedIn = hasValidTokens() && tokenHasRole("User");
 
+  useEffect(() => {
+    if (registered) {
+      setSuccess("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
+      return;
+    }
+
+    if (resetCompleted) {
+      setSuccess("Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.");
+    }
+  }, [registered, resetCompleted]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface text-surface-foreground">
       <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-surface-muted bg-surface/70 shadow-glow backdrop-blur-xl">
@@ -76,6 +92,13 @@ export const UserLoginContent = () => {
                 vào đây
               </Link>
               để quay về trang chủ.
+            </div>
+          )}
+
+          {success && (
+            <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none" />
+              <p>{success}</p>
             </div>
           )}
 
@@ -125,6 +148,12 @@ export const UserLoginContent = () => {
               </div>
             </div>
 
+            <p className="text-right text-xs text-surface-foreground/60">
+              <Link href={"/user/auth/reset-password" as Route} className="underline">
+                Quên mật khẩu?
+              </Link>
+            </p>
+
             <button
               type="submit"
               disabled={loginMutation.isPending}
@@ -138,7 +167,11 @@ export const UserLoginContent = () => {
           </form>
 
           <p className="text-center text-xs text-surface-foreground/60">
-            Gặp vấn đề khi đăng nhập? Liên hệ đội hỗ trợ của TruyenCV để được trợ giúp.
+            Gặp vấn đề khi đăng nhập? <Link href={"/user/auth/reset-password" as Route} className="underline">Đặt lại mật khẩu</Link> hoặc liên hệ đội hỗ trợ của TruyenCV để được trợ giúp.
+          </p>
+
+          <p className="text-center text-xs text-surface-foreground/60">
+            Chưa có tài khoản? <Link href={"/user/auth/register" as Route} className="underline">Đăng ký ngay</Link>.
           </p>
 
           <p className="text-center text-xs text-surface-foreground/60">

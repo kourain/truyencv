@@ -24,7 +24,7 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
         );
     }
 
-    public async Task<RefreshToken?> GetByIdAsync(long id)
+    public async Task<RefreshToken?> GetByIdAsync(ulong id)
     {
         return await _redisCache.GetFromRedisAsync<RefreshToken>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
@@ -33,7 +33,7 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
         );
     }
 
-    public async Task<IEnumerable<RefreshToken>> GetByUserIdAsync(long userId)
+    public async Task<IEnumerable<RefreshToken>> GetByUserIdAsync(ulong userId)
     {
         var users = await _redisCache.GetFromRedisAsync<Models.User>(_dbcontext.Users.Skip(0).Take(10).ToListAsync(), 0, 10);
         return await _redisCache.GetFromRedisAsync<RefreshToken>(
@@ -53,7 +53,7 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
         await _redisCache.AddOrUpdateInRedisAsync(refreshToken, $"token:{token}", DefaultCacheMinutes);
         return true;
     }
-    public async Task<int> RevokeAllUserTokensAsync(long userId)
+    public async Task<int> RevokeAllUserTokensAsync(ulong userId)
     {
         var userTokens = await _dbSet
             .Where(r => r.user_id == userId && r.revoked_at == null)

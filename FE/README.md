@@ -32,5 +32,5 @@ Route: /aser
 ## .env
 
 lưu địa chỉ backend
-lưu cổng mà front-end sẽ sử dụng để khởi chạy
 lưu địa chỉ cdn dùng để tải dữ liệu như nội dung chương truyện, hình ảnh truyện
+lưu JWT secret để validate JWT token

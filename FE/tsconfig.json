@@ -25,8 +25,14 @@
       }
     ],
     "paths": {
+      "@app/*": [
+        "./src/app/*"
+      ],
       "@components/*": [
         "./src/components/*"
+      ],
+      "@const/*": [
+        "./src/const/*"
       ],
       "@hooks/*": [
         "./src/hooks/*"
@@ -34,18 +40,15 @@
       "@helpers/*": [
         "./src/helpers/*"
       ],
+      "@server/*": [
+        "./src/server/*"
+      ],
       "@services/*": [
         "./src/services/*"
       ],
       "@types/*": [
         "./src/types/*"
       ],
-      "@app/*": [
-        "./src/app/*"
-      ],
-      "@const/*": [
-        "./src/const/*"
-      ]
     },
     "noEmit": true
   },
@@ -57,6 +60,7 @@
     "next.config.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next"
   ]
 }

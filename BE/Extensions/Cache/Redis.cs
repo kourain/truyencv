@@ -53,7 +53,7 @@ public static partial class RedisExtensions
     {
         await RedisCache.RemoveAsync($"{typeof(T).Name}:one:{Entity.id}");
     }
-    public static async Task RemoveFromRedisAsync<T>(this IDistributedCache RedisCache, long Key) where T : BaseEntity
+    public static async Task RemoveFromRedisAsync<T>(this IDistributedCache RedisCache, ulong Key) where T : BaseEntity
     {
         await RedisCache.RemoveAsync($"{typeof(T).Name}:one:{Key}");
     }
@@ -168,7 +168,7 @@ public static partial class RedisExtensions
     /// <param name="Limit"></param>
     /// <param name="CacheMinutes"></param>
     /// <returns></returns>
-    public static async Task<IEnumerable<T>> GetFromRedisAsync<T>(this IDistributedCache RedisCache, Task<List<T>>? QueryMany, long Pos, long Limit, double CacheMinutes) where T : BaseEntity
+    public static async Task<IEnumerable<T>> GetFromRedisAsync<T>(this IDistributedCache RedisCache, Task<List<T>>? QueryMany, ulong Pos, ulong Limit, double CacheMinutes) where T : BaseEntity
     {
         try
         {
@@ -198,7 +198,7 @@ public static partial class RedisExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="RedisCache"></param>
     /// <param name="Entitys"></param>
-    public static async Task AddOrUpdateInRedisAsync<T>(this IDistributedCache RedisCache, IEnumerable<T> Entitys, long Pos, long Limit, double CacheMinutes) where T : BaseEntity
+    public static async Task AddOrUpdateInRedisAsync<T>(this IDistributedCache RedisCache, IEnumerable<T> Entitys, ulong Pos, ulong Limit, double CacheMinutes) where T : BaseEntity
     {
         try
         {

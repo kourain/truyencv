@@ -7,16 +7,19 @@ Luôn luôn trả lời bằng tiếng Việt
 Nghiêm cấm tự ý tạo file mới có cùng chức năng với 1 file cũ hoặc là bản nâng cấm của một file cũ, Hãy chỉnh sửa trực tiếp lên file đó.
 Nghiêm cấm tự ý tạo file mới hoặc chỉnh sửa file không thuộc phạm vi của bạn. Chỉ được phép chỉnh sửa các file được giao.
 Nghiêm cấm tự ý tạo file *.md. Hãy hỏi tôi trước khi tạo.
+Nghiêm cấm tự ý hardcode.
 
 # CMS Base API - AI Coding Instructions
 
 Đây là dự án ASP.NET Core 8.0 Web API với mô hình kiến trúc, mẫu thiết kế và quy ước code cụ thể. Khi làm việc với dự án, cần tuân thủ các quy tắc sau:
 
-- **ROLES**: Được định nghĩa trong Const\Enum\Roles.cs
-- **PERMISSION**: Được định nghĩa trong Const\Enum\Permission.cs
+- **ROLES**: Được định nghĩa trong Const\Roles.cs
+- **PERMISSION**: Được định nghĩa trong Const\Permissions.cs
 - Luôn chỉnh sửa trực tiếp các tệp chứ không tạo file mới như CreateNew thay cho Create
 - Phân vùng Areas và các lớp sealed cho các Controller để tổ chức mã nguồn rõ ràng
 - Luôn đọc README.md/readme.md trong từng thư mục để hiểu các quy ước và mẫu thiết kế cụ thể
+- Tìm kiếm tất cả các tệp có khả năng liên quan đến yêu cầu, luôn đọc tất cả các tệp có trong Const/const 
+- Đối với các hàm phức tạp, hãy ghi document
 
 ## Kiến Trúc Tổng Quan
 
@@ -73,7 +76,7 @@ Ví dụ với `UserController` trong `Admin` area:
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(long id)
+		public async Task<IActionResult> Index(ulong id)
 		{
     // implementation
 		}
@@ -164,14 +167,11 @@ Luôn sử dụng `namespace TruyenCV;`
 **Cache Serialization**: Thêm `[JsonIgnore]` vào navigation properties để tránh circular references
 **Json**: Luôn sử dụng snake_case cho JSON properties trong DTOs và schema cơ sở dữ liệu. Luôn sử dụng Newtonsoft.Json thay cho thư viện mặc định System.Text.Json
 
-# FrontEnd Coding
+## FrontEnd Coding
 
-tên thư mục đều viết ở dạng lower_case
-tất cả route đều lower_case
-tất cả component đều viết ở dạng PascalCase
-thư mục app/*.tsx là thư mục chứa các tệp tin SSR
-thư mục components/*.tsx là thư mục chứa các component dùng chung, không chứa các tệp tin SSR, chỉ chứa các component tái sử dụng CSR
-
-# Mock Data
-Backend: đặt nó vào bên trong repository
-FrontEnd: đặt nó vào bên trong services, nơi thường dùng để gọi API tới BackEnd
+- tên thư mục đều viết ở dạng lower_case
+- tất cả route đều lower_case
+- tất cả component đều viết ở dạng PascalCase
+- thư mục app/*.tsx là thư mục chứa các tệp tin SSR
+- thư mục components/*.tsx là thư mục chứa các component dùng chung, không chứa các tệp tin SSR, chỉ chứa các component tái sử dụng CSR
+- Mock Data: đặt nó vào bên trong services, nơi thường dùng để gọi API tới BackEnd

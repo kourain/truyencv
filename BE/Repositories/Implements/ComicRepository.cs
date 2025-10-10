@@ -13,7 +13,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	{
 	}
 
-	public async Task<Comic?> GetByIdAsync(long id)
+	public async Task<Comic?> GetByIdAsync(ulong id)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
 			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),

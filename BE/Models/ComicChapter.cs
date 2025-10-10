@@ -10,7 +10,7 @@ namespace TruyenCV.Models;
 public class ComicChapter : BaseEntity
 {
 	[Required]
-	public required long comic_id { get; set; }
+	public required ulong comic_id { get; set; }
 
 	[Required]
 	public required int chapter { get; set; }

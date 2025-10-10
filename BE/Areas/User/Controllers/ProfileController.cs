@@ -33,7 +33,7 @@ namespace TruyenCV.Areas.User.Controllers
         public async Task<IActionResult> GetProfile()
         {
             // Lấy ID user từ claims của token
-            long? userId = User.GetUserId();
+            ulong? userId = User.GetUserId();
             if (userId == null)
             {
                 return Unauthorized(new { message = "Không thể xác định người dùng" });
@@ -52,7 +52,7 @@ namespace TruyenCV.Areas.User.Controllers
         public async Task<IActionResult> GetRefreshTokens()
         {
 			// Lấy ID user từ claims của token
-			long? userId = User.GetUserId();
+			ulong? userId = User.GetUserId();
             if (userId == null)
             {
                 return Unauthorized(new { message = "Không thể xác định người dùng" });
@@ -73,10 +73,10 @@ namespace TruyenCV.Areas.User.Controllers
         }
 
         [HttpDelete("refresh-tokens/{tokenId}")]
-        public async Task<IActionResult> RevokeRefreshToken(long tokenId)
+        public async Task<IActionResult> RevokeRefreshToken(ulong tokenId)
         {
             // Lấy ID user từ claims của token
-            long? userId = User.GetUserId();
+            ulong? userId = User.GetUserId();
             if (userId == null)
             {
                 return Unauthorized(new { message = "Không thể xác định người dùng" });
@@ -106,7 +106,7 @@ namespace TruyenCV.Areas.User.Controllers
         public async Task<IActionResult> RevokeAllRefreshTokens()
         {
             // Lấy ID user từ claims của token
-            long? userId = User.GetUserId();
+            ulong? userId = User.GetUserId();
             if (userId == null)
             {
                 return Unauthorized(new { message = "Không thể xác định người dùng" });

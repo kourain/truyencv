@@ -13,14 +13,14 @@ public interface IComicHaveCategoryService
 	/// </summary>
 	/// <param name="comicId">ID của comic</param>
 	/// <returns>Danh sách category</returns>
-	Task<IEnumerable<ComicCategoryResponse>> GetCategoriesByComicIdAsync(long comicId);
+	Task<IEnumerable<ComicCategoryResponse>> GetCategoriesByComicIdAsync(ulong comicId);
 
 	/// <summary>
 	/// Lấy danh sách comics của một category
 	/// </summary>
 	/// <param name="categoryId">ID của category</param>
 	/// <returns>Danh sách comic</returns>
-	Task<IEnumerable<ComicResponse>> GetComicsByCategoryIdAsync(long categoryId);
+	Task<IEnumerable<ComicResponse>> GetComicsByCategoryIdAsync(ulong categoryId);
 
 	/// <summary>
 	/// Thêm comic vào category
@@ -35,5 +35,5 @@ public interface IComicHaveCategoryService
 	/// <param name="comicId">ID của comic</param>
 	/// <param name="categoryId">ID của category</param>
 	/// <returns>True nếu xóa thành công</returns>
-	Task<bool> RemoveComicFromCategoryAsync(long comicId, long categoryId);
+	Task<bool> RemoveComicFromCategoryAsync(ulong comicId, ulong categoryId);
 }

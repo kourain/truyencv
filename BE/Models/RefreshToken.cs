@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 
 namespace TruyenCV.Models
 {
+    [Table("refresh_tokens")]
     [Index(nameof(token), IsUnique = true)]
     public class RefreshToken : BaseEntity
 	{        
@@ -12,7 +13,7 @@ namespace TruyenCV.Models
         public required string token { get; set; }
         
         [Required]
-        public required long user_id { get; set; }
+        public required ulong user_id { get; set; }
         
         [Required]
         public required DateTime expires_at { get; set; }

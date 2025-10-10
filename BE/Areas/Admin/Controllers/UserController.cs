@@ -29,7 +29,7 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(long id)
+        public async Task<IActionResult> GetUser(ulong id)
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
@@ -48,7 +48,7 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpGet("{id}/refresh-tokens")]
-        public async Task<IActionResult> GetUserRefreshTokens(long id)
+        public async Task<IActionResult> GetUserRefreshTokens(ulong id)
         {
             // Kiểm tra user có tồn tại không
             var user = await _userService.GetUserByIdAsync(id);
@@ -73,7 +73,7 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpDelete("{id}/refresh-tokens/{tokenId}")]
-        public async Task<IActionResult> RevokeUserRefreshToken(long id, long tokenId)
+        public async Task<IActionResult> RevokeUserRefreshToken(ulong id, ulong tokenId)
         {
             // Kiểm tra user có tồn tại không
             var user = await _userService.GetUserByIdAsync(id);
@@ -103,7 +103,7 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpDelete("{id}/refresh-tokens")]
-        public async Task<IActionResult> RevokeAllUserRefreshTokens(long id)
+        public async Task<IActionResult> RevokeAllUserRefreshTokens(ulong id)
         {
             // Kiểm tra user có tồn tại không
             var user = await _userService.GetUserByIdAsync(id);

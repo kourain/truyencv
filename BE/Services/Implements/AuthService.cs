@@ -24,8 +24,10 @@ namespace TruyenCV.Services
             var accessTokenExpiry = int.Parse(jwtSettings["AccessTokenExpiryMinutes"]!);
             var refreshTokenExpiry = int.Parse(jwtSettings["RefreshTokenExpiryDays"]!);
 
+            var permissions = await GetUserPermissionsAsync(user.id);
+
             // Sinh Access Token
-            var accessToken = JwtHelper.GenerateAccessToken(user, roles, secretKey, issuer, audience, accessTokenExpiry);
+            var accessToken = JwtHelper.GenerateAccessToken(user, roles, permissions, secretKey, issuer, audience, accessTokenExpiry);
 
             // Sinh Refresh Token
             var refreshTokenValue = JwtHelper.GenerateRefreshToken();
@@ -78,7 +80,7 @@ namespace TruyenCV.Services
             return true;
         }
 
-        public async Task<bool> RevokeAllUserTokensAsync(long userId)
+        public async Task<bool> RevokeAllUserTokensAsync(ulong userId)
         {
             var userTokens = await _context.RefreshTokens
                 .Where(rt => rt.user_id == userId && rt.revoked_at == null)
@@ -93,7 +95,7 @@ namespace TruyenCV.Services
             return true;
         }
 
-        public async Task<List<string>> GetUserRolesAsync(long userId)
+        public async Task<List<string>> GetUserRolesAsync(ulong userId)
         {
             // Tạm thời hardcode roles, sau này có thể lấy từ database
             // Có thể tạo bảng UserRoles hoặc thêm role_id vào bảng Users
@@ -106,6 +108,14 @@ namespace TruyenCV.Services
                 return new List<string> { "Admin", "User" };
             else
                 return new List<string> { "User" };
+        }
+
+        public async Task<List<string>> GetUserPermissionsAsync(ulong userId)
+        {
+            return await _context.UserHasPermissions
+                .Where(permission => permission.user_id == userId && permission.deleted_at == null)
+                .Select(permission => permission.permissions.ToString())
+                .ToListAsync();
         }
     }
 }

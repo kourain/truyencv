@@ -1,6 +1,7 @@
 export type AppEnvironment = {
   BACKEND_URL: string;
   CDN_URL: string;
+  JWT_SECRET: string;
 };
 
 const fallbackUrl = (value?: string | null) => {
@@ -20,6 +21,7 @@ const parsePort = (value?: string | null) => {
 export const appEnv: AppEnvironment = {
   BACKEND_URL: fallbackUrl(process.env.NEXT_PUBLIC_BACKEND_URL),
   CDN_URL: fallbackUrl(process.env.NEXT_PUBLIC_CDN_URL),
+  JWT_SECRET: fallbackUrl(process.env.NEXT_PUBLIC_JWT_SECRET),
 };
 
 export const isBrowser = typeof window !== "undefined";

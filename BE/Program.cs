@@ -171,6 +171,7 @@ namespace TruyenCV
                 Log.Information("INFO: [CACHE] Using Memory Cache instead of Redis");
             }
             SnowflakeIdGenerator.Init();
+            builder.Services.AddHttpClient();
             // Đăng ký Background Services
             builder.Services.AddBackgroundServices();
             // Đăng ký Repositories

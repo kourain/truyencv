@@ -20,13 +20,13 @@ public class UserHasRoleService : IUserHasRoleService
         _redisCache = redisCache;
     }
 
-    public async Task<UserHasRoleResponse?> GetUserHasRoleByIdAsync(long id)
+    public async Task<UserHasRoleResponse?> GetUserHasRoleByIdAsync(ulong id)
     {
         var userHasRole = await _userHasRoleRepository.GetByIdAsync(id);
         return userHasRole?.ToRespDTO();
     }
 
-    public async Task<IEnumerable<UserHasRoleResponse>> GetRolesByUserIdAsync(long userId)
+    public async Task<IEnumerable<UserHasRoleResponse>> GetRolesByUserIdAsync(ulong userId)
     {
         var userHasRoles = await _userHasRoleRepository.GetByUserIdAsync(userId);
         return userHasRoles.Select(r => r.ToRespDTO());
@@ -67,7 +67,7 @@ public class UserHasRoleService : IUserHasRoleService
         return newUserHasRole.ToRespDTO();
     }
 
-    public async Task<UserHasRoleResponse?> UpdateUserHasRoleAsync(long id, UpdateUserHasRoleRequest request)
+    public async Task<UserHasRoleResponse?> UpdateUserHasRoleAsync(ulong id, UpdateUserHasRoleRequest request)
     {
         // Lấy user role từ database
         var userHasRole = await _userHasRoleRepository.GetByIdAsync(id);
@@ -95,7 +95,7 @@ public class UserHasRoleService : IUserHasRoleService
         return userHasRole.ToRespDTO();
     }
 
-    public async Task<bool> DeleteUserHasRoleAsync(long id)
+    public async Task<bool> DeleteUserHasRoleAsync(ulong id)
     {
         // Lấy user role từ database
         var userHasRole = await _userHasRoleRepository.GetByIdAsync(id);

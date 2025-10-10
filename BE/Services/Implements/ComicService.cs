@@ -19,7 +19,7 @@ public class ComicService : IComicService
 		_redisCache = redisCache;
 	}
 
-	public async Task<ComicResponse?> GetComicByIdAsync(long id)
+	public async Task<ComicResponse?> GetComicByIdAsync(ulong id)
 	{
 		var comic = await _comicRepository.GetByIdAsync(id);
 		return comic?.ToRespDTO();
@@ -73,7 +73,7 @@ public class ComicService : IComicService
 		return newComic.ToRespDTO();
 	}
 
-	public async Task<ComicResponse?> UpdateComicAsync(long id, UpdateComicRequest comicRequest)
+	public async Task<ComicResponse?> UpdateComicAsync(ulong id, UpdateComicRequest comicRequest)
 	{
 		// Lấy comic từ database
 		var comic = await _comicRepository.GetByIdAsync(id);
@@ -92,7 +92,7 @@ public class ComicService : IComicService
 		return comic.ToRespDTO();
 	}
 
-	public async Task<bool> DeleteComicAsync(long id)
+	public async Task<bool> DeleteComicAsync(ulong id)
 	{
 		// Lấy comic từ database
 		var comic = await _comicRepository.GetByIdAsync(id);

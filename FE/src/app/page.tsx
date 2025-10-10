@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-const LoginIndexPage = () => {
+const IndexPage = () => {
 	redirect("/user");
 };
 
-export default LoginIndexPage;
+export default IndexPage;

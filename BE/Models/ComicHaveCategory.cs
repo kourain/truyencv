@@ -12,10 +12,10 @@ namespace TruyenCV.Models;
 public class ComicHaveCategory
 {
 	[Required]
-	public required long comic_id { get; set; }
+	public required ulong comic_id { get; set; }
 
 	[Required]
-	public required long comic_category_id { get; set; }
+	public required ulong comic_category_id { get; set; }
 
 	[JsonIgnore]
 	[ForeignKey(nameof(comic_id))]

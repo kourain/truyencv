@@ -10,11 +10,14 @@ public static class RepositoriesRegisterExtensions
 		Services.AddScoped<TruyenCV.Repositories.IUserRepository, TruyenCV.Repositories.UserRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IRefreshTokenRepository, TruyenCV.Repositories.RefreshTokenRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IUserHasRoleRepository, TruyenCV.Repositories.UserHasRoleRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserHasPermissionRepository, TruyenCV.Repositories.UserHasPermissionRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IComicRepository, TruyenCV.Repositories.ComicRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IComicCategoryRepository, TruyenCV.Repositories.ComicCategoryRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IComicChapterRepository, TruyenCV.Repositories.ComicChapterRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IComicCommentRepository, TruyenCV.Repositories.ComicCommentRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IComicHaveCategoryRepository, TruyenCV.Repositories.ComicHaveCategoryRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserComicBookmarkRepository, TruyenCV.Repositories.UserComicBookmarkRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserComicReadHistoryRepository, TruyenCV.Repositories.UserComicReadHistoryRepository>();
 		return Services;
 	}
 }

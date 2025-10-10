@@ -4,14 +4,14 @@ public class SnowflakeIdGenerator
     private static readonly DateTime Epoch = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     private static readonly object[] _lock = new object[1024];
-    private static readonly long[] _lastTimestamp = new long[1024];
-    private static readonly long[] _sequence = new long[4096];
+    private static readonly ulong[] _lastTimestamp = new ulong[1024];
+    private static readonly ulong[] _sequence = new ulong[4096];
 
     private const int MachineIdBits = 10;
     private const int SequenceBits = 12;
 
-    private const long MaxMachineId = 1023;
-    private const long MaxSequence = 4095;
+    private const ulong MaxMachineId = 1023;
+    private const ulong MaxSequence = 4095;
 
     private const int MachineIdShift = 12;
     private const int TimestampShift = 22;
@@ -22,7 +22,7 @@ public class SnowflakeIdGenerator
 			_lock[i] = new object();
 		}
 	}
-    public static long NextId(long machineId = 0)
+    public static ulong NextId(ulong machineId = 0)
     {
         if (machineId < 0 || machineId > MaxMachineId)
             throw new ArgumentException($"MachineId phải nằm trong khoảng 0 - {MaxMachineId}");
@@ -46,6 +46,6 @@ public class SnowflakeIdGenerator
         }
     }
 
-    private static long GetCurrentTimestamp()
-        => (long)(DateTime.UtcNow - Epoch).TotalMilliseconds;
+    private static ulong GetCurrentTimestamp()
+        => (ulong)(DateTime.UtcNow - Epoch).TotalMilliseconds;
 }

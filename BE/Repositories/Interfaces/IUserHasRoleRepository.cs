@@ -12,14 +12,14 @@ public interface IUserHasRoleRepository : IRepository<UserHasRole>
     /// </summary>
     /// <param name="id">ID của user role</param>
     /// <returns>UserHasRole nếu tìm thấy, null nếu không tìm thấy</returns>
-    Task<UserHasRole?> GetByIdAsync(long id);
+    Task<UserHasRole?> GetByIdAsync(ulong id);
 
     /// <summary>
     /// Lấy danh sách role của user theo user_id
     /// </summary>
     /// <param name="userId">ID của user</param>
     /// <returns>Danh sách UserHasRole</returns>
-    Task<IEnumerable<UserHasRole>> GetByUserIdAsync(long userId);
+    Task<IEnumerable<UserHasRole>> GetByUserIdAsync(ulong userId);
 
     /// <summary>
     /// Lấy danh sách user có role cụ thể

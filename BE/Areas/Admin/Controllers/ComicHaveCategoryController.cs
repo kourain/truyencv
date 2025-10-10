@@ -25,7 +25,7 @@ public sealed class ComicHaveCategoryController : ControllerBase
 	/// Lấy danh sách categories của một comic
 	/// </summary>
 	[HttpGet("comic/{comicId}/categories")]
-	public async Task<IActionResult> GetCategoriesByComicId(long comicId)
+	public async Task<IActionResult> GetCategoriesByComicId(ulong comicId)
 	{
 		var categories = await _comicHaveCategoryService.GetCategoriesByComicIdAsync(comicId);
 		return Ok(categories);
@@ -35,7 +35,7 @@ public sealed class ComicHaveCategoryController : ControllerBase
 	/// Lấy danh sách comics của một category
 	/// </summary>
 	[HttpGet("category/{categoryId}/comics")]
-	public async Task<IActionResult> GetComicsByCategoryId(long categoryId)
+	public async Task<IActionResult> GetComicsByCategoryId(ulong categoryId)
 	{
 		var comics = await _comicHaveCategoryService.GetComicsByCategoryIdAsync(categoryId);
 		return Ok(comics);
@@ -62,7 +62,7 @@ public sealed class ComicHaveCategoryController : ControllerBase
 	/// Xóa comic khỏi category
 	/// </summary>
 	[HttpDelete("comic/{comicId}/category/{categoryId}")]
-	public async Task<IActionResult> RemoveComicFromCategory(long comicId, long categoryId)
+	public async Task<IActionResult> RemoveComicFromCategory(ulong comicId, ulong categoryId)
 	{
 		var result = await _comicHaveCategoryService.RemoveComicFromCategoryAsync(comicId, categoryId);
 		if (!result)
