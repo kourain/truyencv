@@ -36,6 +36,28 @@ namespace TruyenCV.Controllers
         }
 
         /// <summary>
+        /// API lấy thông tin tài khoản hiện tại
+        /// </summary>
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "Không thể xác định người dùng" });
+            }
+
+            var profile = await _userService.GetProfileAsync(userId.Value);
+            if (profile == null)
+            {
+                return NotFound(new { message = "Không tìm thấy người dùng" });
+            }
+
+            return Ok(profile);
+        }
+
+        /// <summary>
         /// API đăng ký người dùng mới - trả về access token và refresh token sau khi tạo tài khoản
         /// </summary>
         [HttpPost("register")]

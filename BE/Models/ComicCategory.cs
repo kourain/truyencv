@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
@@ -13,5 +14,5 @@ public class ComicCategory : BaseEntity
 	public required string name { get; set; }
 
 	[JsonIgnore]
-	public ICollection<ComicHaveCategory>? ComicHaveCategories { get; set; }
+	public virtual ICollection<ComicHaveCategory> ComicHaveCategories { get; set; }
 }

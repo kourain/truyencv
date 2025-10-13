@@ -19,7 +19,7 @@ const UserNavbar = () => {
   }, [router]);
 
   const handleOpenSettings = useCallback(() => {
-    router.push("/user");
+    router.push("/user/profile");
   }, [router]);
   if (pathname.match(/login|register/)) {
     return null;

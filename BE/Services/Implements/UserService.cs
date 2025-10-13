@@ -6,6 +6,7 @@ using TruyenCV.Models;
 using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace TruyenCV.Services
 {
@@ -96,15 +97,16 @@ namespace TruyenCV.Services
         public async Task<User?> AuthenticateAsync(string email, string password)
         {
             // Lấy user từ database
-            var user = await _dbcontext.Users.FirstOrDefaultAsync(m=> m.email == email);
-            if (user != null && Bcrypt.VerifyPassword(password, user.password))
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user != null && Bcrypt.VerifyPassword(password, user.password) && user.deleted_at == null)
             {
                 return await _dbcontext.Users
-                    .Include(u => u.Roles)
-                    .Include(u => u.Permissions)
-                    .FirstOrDefaultAsync(u => u.id == user.id);
+                    .Where(u => u.id == user.id && u.deleted_at == null)
+                    .Include(u => u.Roles.Where(role => role.deleted_at == null))
+                    .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                    .FirstOrDefaultAsync();
             }
-            return user;
+            return null;
         }
 
         public async Task<User?> GetUserEntityByEmailAsync(string email)
@@ -135,6 +137,82 @@ namespace TruyenCV.Services
 
             await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
             await _redisCache.RemoveAsync($"User:one:email:{user.email}");
+        }
+
+        public async Task<UserProfileResponse?> GetProfileAsync(ulong userId)
+        {
+            var user = await _dbcontext.Users
+                .Where(u => u.id == userId && u.deleted_at == null)
+                .Include(u => u.Roles.Where(role => role.deleted_at == null))
+                .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                .FirstOrDefaultAsync();
+
+            return user?.ToProfileDTO();
+        }
+
+        public async Task ChangePasswordAsync(ulong userId, string currentPassword, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword))
+            {
+                throw new ArgumentException("Mật khẩu hiện tại không hợp lệ", nameof(currentPassword));
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                throw new ArgumentException("Mật khẩu mới phải có tối thiểu 6 ký tự", nameof(newPassword));
+            }
+
+            var user = await _dbcontext.Users
+                .Where(u => u.id == userId && u.deleted_at == null)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new Exception("Người dùng không tồn tại");
+            }
+
+            if (!Bcrypt.VerifyPassword(currentPassword, user.password))
+            {
+                throw new ArgumentException("Mật khẩu hiện tại không chính xác", nameof(currentPassword));
+            }
+
+            if (Bcrypt.VerifyPassword(newPassword, user.password))
+            {
+                throw new ArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại", nameof(newPassword));
+            }
+
+            user.password = Bcrypt.HashPassword(newPassword);
+            user.updated_at = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
+            await _redisCache.RemoveAsync($"User:one:email:{user.email}");
+        }
+
+        public async Task<UserProfileResponse?> VerifyEmailAsync(ulong userId)
+        {
+            var user = await _dbcontext.Users
+                .Where(u => u.id == userId && u.deleted_at == null)
+                .Include(u => u.Roles.Where(role => role.deleted_at == null))
+                .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (user.email_verified_at == null)
+            {
+                user.email_verified_at = DateTime.UtcNow;
+                user.updated_at = DateTime.UtcNow;
+
+                await _dbcontext.SaveChangesAsync();
+                await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
+            }
+
+            return user.ToProfileDTO();
         }
     }
 }

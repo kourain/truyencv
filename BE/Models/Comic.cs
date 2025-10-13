@@ -37,13 +37,13 @@ public class Comic : BaseEntity
     [Required]
     public ComicStatus status { get; set; } = ComicStatus.Continuing;
 
-    public User? EmbeddedByUser { get; set; }
-    [JsonIgnore, ForeignKey(nameof(id))]
-    public ICollection<ComicChapter>? ComicChapters { get; set; }
+    public virtual User? EmbeddedByUser { get; set; }
+    [JsonIgnore] //, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<ComicChapter>? ComicChapters { get; set; }
 
-    [JsonIgnore, ForeignKey(nameof(id))]
-    public ICollection<ComicComment>? ComicComments { get; set; }
+    [JsonIgnore] //, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<ComicComment>? ComicComments { get; set; }
 
-    [JsonIgnore, ForeignKey(nameof(id))]
-    public ICollection<ComicHaveCategory>? ComicHaveCategories { get; set; }
+    [JsonIgnore] //, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<ComicHaveCategory>? ComicHaveCategories { get; set; }
 }

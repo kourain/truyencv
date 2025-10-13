@@ -20,8 +20,8 @@ public class ComicChapter : BaseEntity
 
 	[JsonIgnore]
 	[ForeignKey(nameof(comic_id))]
-	public Comic? Comic { get; set; }
+	public virtual Comic? Comic { get; set; }
 
-	[JsonIgnore]
-	public ICollection<ComicComment>? ComicComments { get; set; }
+	[JsonIgnore, DeleteBehavior(DeleteBehavior.SetNull)]
+	public virtual ICollection<ComicComment>? ComicComments { get; set; }
 }

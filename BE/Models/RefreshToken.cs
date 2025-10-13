@@ -13,6 +13,7 @@ namespace TruyenCV.Models
         public required string token { get; set; }
         
         [Required]
+        [ForeignKey(nameof(User))]
         public required ulong user_id { get; set; }
         
         [Required]
@@ -27,7 +28,6 @@ namespace TruyenCV.Models
         public bool is_active => !is_revoked && !is_expired;
         
         // Navigation property
-        [ForeignKey(nameof(user_id))]
         [JsonIgnore]
         public User? User { get; set; }
     }

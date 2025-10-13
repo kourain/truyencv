@@ -9,6 +9,7 @@ import { login } from "@services/auth.service";
 import { clearAuthTokens } from "@helpers/authTokens";
 import { useAuth } from "@hooks/useAuth";
 import { UserRole } from "@const/role";
+import { useToast } from "@components/providers/ToastProvider";
 
 export const AdminLoginContent = () => {
   const router = useRouter();
@@ -16,6 +17,7 @@ export const AdminLoginContent = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const { pushToast } = useToast();
 
   const redirectParam = searchParams?.get("redirect") as Route | null;
   const fallback = redirectParam ?? ("/admin" as Route);
@@ -28,20 +30,36 @@ export const AdminLoginContent = () => {
     mutationFn: (payload: LoginRequest) => login(payload),
     onSuccess: async (response) => {
       setError(null);
+      pushToast({
+        title: "Đăng nhập quản trị thành công",
+        description: "Chào mừng quay lại bảng điều khiển.",
+        variant: "success",
+      });
       await auth.updateAuthStateFromAccessToken(response.access_token);
       router.replace(fallback);
     },
     onError: async (mutationError: unknown) => {
       await clearAuthTokens();
+      const fallbackMessage = "Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.";
       if (typeof mutationError === "object" && mutationError !== null && "response" in mutationError) {
         const apiError = mutationError as {
           response?: { data?: { message?: string } };
         };
 
         const message = apiError.response?.data?.message;
-        setError(message ?? "Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.");
+        setError(message ?? fallbackMessage);
+        pushToast({
+          title: "Đăng nhập thất bại",
+          description: message ?? fallbackMessage,
+          variant: "error",
+        });
       } else {
-        setError("Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.");
+        setError(fallbackMessage);
+        pushToast({
+          title: "Đăng nhập thất bại",
+          description: fallbackMessage,
+          variant: "error",
+        });
       }
     }
   });
@@ -52,6 +70,11 @@ export const AdminLoginContent = () => {
 
     if (!email || !password) {
       setError("Vui lòng nhập đầy đủ email và mật khẩu");
+      pushToast({
+        title: "Thiếu thông tin",
+        description: "Vui lòng nhập đầy đủ email và mật khẩu để tiếp tục.",
+        variant: "warning",
+      });
       return;
     }
 

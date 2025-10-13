@@ -12,7 +12,7 @@ using TruyenCV.Models;
 namespace TruyenCV.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20251011062730_init")]
+    [Migration("20251013051913_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -89,8 +89,6 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("embedded_by");
 
-                    b.HasIndex("id");
-
                     b.HasIndex("slug")
                         .IsUnique();
 
@@ -119,8 +117,6 @@ namespace TruyenCV.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("id");
-
                     b.HasIndex("name")
                         .IsUnique();
 
@@ -130,6 +126,7 @@ namespace TruyenCV.Migrations
             modelBuilder.Entity("TruyenCV.Models.ComicChapter", b =>
                 {
                     b.Property<decimal>("id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("chapter")
@@ -153,8 +150,6 @@ namespace TruyenCV.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("id");
-
                     b.HasIndex("comic_id", "chapter")
                         .IsUnique();
 
@@ -164,6 +159,7 @@ namespace TruyenCV.Migrations
             modelBuilder.Entity("TruyenCV.Models.ComicComment", b =>
                 {
                     b.Property<decimal>("id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<decimal?>("comic_chapter_id")
@@ -206,8 +202,6 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("comic_id");
 
-                    b.HasIndex("id");
-
                     b.HasIndex("reply_id");
 
                     b.HasIndex("user_id");
@@ -223,16 +217,11 @@ namespace TruyenCV.Migrations
                     b.Property<decimal>("comic_category_id")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal?>("id")
-                        .HasColumnType("numeric(20,0)");
-
                     b.HasKey("comic_id", "comic_category_id");
 
                     b.HasIndex("comic_category_id");
 
                     b.HasIndex("comic_id");
-
-                    b.HasIndex("id");
 
                     b.ToTable("comic_have_categories");
                 });
@@ -267,8 +256,6 @@ namespace TruyenCV.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("id");
-
                     b.HasIndex("token")
                         .IsUnique();
 
@@ -288,7 +275,13 @@ namespace TruyenCV.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<decimal>("comic_read_count")
+                    b.Property<DateTime?>("banned_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("bookmark_count")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("coin")
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<DateTime>("created_at")
@@ -301,6 +294,12 @@ namespace TruyenCV.Migrations
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("email_verified_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("is_banned")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("name")
                         .IsRequired()
@@ -316,6 +315,12 @@ namespace TruyenCV.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("character varying(15)");
 
+                    b.Property<decimal>("read_chapter_count")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("read_comic_count")
+                        .HasColumnType("numeric(20,0)");
+
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
@@ -324,8 +329,6 @@ namespace TruyenCV.Migrations
                     b.HasIndex("email")
                         .IsUnique();
 
-                    b.HasIndex("id");
-
                     b.ToTable("users");
 
                     b.HasData(
@@ -333,24 +336,34 @@ namespace TruyenCV.Migrations
                         {
                             id = 1m,
                             avatar = "default_avatar.png",
-                            comic_read_count = 0m,
+                            bookmark_count = 0m,
+                            coin = 0m,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             email = "ht.kourain@gmail.com",
+                            email_verified_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            is_banned = false,
                             name = "System",
-                            password = "$2a$12$yxL74iiW1ZmEPk0sZCo73eji9vdic5lg/gsbcQ6lCR3qWa01Uc31W",
+                            password = "$2a$12$0jPXKmQRxJHEGeuDoXrD7uKVfPk7MGISLXPmrSz62gKbBw1NDdaLC",
                             phone = "0000000000",
+                            read_chapter_count = 0m,
+                            read_comic_count = 0m,
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            id = 764735908724346880m,
+                            id = 765443497779007488m,
                             avatar = "default_avatar.png",
-                            comic_read_count = 0m,
+                            bookmark_count = 0m,
+                            coin = 0m,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             email = "maiquyen16503@gmail.com",
+                            email_verified_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            is_banned = false,
                             name = "kourain",
-                            password = "$2a$12$AJdxwveySjD0uEZCT3EzJOG3Vk9MqVXqpPPvZVZIqV2v4Ndw9iTgG",
+                            password = "$2a$12$95O7eg4xl8Y8shqLTXgXH.zRvlpI8dITVTd8BHvojT04I8DPcNn6a",
                             phone = "0123456789",
+                            read_chapter_count = 0m,
+                            read_comic_count = 0m,
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
@@ -379,8 +392,6 @@ namespace TruyenCV.Migrations
                     b.HasKey("id");
 
                     b.HasIndex("comic_id");
-
-                    b.HasIndex("id");
 
                     b.HasIndex("user_id", "comic_id")
                         .IsUnique();
@@ -418,8 +429,6 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("comic_id");
 
-                    b.HasIndex("id");
-
                     b.HasIndex("user_id", "comic_id")
                         .IsUnique();
 
@@ -456,11 +465,6 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("assigned_by");
 
-                    b.HasIndex("id");
-
-                    b.HasIndex("user_id", "permissions")
-                        .IsUnique();
-
                     b.HasIndex(new[] { "user_id" }, "IX_UserHasPermission");
 
                     b.ToTable("user_has_permissions");
@@ -495,8 +499,6 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("assigned_by");
 
-                    b.HasIndex("id");
-
                     b.HasIndex(new[] { "user_id" }, "IX_UserHasRole");
 
                     b.ToTable("user_has_roles");
@@ -504,16 +506,25 @@ namespace TruyenCV.Migrations
                     b.HasData(
                         new
                         {
-                            id = 764735910146215936m,
+                            id = 765443499280568320m,
                             assigned_by = 1m,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "Admin",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            user_id = 764735908724346880m
+                            user_id = 765443497779007488m
                         },
                         new
                         {
-                            id = 764735910146215937m,
+                            id = 765443499284762624m,
+                            assigned_by = 1m,
+                            created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            role_name = "User",
+                            updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            user_id = 765443497779007488m
+                        },
+                        new
+                        {
+                            id = 765443499284762625m,
                             assigned_by = 1m,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "System",
@@ -536,14 +547,8 @@ namespace TruyenCV.Migrations
             modelBuilder.Entity("TruyenCV.Models.ComicChapter", b =>
                 {
                     b.HasOne("TruyenCV.Models.Comic", "Comic")
-                        .WithMany()
-                        .HasForeignKey("comic_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TruyenCV.Models.Comic", null)
                         .WithMany("ComicChapters")
-                        .HasForeignKey("id")
+                        .HasForeignKey("comic_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -554,17 +559,12 @@ namespace TruyenCV.Migrations
                 {
                     b.HasOne("TruyenCV.Models.ComicChapter", "ComicChapter")
                         .WithMany("ComicComments")
-                        .HasForeignKey("comic_chapter_id");
+                        .HasForeignKey("comic_chapter_id")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TruyenCV.Models.Comic", "Comic")
-                        .WithMany()
-                        .HasForeignKey("comic_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TruyenCV.Models.Comic", null)
                         .WithMany("ComicComments")
-                        .HasForeignKey("id")
+                        .HasForeignKey("comic_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -596,14 +596,10 @@ namespace TruyenCV.Migrations
                         .IsRequired();
 
                     b.HasOne("TruyenCV.Models.Comic", "Comic")
-                        .WithMany()
+                        .WithMany("ComicHaveCategories")
                         .HasForeignKey("comic_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("TruyenCV.Models.Comic", null)
-                        .WithMany("ComicHaveCategories")
-                        .HasForeignKey("id");
 
                     b.Navigation("Comic");
 
@@ -662,9 +658,9 @@ namespace TruyenCV.Migrations
             modelBuilder.Entity("TruyenCV.Models.UserHasPermission", b =>
                 {
                     b.HasOne("TruyenCV.Models.User", "AssignedBy")
-                        .WithMany()
+                        .WithMany("PermissionsAssigned")
                         .HasForeignKey("assigned_by")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TruyenCV.Models.User", "User")
@@ -681,9 +677,9 @@ namespace TruyenCV.Migrations
             modelBuilder.Entity("TruyenCV.Models.UserHasRole", b =>
                 {
                     b.HasOne("TruyenCV.Models.User", "AssignedBy")
-                        .WithMany()
+                        .WithMany("RolesAssigned")
                         .HasForeignKey("assigned_by")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TruyenCV.Models.User", "User")
@@ -725,9 +721,13 @@ namespace TruyenCV.Migrations
                 {
                     b.Navigation("Permissions");
 
+                    b.Navigation("PermissionsAssigned");
+
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("Roles");
+
+                    b.Navigation("RolesAssigned");
                 });
 #pragma warning restore 612, 618
         }

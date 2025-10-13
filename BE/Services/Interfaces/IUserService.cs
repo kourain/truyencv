@@ -67,5 +67,21 @@ namespace TruyenCV.Services
         /// <param name="userId">ID của người dùng</param>
         /// <param name="newPassword">Mật khẩu mới</param>
         Task UpdatePasswordAsync(ulong userId, string newPassword);
+
+        /// <summary>
+        /// Đổi mật khẩu từ trang cá nhân (yêu cầu mật khẩu hiện tại)
+        /// </summary>
+        Task ChangePasswordAsync(ulong userId, string currentPassword, string newPassword);
+
+        /// <summary>
+        /// Lấy thông tin trang cá nhân của người dùng
+        /// </summary>
+        /// <param name="userId">ID người dùng</param>
+        Task<UserProfileResponse?> GetProfileAsync(ulong userId);
+
+        /// <summary>
+        /// Xác nhận email cho người dùng
+        /// </summary>
+        Task<UserProfileResponse?> VerifyEmailAsync(ulong userId);
     }
 }

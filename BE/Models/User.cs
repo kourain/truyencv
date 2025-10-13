@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -16,10 +18,27 @@ public class User : BaseEntity
     public string password { get; set; }
     [Required, StringLength(15)]
     public string phone { get; set; }
-    public ulong comic_read_count { get; set; }
+    public DateTime? email_verified_at { get; set; }
+    public ulong read_comic_count { get; set; } = 0;
+    public ulong read_chapter_count { get; set; } = 0;
+    public ulong bookmark_count { get; set; } = 0;
+    public ulong coin { get; set; } = 0;
+    public bool is_banned { get; set; } = false;
+    public DateTime? banned_at { get; set; }
     [Required, StringLength(50)]
     public string avatar { get; set; } = "default_avatar.png";
-    public ICollection<RefreshToken>? RefreshTokens { get; set; }
-    public ICollection<UserHasPermission>? Permissions { get; set; }
-    public ICollection<UserHasRole>? Roles { get; set; }
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<RefreshToken>? RefreshTokens { get; set; }
+
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<UserHasPermission>? Permissions { get; set; }
+
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<UserHasPermission>? PermissionsAssigned { get; set; }
+
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<UserHasRole>? Roles { get; set; }
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<UserHasRole>? RolesAssigned { get; set; }
+
 }

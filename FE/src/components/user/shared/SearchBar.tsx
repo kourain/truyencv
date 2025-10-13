@@ -31,7 +31,6 @@ export const SearchBar = () => {
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:shadow-glow"
             >
                 <SearchIcon className="h-4 w-4" />
-                Tìm kiếm
             </button>
         </div>
     )

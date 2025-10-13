@@ -1,7 +1,7 @@
 "use client";
 import { clearAuthTokens, hasValidTokens, tokenHasRole } from "@helpers/authTokens";
 import { login } from "@services/auth.service";
-import { AlertCircle, CheckCircle2, Lock, Mail, User } from "lucide-react";
+import { AlertCircle, Lock, Mail, User } from "lucide-react";
 import { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@hooks/useAuth";
 import { UserRole } from "@const/role";
+import { useToast } from "@components/providers/ToastProvider";
 
 export const UserLoginContent = () => {
   const router = useRouter();
@@ -20,7 +21,7 @@ export const UserLoginContent = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { pushToast } = useToast();
 
   const redirectParam = searchParams?.get("redirect") as Route | null;
   const registered = searchParams?.get("registered") === "1";
@@ -31,22 +32,36 @@ export const UserLoginContent = () => {
     mutationFn: (payload: LoginRequest) => login(payload),
     onSuccess: async (response) => {
       setError(null);
-      setSuccess(null);
+      pushToast({
+        title: "Đăng nhập thành công",
+        description: "Chào mừng bạn trở lại TruyenCV.",
+        variant: "success",
+      });
       await auth.updateAuthStateFromAccessToken(response.access_token);
       router.replace(fallback);
     },
     onError: async (mutationError: unknown) => {
       await clearAuthTokens();
-      setSuccess(null);
+      const fallbackMessage = "Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.";
       if (typeof mutationError === "object" && mutationError !== null && "response" in mutationError) {
         const apiError = mutationError as {
           response?: { data?: { message?: string } };
         };
 
         const message = apiError.response?.data?.message;
-        setError(message ?? "Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.");
+        setError(message ?? fallbackMessage);
+        pushToast({
+          title: "Đăng nhập thất bại",
+          description: message ?? fallbackMessage,
+          variant: "error",
+        });
       } else {
-        setError("Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.");
+        setError(fallbackMessage);
+        pushToast({
+          title: "Đăng nhập thất bại",
+          description: fallbackMessage,
+          variant: "error",
+        });
       }
     }
   });
@@ -57,6 +72,11 @@ export const UserLoginContent = () => {
 
     if (!email || !password) {
       setError("Vui lòng nhập đầy đủ email và mật khẩu");
+      pushToast({
+        title: "Thiếu thông tin",
+        description: "Vui lòng nhập đầy đủ email và mật khẩu để tiếp tục.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -66,14 +86,22 @@ export const UserLoginContent = () => {
 
   useEffect(() => {
     if (registered) {
-      setSuccess("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
+      pushToast({
+        title: "Đăng ký thành công",
+        description: "Vui lòng đăng nhập để tiếp tục trải nghiệm.",
+        variant: "success",
+      });
       return;
     }
 
     if (resetCompleted) {
-      setSuccess("Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.");
+      pushToast({
+        title: "Đặt lại mật khẩu thành công",
+        description: "Đăng nhập bằng mật khẩu mới của bạn để tiếp tục.",
+        variant: "success",
+      });
     }
-  }, [registered, resetCompleted]);
+  }, [registered, resetCompleted, pushToast]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface text-surface-foreground">
@@ -90,13 +118,6 @@ export const UserLoginContent = () => {
               <h1 className="text-2xl font-semibold text-primary-foreground">Đăng nhập người dùng</h1>
             </div>
           </div>
-
-          {success && (
-            <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none" />
-              <p>{success}</p>
-            </div>
-          )}
 
           {error && (
             <div className="flex items-start gap-3 rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">

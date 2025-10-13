@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 
 import QueryProvider from "@components/providers/QueryProvider";
 import AuthProvider from "@components/providers/AuthProvider";
+import ToastProvider from "@components/providers/ToastProvider";
 import { getServerAuthState } from "@server/auth";
 
 import "./globals.css";
@@ -27,7 +28,9 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
       </head>
       <body>
         <AuthProvider initialState={authState}>
-          <QueryProvider>{children}</QueryProvider>
+          <ToastProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

@@ -12,16 +12,16 @@ namespace TruyenCV.Models;
 public class ComicHaveCategory
 {
 	[Required]
+	[ForeignKey(nameof(Comic))]
 	public required ulong comic_id { get; set; }
 
 	[Required]
+	[ForeignKey(nameof(ComicCategory))]
 	public required ulong comic_category_id { get; set; }
 
 	[JsonIgnore]
-	[ForeignKey(nameof(comic_id))]
-	public Comic? Comic { get; set; }
+	public virtual Comic? Comic { get; set; }
 
 	[JsonIgnore]
-	[ForeignKey(nameof(comic_category_id))]
-	public ComicCategory? ComicCategory { get; set; }
+	public virtual ComicCategory? ComicCategory { get; set; }
 }

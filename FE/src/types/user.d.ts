@@ -70,3 +70,27 @@ interface ConfirmPasswordResetRequest {
 	otp: string;
 	new_password: string;
 }
+
+interface UserProfileResponse {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  created_at: string;
+  updated_at: string;
+  email_verified_at: string | null;
+  banned_at: string | null;
+  is_banned: boolean;
+  read_comic_count: number;
+  read_chapter_count: number;
+  bookmark_count: number;
+  coin: number;
+  roles: string[];
+  permissions: string[];
+};
+
+interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+};

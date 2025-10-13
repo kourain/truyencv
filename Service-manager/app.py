@@ -8,6 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
 from typing import Dict, Any, Optional
 import os,gc,logging,time,threading,subprocess,json
+import signal
 import asyncio
 import psutil
 import uvicorn,requests
@@ -34,21 +35,23 @@ cpu.init()
 disk.init()
 
 from contextlib import asynccontextmanager
-def SVkill(process: subprocess.Popen):
-	"""Kill a service process"""
-	# Try graceful termination first
-	try:
-		process.terminate()
-	
-		# Wait for process to terminate gracefully
-		try:
-			process.wait(timeout=5)
-		except subprocess.TimeoutExpired:
-			# Force kill if graceful termination failed
-			process.kill()
-			process.wait()
-	except Exception as e:
-		logger.error(f"Error terminating process {process.pid}: {e}")
+
+
+def SVkill(process: subprocess.Popen | None):
+    """Kill a service process"""
+    if process is None:
+        return
+
+    try:
+        process.send_signal(signal.SIGINT)
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.send_signal(signal.SIGKILL)
+            process.wait()
+    except Exception as e:
+        logger.error(f"Error terminating process {process.pid}: {e}")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 	yield

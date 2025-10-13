@@ -25,15 +25,34 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()
-                .HasMany(u => u.Roles)
-                .WithOne(ur => ur.User)
-                .HasForeignKey(ur => ur.user_id)
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasMany(u => u.RefreshTokens)
+            .WithOne(token => token.User)
+            .HasForeignKey(token => token.user_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<User>()
-                .HasMany(u => u.Permissions)
-                .WithOne(up => up.User)
-                .HasForeignKey(up => up.user_id)
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasMany(u => u.Permissions)
+            .WithOne(permission => permission.User)
+            .HasForeignKey(permission => permission.user_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.PermissionsAssigned)
+            .WithOne(permission => permission.AssignedBy)
+            .HasForeignKey(permission => permission.assigned_by)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Roles)
+            .WithOne(role => role.User)
+            .HasForeignKey(role => role.user_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.RolesAssigned)
+            .WithOne(role => role.AssignedBy)
+            .HasForeignKey(role => role.assigned_by)
+            .OnDelete(DeleteBehavior.Restrict);
         var system = new User()
         {
             id = SystemUser.id,
@@ -41,6 +60,12 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
             email = "ht.kourain@gmail.com",
             password = Bcrypt.HashPassword("159753"),
             phone = "0000000000",
+            email_verified_at = defaultDate,
+            read_comic_count = 0,
+            read_chapter_count = 0,
+            bookmark_count = 0,
+            coin = 0,
+            is_banned = false,
             created_at = defaultDate,
             updated_at = defaultDate
         };
@@ -50,6 +75,12 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
             email = "maiquyen16503@gmail.com",
             password = Bcrypt.HashPassword("1408"), // Nên mã hóa mật khẩu trong thực tế!
             phone = "0123456789",
+            email_verified_at = defaultDate,
+            read_comic_count = 0,
+            read_chapter_count = 0,
+            bookmark_count = 0,
+            coin = 0,
+            is_banned = false,
             created_at = defaultDate,
             updated_at = defaultDate
         };
@@ -60,6 +91,14 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
             {
                 user_id = baseUser.id,
                 role_name = Roles.Admin,
+                assigned_by = system.id,
+                created_at = defaultDate,
+                updated_at = defaultDate
+            },
+            new UserHasRole
+            {
+                user_id = baseUser.id,
+                role_name = Roles.User,
                 assigned_by = system.id,
                 created_at = defaultDate,
                 updated_at = defaultDate
@@ -118,9 +157,10 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
         return await base.SaveChangesAsync(cancellationToken);
     }
 }
-[PrimaryKey(nameof(id)), Index(nameof(id))]
+[PrimaryKey(nameof(id))]
 public abstract class BaseEntity
 {
+    [Key]
     public ulong id { get; set; } = SnowflakeIdGenerator.NextId();
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }

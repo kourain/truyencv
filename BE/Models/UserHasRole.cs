@@ -15,10 +15,8 @@ public class UserHasRole : BaseEntity
     public required ulong user_id {get;set;}
     [Required]
     public required ulong assigned_by {get;set;}
-    [ForeignKey(nameof(user_id))]
     [JsonIgnore]
     public virtual User? User {get;set;}
-    [ForeignKey(nameof(assigned_by))]
     [JsonIgnore]
     public virtual User? AssignedBy {get;set;}
 }

@@ -33,20 +33,20 @@ public class ComicComment : BaseEntity
 
 	[JsonIgnore]
 	[ForeignKey(nameof(comic_id))]
-	public Comic? Comic { get; set; }
+	public virtual Comic? Comic { get; set; }
 
 	[JsonIgnore]
 	[ForeignKey(nameof(comic_chapter_id))]
-	public ComicChapter? ComicChapter { get; set; }
+	public virtual ComicChapter? ComicChapter { get; set; }
 
 	[JsonIgnore]
 	[ForeignKey(nameof(user_id))]
-	public User? User { get; set; }
+	public virtual User? User { get; set; }
 
 	[JsonIgnore]
 	[ForeignKey(nameof(reply_id))]
-	public ComicComment? ReplyTo { get; set; }
+	public virtual ComicComment? ReplyTo { get; set; }
 
 	[JsonIgnore]
-	public ICollection<ComicComment>? Replies { get; set; }
+	public virtual ICollection<ComicComment>? Replies { get; set; }
 }

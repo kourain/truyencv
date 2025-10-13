@@ -1,3 +1,4 @@
+using System.Linq;
 using TruyenCV.Models;
 using TruyenCV.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,15 @@ namespace TruyenCV.Services
         {
 
             // Sinh Access Token
-            var accessToken = JwtHelper.GenerateAccessToken(user, user.Roles.Select(r => r.role_name), user.Permissions.Select(p => p.permissions));
+            var roleNames = (user.Roles ?? Enumerable.Empty<UserHasRole>())
+                .Where(role => role.deleted_at == null)
+                .Select(role => role.role_name);
+
+            var permissionValues = (user.Permissions ?? Enumerable.Empty<UserHasPermission>())
+                .Where(permission => permission.deleted_at == null)
+                .Select(permission => permission.permissions);
+
+            var accessToken = JwtHelper.GenerateAccessToken(user, roleNames, permissionValues);
 
             // Sinh Refresh Token
             var refreshTokenValue = JwtHelper.GenerateRefreshToken();
@@ -38,22 +47,23 @@ namespace TruyenCV.Services
         {
             var refreshToken = await _context.RefreshTokens
                 .Include(rt => rt.User)
-                .Include(rt => rt.User.Roles)
-                .Include(rt => rt.User.Permissions)
+                .Where(rt => rt.User.deleted_at == null)
+                .Include(rt => rt.User.Roles.Where(role => role.deleted_at == null))
+                .Include(rt => rt.User.Permissions.Where(permission => permission.deleted_at == null))
                 .FirstOrDefaultAsync(rt => rt.token == refreshTokenValue);
 
             if (refreshToken == null || !refreshToken.is_active)
                 return null;
 
             // Lấy roles của user từ database (có thể từ bảng UserRoles hoặc trực tiếp từ User)
-            var roles = await GetUserRolesAsync(refreshToken.user_id);
+            // var roles = await GetUserRolesAsync(refreshToken.user_id);
 
             // Tạo token mới
             var newTokens = await GenerateTokensAsync(refreshToken.User);
 
             // Revoke refresh token cũ
-            refreshToken.revoked_at = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            // refreshToken.revoked_at = DateTime.UtcNow;
+            // await _context.SaveChangesAsync();
 
             return newTokens;
         }

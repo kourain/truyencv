@@ -17,3 +17,9 @@ public class UpdateUserRequest
 	public required string email { get; set; }
 	public required string phone { get; set; }
 }
+
+public class ChangePasswordRequest
+{
+	public required string current_password { get; set; }
+	public required string new_password { get; set; }
+}

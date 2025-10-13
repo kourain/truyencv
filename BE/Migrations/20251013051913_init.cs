@@ -37,7 +37,13 @@ namespace TruyenCV.Migrations
                     email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     password = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
                     phone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
-                    comic_read_count = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    email_verified_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    read_comic_count = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    read_chapter_count = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    bookmark_count = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    coin = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    is_banned = table.Column<bool>(type: "boolean", nullable: false),
+                    banned_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     avatar = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -124,7 +130,7 @@ namespace TruyenCV.Migrations
                         column: x => x.assigned_by,
                         principalTable: "users",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_user_has_permissions_users_user_id",
                         column: x => x.user_id,
@@ -153,7 +159,7 @@ namespace TruyenCV.Migrations
                         column: x => x.assigned_by,
                         principalTable: "users",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_user_has_roles_users_user_id",
                         column: x => x.user_id,
@@ -183,12 +189,6 @@ namespace TruyenCV.Migrations
                         principalTable: "comics",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_comic_chapters_comics_id",
-                        column: x => x.id,
-                        principalTable: "comics",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -196,8 +196,7 @@ namespace TruyenCV.Migrations
                 columns: table => new
                 {
                     comic_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    comic_category_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
+                    comic_category_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -214,11 +213,6 @@ namespace TruyenCV.Migrations
                         principalTable: "comics",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_comic_have_categories_comics_id",
-                        column: x => x.id,
-                        principalTable: "comics",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -302,7 +296,8 @@ namespace TruyenCV.Migrations
                         name: "FK_comic_comments_comic_chapters_comic_chapter_id",
                         column: x => x.comic_chapter_id,
                         principalTable: "comic_chapters",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_comic_comments_comic_comments_reply_id",
                         column: x => x.reply_id,
@@ -311,12 +306,6 @@ namespace TruyenCV.Migrations
                     table.ForeignKey(
                         name: "FK_comic_comments_comics_comic_id",
                         column: x => x.comic_id,
-                        principalTable: "comics",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_comic_comments_comics_id",
-                        column: x => x.id,
                         principalTable: "comics",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -330,11 +319,11 @@ namespace TruyenCV.Migrations
 
             migrationBuilder.InsertData(
                 table: "users",
-                columns: new[] { "id", "avatar", "comic_read_count", "created_at", "deleted_at", "email", "name", "password", "phone", "updated_at" },
+                columns: new[] { "id", "avatar", "banned_at", "bookmark_count", "coin", "created_at", "deleted_at", "email", "email_verified_at", "is_banned", "name", "password", "phone", "read_chapter_count", "read_comic_count", "updated_at" },
                 values: new object[,]
                 {
-                    { 1m, "default_avatar.png", 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "ht.kourain@gmail.com", "System", "$2a$12$yxL74iiW1ZmEPk0sZCo73eji9vdic5lg/gsbcQ6lCR3qWa01Uc31W", "0000000000", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 764735908724346880m, "default_avatar.png", 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "maiquyen16503@gmail.com", "kourain", "$2a$12$AJdxwveySjD0uEZCT3EzJOG3Vk9MqVXqpPPvZVZIqV2v4Ndw9iTgG", "0123456789", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) }
+                    { 1m, "default_avatar.png", null, 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "ht.kourain@gmail.com", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), false, "System", "$2a$12$0jPXKmQRxJHEGeuDoXrD7uKVfPk7MGISLXPmrSz62gKbBw1NDdaLC", "0000000000", 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { 765443497779007488m, "default_avatar.png", null, 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "maiquyen16503@gmail.com", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), false, "kourain", "$2a$12$95O7eg4xl8Y8shqLTXgXH.zRvlpI8dITVTd8BHvojT04I8DPcNn6a", "0123456789", 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) }
                 });
 
             migrationBuilder.InsertData(
@@ -342,14 +331,10 @@ namespace TruyenCV.Migrations
                 columns: new[] { "id", "assigned_by", "created_at", "deleted_at", "role_name", "updated_at", "user_id" },
                 values: new object[,]
                 {
-                    { 764735910146215936m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "Admin", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 764735908724346880m },
-                    { 764735910146215937m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "System", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 1m }
+                    { 765443499280568320m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "Admin", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 765443497779007488m },
+                    { 765443499284762624m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "User", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 765443497779007488m },
+                    { 765443499284762625m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "System", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 1m }
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_comic_categories_id",
-                table: "comic_categories",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_comic_categories_name",
@@ -364,11 +349,6 @@ namespace TruyenCV.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_comic_chapters_id",
-                table: "comic_chapters",
-                column: "id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_comic_comments_comic_chapter_id",
                 table: "comic_comments",
                 column: "comic_chapter_id");
@@ -377,11 +357,6 @@ namespace TruyenCV.Migrations
                 name: "IX_comic_comments_comic_id",
                 table: "comic_comments",
                 column: "comic_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_comic_comments_id",
-                table: "comic_comments",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_comic_comments_reply_id",
@@ -404,30 +379,15 @@ namespace TruyenCV.Migrations
                 column: "comic_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_comic_have_categories_id",
-                table: "comic_have_categories",
-                column: "id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_comics_embedded_by",
                 table: "comics",
                 column: "embedded_by");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_comics_id",
-                table: "comics",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_comics_slug",
                 table: "comics",
                 column: "slug",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_refresh_tokens_id",
-                table: "refresh_tokens",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_refresh_tokens_token",
@@ -446,11 +406,6 @@ namespace TruyenCV.Migrations
                 column: "comic_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_user_comic_bookmarks_id",
-                table: "user_comic_bookmarks",
-                column: "id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_user_comic_bookmarks_user_id_comic_id",
                 table: "user_comic_bookmarks",
                 columns: new[] { "user_id", "comic_id" },
@@ -465,11 +420,6 @@ namespace TruyenCV.Migrations
                 name: "IX_user_comic_read_history_comic_id",
                 table: "user_comic_read_history",
                 column: "comic_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_comic_read_history_id",
-                table: "user_comic_read_history",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_user_comic_read_history_user_id_comic_id",
@@ -488,17 +438,6 @@ namespace TruyenCV.Migrations
                 column: "assigned_by");
 
             migrationBuilder.CreateIndex(
-                name: "IX_user_has_permissions_id",
-                table: "user_has_permissions",
-                column: "id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_has_permissions_user_id_permissions",
-                table: "user_has_permissions",
-                columns: new[] { "user_id", "permissions" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserHasPermission",
                 table: "user_has_permissions",
                 column: "user_id");
@@ -507,11 +446,6 @@ namespace TruyenCV.Migrations
                 name: "IX_user_has_roles_assigned_by",
                 table: "user_has_roles",
                 column: "assigned_by");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_has_roles_id",
-                table: "user_has_roles",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserHasRole",
@@ -523,11 +457,6 @@ namespace TruyenCV.Migrations
                 table: "users",
                 column: "email",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_users_id",
-                table: "users",
-                column: "id");
         }
 
         /// <inheritdoc />

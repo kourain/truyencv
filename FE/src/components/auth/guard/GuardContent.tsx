@@ -10,13 +10,27 @@ import { useAuth } from "@hooks/useAuth";
 import { refreshTokens } from "@services/auth.service";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react"; 
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react"; 
+
+const routeRequiredRoles: Record<string, UserRole[]> = {
+  admin: [UserRole.Admin],
+  user: [UserRole.User]
+};
 
 export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp, routeFor: string }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
   const authState = useAuth();
+  const requiredRoles = useMemo(() => routeRequiredRoles[routeFor] ?? [UserRole.User], [routeFor]);
+
+  const hasRequiredRole = useCallback((roles?: string[]) => {
+    if (!roles?.length) {
+      return false;
+    }
+
+    return roles?.some((role) => requiredRoles.includes(role as UserRole));
+  }, [requiredRoles]);
 
   useEffect(() => {
     let isMounted = true;
@@ -29,8 +43,8 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
 
     const ensureUserSession = async () => {
       const isAuthPage = USER_AUTH_ROUTE_REGEX.test(pathname ?? "");
-      const hasUserRole = authState.roles?.includes(UserRole.User);
-      const isSessionValid = hasUserRole && authState.isAuthenticated;
+      const hasRole = hasRequiredRole(authState.roles);
+      const isSessionValid = hasRole && authState.isAuthenticated;
 
       const attemptRefresh = async () => {
         try {
@@ -38,7 +52,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
           await authState.updateAuthStateFromAccessToken(tokens.access_token);
           const refreshedPayload = getAccessTokenPayload();
           const refreshedRoles = refreshedPayload ? getRoleFromJWT(refreshedPayload) : [];
-          return tokens.access_token !== undefined && refreshedRoles.some((role) => role?.toLowerCase() === UserRole.User.toLowerCase());
+          return tokens.access_token !== undefined && hasRequiredRole(refreshedRoles);
         } catch (error) {
           console.error("[AuthGuard] Không thể làm mới phiên người dùng", error);
           return false;
@@ -83,7 +97,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
     return () => {
       isMounted = false;
     };
-  }, [authState.isAuthenticated, authState.payload?.exp, authState.roles, authState.updateAuthStateFromAccessToken, pathname, router]);
+  }, [authState.isAuthenticated, authState.payload?.exp, authState.roles, authState.updateAuthStateFromAccessToken, pathname, router, hasRequiredRole, USER_AUTH_ROUTE_REGEX]);
 
   return (
     <>

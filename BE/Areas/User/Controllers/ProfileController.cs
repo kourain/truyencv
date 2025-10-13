@@ -2,6 +2,7 @@ using TruyenCV.Models;
 using TruyenCV.Services;
 using TruyenCV.Repositories;
 using TruyenCV.DTO.Response;
+using TruyenCV.DTO.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
@@ -39,13 +40,60 @@ namespace TruyenCV.Areas.User.Controllers
                 return Unauthorized(new { message = "Không thể xác định người dùng" });
             }
 
-            var user = await _userService.GetUserByIdAsync(userId.Value);
+            var user = await _userService.GetProfileAsync(userId.Value);
             if (user == null)
             {
                 return NotFound(new { message = "Không tìm thấy người dùng" });
             }
 
             return Ok(user);
+        }
+
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail()
+        {
+            ulong? userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "Không thể xác định người dùng" });
+            }
+
+            var profile = await _userService.VerifyEmailAsync(userId.Value);
+            if (profile == null)
+            {
+                return NotFound(new { message = "Không tìm thấy người dùng" });
+            }
+
+            return Ok(profile);
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            ulong? userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "Không thể xác định người dùng" });
+            }
+
+            try
+            {
+                await _userService.ChangePasswordAsync(userId.Value, request.current_password, request.new_password);
+                return Ok(new { message = "Đổi mật khẩu thành công" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
         }
 
         [HttpGet("refresh-tokens")]
