@@ -1,16 +1,10 @@
 import { useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 
-import { ComicStatus } from "@const/comic-status";
+import { ComicStatus, ComicStatusLabel } from "@const/comic-status";
 import { formatNumber, formatRelativeTime } from "@helpers/format";
-import type { ComicResponse } from "../../types/comic";
+import type { ComicResponse } from "../../../types/comic";
 
-const comicStatusLabel: Record<ComicStatus, string> = {
-  [ComicStatus.Continuing]: "Đang cập nhật",
-  [ComicStatus.Paused]: "Tạm dừng",
-  [ComicStatus.Stopped]: "Ngừng xuất bản",
-  [ComicStatus.Completed]: "Đã hoàn thành"
-};
 
 type TopComicsSectionProps = {
   topComics: ComicResponse[];
@@ -57,7 +51,7 @@ const TopComicsSection = ({ topComics, showLoading }: TopComicsSectionProps) => 
                 <div>
                   <h4 className="text-lg font-semibold text-primary-foreground">{comic.name}</h4>
                   <p className="text-sm text-surface-foreground/70">
-                    {comic.author} • {comicStatusLabel[comic.status]}
+                    {comic.author} • {ComicStatusLabel[comic.status]}
                   </p>
                 </div>
                 <div className="text-right">

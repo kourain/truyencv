@@ -31,10 +31,9 @@ namespace TruyenCV
 
             if (allowedOrigins is null || allowedOrigins.Length == 0)
             {
-                allowedOrigins = new[]
-                {
+                allowedOrigins = [
                     "*"
-                };
+                ];
             }
 
             builder.Services.AddCors(option =>
@@ -53,12 +52,11 @@ namespace TruyenCV
 
             if (allowedOrigins is null || allowedOrigins.Length == 0)
             {
-                allowedOrigins = new []
-                {
+                allowedOrigins = [
                     "http://localhost:3000",
                     "https://admin-truyencv.maiquyen.name.vn",
                     "https://truyencv.maiquyen.name.vn"
-                };
+                ];
             }
 
             builder.Services.AddCors(option =>

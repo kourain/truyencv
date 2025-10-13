@@ -4,12 +4,12 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, BookOpen, MessageCircle, ShieldCheck, Sparkles, Users } from "lucide-react";
 
-import DashboardHeaderSection from "@components/admin/dashboard-header-section";
-import MetricCardsSection from "@components/admin/metric-cards-section";
-import TopComicsSection from "@components/admin/top-comics-section";
-import InsightsSidebar from "@components/admin/insights-sidebar";
-import CategorySection from "@components/admin/category-section";
-import ServiceStatusSection from "@components/admin/service-status-section";
+import DashboardHeaderSection from "@components/admin/home/dashboard-header-section";
+import MetricCardsSection from "@components/admin/home/metric-cards-section";
+import TopComicsSection from "@components/admin/home/top-comics-section";
+import InsightsSidebar from "@components/admin/home/insights-sidebar";
+import CategorySection from "@components/admin/home/category-section";
+import ServiceStatusSection from "@components/admin/home/service-status-section";
 import type { MetricCardConfig, OverviewStats } from "@components/admin/types";
 
 import { formatNumber } from "@helpers/format";
