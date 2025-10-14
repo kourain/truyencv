@@ -23,6 +23,7 @@ public class User : BaseEntity
     public long read_chapter_count { get; set; } = 0;
     public long bookmark_count { get; set; } = 0;
     public long coin { get; set; } = 0;
+    public long key { get; set; } = 0;
     public bool is_banned { get; set; } = false;
     public DateTime? banned_at { get; set; }
     [Required, StringLength(50)]
@@ -40,5 +41,17 @@ public class User : BaseEntity
     public virtual ICollection<UserHasRole>? Roles { get; set; }
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
     public virtual ICollection<UserHasRole>? RolesAssigned { get; set; }
+
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<UserHasSubscription>? Subscriptions { get; set; }
+
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<PaymentHistory>? PaymentHistories { get; set; }
+
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<UserCoinHistory>? CoinHistories { get; set; }
+
+    [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
+    public virtual ICollection<UserUseKeyHistory>? KeyHistories { get; set; }
 
 }

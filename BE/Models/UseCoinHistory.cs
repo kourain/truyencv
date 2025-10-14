@@ -1,0 +1,1 @@
+// Replaced by UserCoinHistory model.

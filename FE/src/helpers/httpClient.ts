@@ -59,7 +59,10 @@ httpClient.interceptors.response.use(
     if (error.response) {
       const { status, data, config } = error.response;
       const originalRequest = config ?? error.config;
-
+      if(status ===0 ){
+        console.error("[API ERROR] Network Error - Unable to reach the server");
+        return Promise.reject(error);
+      }
       if (originalRequest?.url?.includes("/auth/refresh-token")) {
         await clearAuthTokens();
         return Promise.reject(error);

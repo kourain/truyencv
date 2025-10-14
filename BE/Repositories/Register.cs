@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 public static class RepositoriesRegisterExtensions
 {
 	/// <summary>
@@ -18,6 +20,11 @@ public static class RepositoriesRegisterExtensions
 		Services.AddScoped<TruyenCV.Repositories.IComicHaveCategoryRepository, TruyenCV.Repositories.ComicHaveCategoryRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IUserComicBookmarkRepository, TruyenCV.Repositories.UserComicBookmarkRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IUserComicReadHistoryRepository, TruyenCV.Repositories.UserComicReadHistoryRepository>();
+		Services.AddScoped<TruyenCV.Repositories.ISubscriptionRepository, TruyenCV.Repositories.SubscriptionRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserHasSubscriptionRepository, TruyenCV.Repositories.UserHasSubscriptionRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IPaymentHistoryRepository, TruyenCV.Repositories.PaymentHistoryRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserCoinHistoryRepository, TruyenCV.Repositories.UserCoinHistoryRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserUseKeyHistoryRepository, TruyenCV.Repositories.UserUseKeyHistoryRepository>();
 		return Services;
 	}
 }

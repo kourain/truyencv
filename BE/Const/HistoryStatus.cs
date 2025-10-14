@@ -1,4 +1,7 @@
-enum HistoryStatus {
-    Add = 1,
-    Use = 2
+namespace TruyenCV.Const;
+
+public enum HistoryStatus
+{
+	Add = 1,
+	Use = 2
 }

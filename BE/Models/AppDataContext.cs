@@ -21,6 +21,11 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<UserComicBookmark> UserComicBookmarks { get; set; }
     public DbSet<UserComicReadHistory> UserComicReadHistories { get; set; }
     public DbSet<UserHasPermission> UserHasPermissions { get; set; }
+    public DbSet<Subscription> Subscriptions { get; set; }
+    public DbSet<UserHasSubscription> UserHasSubscriptions { get; set; }
+    public DbSet<PaymentHistory> PaymentHistories { get; set; }
+    public DbSet<UserCoinHistory> UserCoinHistories { get; set; }
+    public DbSet<UserUseKeyHistory> UserUseKeyHistories { get; set; }
     public static readonly DateTime defaultDate = DateTime.Parse("2025-09-23T00:00:00Z").ToUniversalTime();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +58,36 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
             .WithOne(role => role.AssignedBy)
             .HasForeignKey(role => role.assigned_by)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Subscriptions)
+            .WithOne(subscription => subscription.User)
+            .HasForeignKey(subscription => subscription.user_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.PaymentHistories)
+            .WithOne(history => history.User)
+            .HasForeignKey(history => history.user_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.CoinHistories)
+            .WithOne(history => history.User)
+            .HasForeignKey(history => history.user_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.KeyHistories)
+            .WithOne(history => history.User)
+            .HasForeignKey(history => history.user_id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Subscription>()
+            .HasMany(subscription => subscription.UserSubscriptions)
+            .WithOne(link => link.Subscription)
+            .HasForeignKey(link => link.subscription_id)
+            .OnDelete(DeleteBehavior.Cascade);
         var system = new User()
         {
             id = SystemUser.id,
@@ -65,6 +100,7 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
             read_chapter_count = 0,
             bookmark_count = 0,
             coin = 0,
+            key = 0,
             is_banned = false,
             created_at = defaultDate,
             updated_at = defaultDate
@@ -80,6 +116,7 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
             read_chapter_count = 0,
             bookmark_count = 0,
             coin = 0,
+            key = 0,
             is_banned = false,
             created_at = defaultDate,
             updated_at = defaultDate
