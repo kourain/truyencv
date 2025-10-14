@@ -21,7 +21,7 @@ const AUTH_ROUTE_REGEX = /^\/admin\/auth\//;
 interface navigationItem {
   label: string;
   href: string;
-  icon: (props: React.ComponentProps<"svg">) => JSX.Element | any;
+  icon: any;
 }
 const navigationItems: navigationItem[] = [
   {
