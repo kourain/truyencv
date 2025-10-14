@@ -25,13 +25,13 @@ public class UserComicBookmarkService : IUserComicBookmarkService
         _redisCache = redisCache;
     }
 
-    public async Task<IEnumerable<UserComicBookmarkResponse>> GetBookmarksByUserIdAsync(ulong userId)
+    public async Task<IEnumerable<UserComicBookmarkResponse>> GetBookmarksByUserIdAsync(long userId)
     {
         var bookmarks = await _bookmarkRepository.GetByUserIdAsync(userId);
         return bookmarks.Select(b => b.ToRespDTO());
     }
 
-    public async Task<UserComicBookmarkResponse> CreateBookmarkAsync(ulong userId, ulong comicId)
+    public async Task<UserComicBookmarkResponse> CreateBookmarkAsync(long userId, long comicId)
     {
         var existing = await _bookmarkRepository.GetByUserAndComicAsync(userId, comicId);
         if (existing != null)
@@ -55,13 +55,13 @@ public class UserComicBookmarkService : IUserComicBookmarkService
         return newBookmark.ToRespDTO();
     }
 
-    public async Task<bool> IsBookmarkedAsync(ulong userId, ulong comicId)
+    public async Task<bool> IsBookmarkedAsync(long userId, long comicId)
     {
         var existing = await _bookmarkRepository.GetByUserAndComicAsync(userId, comicId);
         return existing != null;
     }
 
-    public async Task<bool> RemoveBookmarkAsync(ulong userId, ulong comicId)
+    public async Task<bool> RemoveBookmarkAsync(long userId, long comicId)
     {
         var bookmark = await _bookmarkRepository.GetByUserAndComicAsync(userId, comicId);
         if (bookmark == null)
@@ -76,7 +76,7 @@ public class UserComicBookmarkService : IUserComicBookmarkService
         return true;
     }
 
-    private async Task UpdateComicBookmarkCount(ulong comicId, int delta)
+    private async Task UpdateComicBookmarkCount(long comicId, int delta)
     {
         var comic = await _comicRepository.GetByIdAsync(comicId);
         if (comic == null)
@@ -85,13 +85,13 @@ public class UserComicBookmarkService : IUserComicBookmarkService
         }
 
         var newValue = (int)comic.bookmark_count + delta;
-        comic.bookmark_count = (uint)Math.Max(0, newValue);
+        comic.bookmark_count = (int)Math.Max(0, newValue);
         comic.updated_at = DateTime.UtcNow;
 
     await _comicRepository.UpdateAsync(comic);
     }
 
-    private async Task InvalidateCaches(ulong userId, ulong comicId)
+    private async Task InvalidateCaches(long userId, long comicId)
     {
         await _redisCache.RemoveAsync($"UserComicBookmark:user:{userId}");
         await _redisCache.RemoveAsync($"UserComicBookmark:comic:{comicId}");

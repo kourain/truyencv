@@ -20,14 +20,14 @@ public interface IRefreshTokenRepository : IRepository<RefreshToken>
     /// </summary>
     /// <param name="id">ID của refresh token</param>
     /// <returns>RefreshToken nếu tìm thấy, null nếu không tìm thấy</returns>
-    Task<RefreshToken?> GetByIdAsync(ulong id);
+    Task<RefreshToken?> GetByIdAsync(long id);
     
     /// <summary>
     /// Lấy tất cả refresh token của user
     /// </summary>
     /// <param name="userId">ID của user</param>
     /// <returns>Danh sách refresh token</returns>
-    Task<IEnumerable<RefreshToken>> GetByUserIdAsync(ulong userId);
+    Task<IEnumerable<RefreshToken>> GetByUserIdAsync(long userId);
     
     /// <summary>
     /// Vô hiệu hóa refresh token
@@ -41,5 +41,5 @@ public interface IRefreshTokenRepository : IRepository<RefreshToken>
     /// </summary>
     /// <param name="userId">ID của user</param>
     /// <returns>Số lượng token đã bị vô hiệu hóa</returns>
-    Task<int> RevokeAllUserTokensAsync(ulong userId);
+    Task<int> RevokeAllUserTokensAsync(long userId);
 }

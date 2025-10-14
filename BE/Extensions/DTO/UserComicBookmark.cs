@@ -6,7 +6,7 @@ namespace TruyenCV;
 
 public static partial class Extensions
 {
-    public static UserComicBookmark ToEntity(this CreateUserComicBookmarkRequest request, ulong userId)
+    public static UserComicBookmark ToEntity(this CreateUserComicBookmarkRequest request, long userId)
     {
         return new UserComicBookmark
         {

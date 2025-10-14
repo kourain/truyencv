@@ -12,7 +12,7 @@ using TruyenCV.Models;
 namespace TruyenCV.Migrations
 {
     [DbContext(typeof(AppDataContext))]
-    [Migration("20251013051913_init")]
+    [Migration("20251014032502_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -27,20 +27,22 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.Comic", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
                     b.Property<string>("author")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<long>("bookmark_count")
-                        .HasColumnType("bigint");
+                    b.Property<int>("bookmark_count")
+                        .HasColumnType("integer");
 
-                    b.Property<long>("chapter_count")
-                        .HasColumnType("bigint");
+                    b.Property<int>("chapter_count")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -52,8 +54,8 @@ namespace TruyenCV.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal>("embedded_by")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("embedded_by")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("embedded_from")
                         .HasMaxLength(255)
@@ -68,8 +70,8 @@ namespace TruyenCV.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<long?>("published_year")
-                        .HasColumnType("bigint");
+                    b.Property<int?>("published_year")
+                        .HasColumnType("integer");
 
                     b.Property<float>("rate")
                         .HasColumnType("real");
@@ -97,9 +99,11 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.ComicCategory", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -125,15 +129,17 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.ComicChapter", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
                     b.Property<int>("chapter")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("comic_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("comic_id")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("content")
                         .IsRequired()
@@ -158,15 +164,17 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.ComicComment", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal?>("comic_chapter_id")
-                        .HasColumnType("numeric(20,0)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
-                    b.Property<decimal>("comic_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long?>("comic_chapter_id")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("comic_id")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("comment")
                         .IsRequired()
@@ -187,14 +195,14 @@ namespace TruyenCV.Migrations
                     b.Property<int?>("rate_star")
                         .HasColumnType("integer");
 
-                    b.Property<decimal?>("reply_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long?>("reply_id")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("user_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("user_id")
+                        .HasColumnType("bigint");
 
                     b.HasKey("id");
 
@@ -211,11 +219,11 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.ComicHaveCategory", b =>
                 {
-                    b.Property<decimal>("comic_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("comic_id")
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal>("comic_category_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("comic_category_id")
+                        .HasColumnType("bigint");
 
                     b.HasKey("comic_id", "comic_category_id");
 
@@ -228,9 +236,11 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.RefreshToken", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -251,8 +261,8 @@ namespace TruyenCV.Migrations
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("user_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("user_id")
+                        .HasColumnType("bigint");
 
                     b.HasKey("id");
 
@@ -266,9 +276,11 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.User", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
                     b.Property<string>("avatar")
                         .IsRequired()
@@ -278,11 +290,11 @@ namespace TruyenCV.Migrations
                     b.Property<DateTime?>("banned_at")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("bookmark_count")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("bookmark_count")
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal>("coin")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("coin")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -315,11 +327,11 @@ namespace TruyenCV.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("character varying(15)");
 
-                    b.Property<decimal>("read_chapter_count")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("read_chapter_count")
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal>("read_comic_count")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("read_comic_count")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
@@ -334,48 +346,50 @@ namespace TruyenCV.Migrations
                     b.HasData(
                         new
                         {
-                            id = 1m,
+                            id = 1L,
                             avatar = "default_avatar.png",
-                            bookmark_count = 0m,
-                            coin = 0m,
+                            bookmark_count = 0L,
+                            coin = 0L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             email = "ht.kourain@gmail.com",
                             email_verified_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             is_banned = false,
                             name = "System",
-                            password = "$2a$12$0jPXKmQRxJHEGeuDoXrD7uKVfPk7MGISLXPmrSz62gKbBw1NDdaLC",
+                            password = "$2a$12$IX70SAFiyBMxIKYeafybceq8mGOzRC8gKtQ4rLPgop//2soyYuOsy",
                             phone = "0000000000",
-                            read_chapter_count = 0m,
-                            read_comic_count = 0m,
+                            read_chapter_count = 0L,
+                            read_comic_count = 0L,
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
-                            id = 765443497779007488m,
+                            id = 765777151059300352L,
                             avatar = "default_avatar.png",
-                            bookmark_count = 0m,
-                            coin = 0m,
+                            bookmark_count = 0L,
+                            coin = 0L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             email = "maiquyen16503@gmail.com",
                             email_verified_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             is_banned = false,
                             name = "kourain",
-                            password = "$2a$12$95O7eg4xl8Y8shqLTXgXH.zRvlpI8dITVTd8BHvojT04I8DPcNn6a",
+                            password = "$2a$12$TMBz3RFBpSJ1bAcsPHUAhubOL9faDXiUAZYmDnNqKRZEzRE7MU55C",
                             phone = "0123456789",
-                            read_chapter_count = 0m,
-                            read_comic_count = 0m,
+                            read_chapter_count = 0L,
+                            read_comic_count = 0L,
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserComicBookmark", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal>("comic_id")
-                        .HasColumnType("numeric(20,0)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
+
+                    b.Property<long>("comic_id")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -386,8 +400,8 @@ namespace TruyenCV.Migrations
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("user_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("user_id")
+                        .HasColumnType("bigint");
 
                     b.HasKey("id");
 
@@ -403,15 +417,17 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.UserComicReadHistory", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal>("chapter_id")
-                        .HasColumnType("numeric(20,0)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
-                    b.Property<decimal>("comic_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("chapter_id")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("comic_id")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -422,8 +438,8 @@ namespace TruyenCV.Migrations
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("user_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("user_id")
+                        .HasColumnType("bigint");
 
                     b.HasKey("id");
 
@@ -439,12 +455,14 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.UserHasPermission", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal>("assigned_by")
-                        .HasColumnType("numeric(20,0)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
+
+                    b.Property<long>("assigned_by")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -458,8 +476,8 @@ namespace TruyenCV.Migrations
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("user_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("user_id")
+                        .HasColumnType("bigint");
 
                     b.HasKey("id");
 
@@ -472,12 +490,14 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.UserHasRole", b =>
                 {
-                    b.Property<decimal>("id")
+                    b.Property<long>("id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
+                        .HasColumnType("bigint");
 
-                    b.Property<decimal>("assigned_by")
-                        .HasColumnType("numeric(20,0)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
+
+                    b.Property<long>("assigned_by")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
@@ -492,8 +512,8 @@ namespace TruyenCV.Migrations
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("user_id")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("user_id")
+                        .HasColumnType("bigint");
 
                     b.HasKey("id");
 
@@ -506,30 +526,30 @@ namespace TruyenCV.Migrations
                     b.HasData(
                         new
                         {
-                            id = 765443499280568320m,
-                            assigned_by = 1m,
+                            id = 765777152539889664L,
+                            assigned_by = 1L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "Admin",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            user_id = 765443497779007488m
+                            user_id = 765777151059300352L
                         },
                         new
                         {
-                            id = 765443499284762624m,
-                            assigned_by = 1m,
+                            id = 765777152539889665L,
+                            assigned_by = 1L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "User",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            user_id = 765443497779007488m
+                            user_id = 765777151059300352L
                         },
                         new
                         {
-                            id = 765443499284762625m,
-                            assigned_by = 1m,
+                            id = 765777152539889666L,
+                            assigned_by = 1L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "System",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            user_id = 1m
+                            user_id = 1L
                         });
                 });
 

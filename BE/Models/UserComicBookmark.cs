@@ -9,8 +9,8 @@ namespace TruyenCV.Models;
 [Index(nameof(user_id), nameof(comic_id), IsUnique = true)]
 public class UserComicBookmark : BaseEntity
 {
-    public required ulong user_id { get; set; }
-    public required ulong comic_id { get; set; }
+    public required long user_id { get; set; }
+    public required long comic_id { get; set; }
 
     [ForeignKey(nameof(user_id))]
     [JsonIgnore]

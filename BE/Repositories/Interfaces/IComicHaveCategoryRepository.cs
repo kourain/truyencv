@@ -12,14 +12,14 @@ public interface IComicHaveCategoryRepository
 	/// </summary>
 	/// <param name="comicId">ID của comic</param>
 	/// <returns>Danh sách category</returns>
-	Task<IEnumerable<ComicCategory>> GetCategoriesByComicIdAsync(ulong comicId);
+	Task<IEnumerable<ComicCategory>> GetCategoriesByComicIdAsync(long comicId);
 
 	/// <summary>
 	/// Lấy danh sách comics của một category
 	/// </summary>
 	/// <param name="categoryId">ID của category</param>
 	/// <returns>Danh sách comic</returns>
-	Task<IEnumerable<Comic>> GetComicsByCategoryIdAsync(ulong categoryId);
+	Task<IEnumerable<Comic>> GetComicsByCategoryIdAsync(long categoryId);
 
 	/// <summary>
 	/// Thêm comic vào category
@@ -27,7 +27,7 @@ public interface IComicHaveCategoryRepository
 	/// <param name="comicId">ID của comic</param>
 	/// <param name="categoryId">ID của category</param>
 	/// <returns>ComicHaveCategory đã thêm</returns>
-	Task<ComicHaveCategory> AddAsync(ulong comicId, ulong categoryId);
+	Task<ComicHaveCategory> AddAsync(long comicId, long categoryId);
 
 	/// <summary>
 	/// Xóa comic khỏi category
@@ -35,7 +35,7 @@ public interface IComicHaveCategoryRepository
 	/// <param name="comicId">ID của comic</param>
 	/// <param name="categoryId">ID của category</param>
 	/// <returns>True nếu xóa thành công</returns>
-	Task<bool> DeleteAsync(ulong comicId, ulong categoryId);
+	Task<bool> DeleteAsync(long comicId, long categoryId);
 
 	/// <summary>
 	/// Kiểm tra xem comic có thuộc category không
@@ -43,5 +43,5 @@ public interface IComicHaveCategoryRepository
 	/// <param name="comicId">ID của comic</param>
 	/// <param name="categoryId">ID của category</param>
 	/// <returns>True nếu comic thuộc category</returns>
-	Task<bool> ExistsAsync(ulong comicId, ulong categoryId);
+	Task<bool> ExistsAsync(long comicId, long categoryId);
 }

@@ -13,14 +13,14 @@ public interface IUserHasRoleService
     /// </summary>
     /// <param name="id">ID của user role</param>
     /// <returns>Thông tin user role</returns>
-    Task<UserHasRoleResponse?> GetUserHasRoleByIdAsync(ulong id);
+    Task<UserHasRoleResponse?> GetUserHasRoleByIdAsync(long id);
 
     /// <summary>
     /// Lấy danh sách role của user
     /// </summary>
     /// <param name="userId">ID của user</param>
     /// <returns>Danh sách role của user</returns>
-    Task<IEnumerable<UserHasRoleResponse>> GetRolesByUserIdAsync(ulong userId);
+    Task<IEnumerable<UserHasRoleResponse>> GetRolesByUserIdAsync(long userId);
 
     /// <summary>
     /// Lấy danh sách user có role cụ thể
@@ -50,12 +50,12 @@ public interface IUserHasRoleService
     /// <param name="id">ID của user role</param>
     /// <param name="request">Thông tin cập nhật</param>
     /// <returns>Thông tin user role đã cập nhật</returns>
-    Task<UserHasRoleResponse?> UpdateUserHasRoleAsync(ulong id, UpdateUserHasRoleRequest request);
+    Task<UserHasRoleResponse?> UpdateUserHasRoleAsync(long id, UpdateUserHasRoleRequest request);
 
     /// <summary>
     /// Xóa user role
     /// </summary>
     /// <param name="id">ID của user role</param>
     /// <returns>True nếu xóa thành công, ngược lại là False</returns>
-    Task<bool> DeleteUserHasRoleAsync(ulong id);
+    Task<bool> DeleteUserHasRoleAsync(long id);
 }

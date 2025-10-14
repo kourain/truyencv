@@ -34,7 +34,7 @@ return await _redisCache.GetFromRedisAsync<Entity>(
 ### lấy nhiều entity
 KHÔNG SỬ DỤNG
 ```csharp
-public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(ulong chapterId)
+public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(long chapterId)
 {
     return await _redisCache.GetFromRedisAsync<ComicComment>(
         _dbSet.AsNoTracking()
@@ -48,7 +48,7 @@ public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(ulong chapterId
 ```
 Hãy sử dụng
 ```csharp
-public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(ulong chapterId)
+public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(long chapterId)
 {
     return await _redisCache.GetFromRedisAsync<ComicComment>(
         _dbSet.AsNoTracking()
@@ -100,7 +100,7 @@ public UserService(IUserRepository userRepository)
 }
 
 // Sử dụng trong phương thức
-public async Task<UserResponse> GetUserById(ulong id)
+public async Task<UserResponse> GetUserById(long id)
 {
     var user = await _userRepository.GetByIdAsync(id);
     if (user == null)

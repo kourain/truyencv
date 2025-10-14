@@ -56,7 +56,7 @@ public static partial class Extensions
 		comic.author = request.author;
 		comic.embedded_from = request.embedded_from;
 		comic.embedded_from_url = request.embedded_from_url;
-		comic.chapter_count = (uint)request.chap_count;
+		comic.chapter_count = (int)request.chap_count;
 		comic.rate = request.rate;
 		comic.status = request.status;
 		comic.updated_at = DateTime.UtcNow;

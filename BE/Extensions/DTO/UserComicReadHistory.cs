@@ -6,7 +6,7 @@ namespace TruyenCV;
 
 public static partial class Extensions
 {
-    public static UserComicReadHistory ToEntity(this UpsertUserComicReadHistoryRequest request, ulong userId)
+    public static UserComicReadHistory ToEntity(this UpsertUserComicReadHistoryRequest request, long userId)
     {
         return new UserComicReadHistory
         {

@@ -13,11 +13,11 @@ public class ComicHaveCategory
 {
 	[Required]
 	[ForeignKey(nameof(Comic))]
-	public required ulong comic_id { get; set; }
+	public required long comic_id { get; set; }
 
 	[Required]
 	[ForeignKey(nameof(ComicCategory))]
-	public required ulong comic_category_id { get; set; }
+	public required long comic_category_id { get; set; }
 
 	[JsonIgnore]
 	public virtual Comic? Comic { get; set; }

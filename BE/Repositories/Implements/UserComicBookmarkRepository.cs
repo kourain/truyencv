@@ -14,7 +14,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
     {
     }
 
-    public async Task<UserComicBookmark?> GetByIdAsync(ulong id)
+    public async Task<UserComicBookmark?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<UserComicBookmark>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.id == id && b.deleted_at == null),
@@ -23,7 +23,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
         );
     }
 
-    public async Task<UserComicBookmark?> GetByUserAndComicAsync(ulong userId, ulong comicId)
+    public async Task<UserComicBookmark?> GetByUserAndComicAsync(long userId, long comicId)
     {
         return await _redisCache.GetFromRedisAsync<UserComicBookmark>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.user_id == userId && b.comic_id == comicId && b.deleted_at == null),
@@ -32,7 +32,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
         );
     }
 
-    public async Task<IEnumerable<UserComicBookmark>> GetByUserIdAsync(ulong userId)
+    public async Task<IEnumerable<UserComicBookmark>> GetByUserIdAsync(long userId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserComicBookmark>(
             _dbSet.AsNoTracking()
@@ -45,7 +45,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
         return result ?? Enumerable.Empty<UserComicBookmark>();
     }
 
-    public async Task<IEnumerable<UserComicBookmark>> GetByComicIdAsync(ulong comicId)
+    public async Task<IEnumerable<UserComicBookmark>> GetByComicIdAsync(long comicId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserComicBookmark>(
             _dbSet.AsNoTracking()

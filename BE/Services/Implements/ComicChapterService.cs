@@ -24,19 +24,19 @@ public class ComicChapterService : IComicChapterService
 		_redisCache = redisCache;
 	}
 
-	public async Task<ComicChapterResponse?> GetChapterByIdAsync(ulong id)
+	public async Task<ComicChapterResponse?> GetChapterByIdAsync(long id)
 	{
 		var chapter = await _chapterRepository.GetByIdAsync(id);
 		return chapter?.ToRespDTO();
 	}
 
-	public async Task<IEnumerable<ComicChapterResponse>> GetChaptersByComicIdAsync(ulong comicId)
+	public async Task<IEnumerable<ComicChapterResponse>> GetChaptersByComicIdAsync(long comicId)
 	{
 		var chapters = await _chapterRepository.GetByComicIdAsync(comicId);
 		return chapters.Select(c => c.ToRespDTO());
 	}
 
-	public async Task<ComicChapterResponse?> GetChapterByComicIdAndChapterAsync(ulong comicId, int chapter)
+	public async Task<ComicChapterResponse?> GetChapterByComicIdAndChapterAsync(long comicId, int chapter)
 	{
 		var chapterEntity = await _chapterRepository.GetByComicIdAndChapterAsync(comicId, chapter);
 		return chapterEntity?.ToRespDTO();
@@ -71,7 +71,7 @@ public class ComicChapterService : IComicChapterService
 		return newChapter.ToRespDTO();
 	}
 
-	public async Task<ComicChapterResponse?> UpdateChapterAsync(ulong id, UpdateComicChapterRequest chapterRequest)
+	public async Task<ComicChapterResponse?> UpdateChapterAsync(long id, UpdateComicChapterRequest chapterRequest)
 	{
 		// Lấy chapter từ database
 		var chapter = await _chapterRepository.GetByIdAsync(id);
@@ -90,7 +90,7 @@ public class ComicChapterService : IComicChapterService
 		return chapter.ToRespDTO();
 	}
 
-	public async Task<bool> DeleteChapterAsync(ulong id)
+	public async Task<bool> DeleteChapterAsync(long id)
 	{
 		// Lấy chapter từ database
 		var chapter = await _chapterRepository.GetByIdAsync(id);

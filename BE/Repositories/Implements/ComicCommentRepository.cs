@@ -13,7 +13,7 @@ public class ComicCommentRepository : Repository<ComicComment>, IComicCommentRep
 	{
 	}
 
-	public async Task<ComicComment?> GetByIdAsync(ulong id)
+	public async Task<ComicComment?> GetByIdAsync(long id)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicComment>(
 			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
@@ -22,7 +22,7 @@ public class ComicCommentRepository : Repository<ComicComment>, IComicCommentRep
 		);
 	}
 
-	public async Task<IEnumerable<ComicComment>> GetByComicIdAsync(ulong comicId)
+	public async Task<IEnumerable<ComicComment>> GetByComicIdAsync(long comicId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicComment>(
 			_dbSet.AsNoTracking()
@@ -34,7 +34,7 @@ public class ComicCommentRepository : Repository<ComicComment>, IComicCommentRep
 		);
 	}
 
-	public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(ulong chapterId)
+	public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(long chapterId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicComment>(
 			_dbSet.AsNoTracking()
@@ -46,7 +46,7 @@ public class ComicCommentRepository : Repository<ComicComment>, IComicCommentRep
 		);
 	}
 
-	public async Task<IEnumerable<ComicComment>> GetByUserIdAsync(ulong userId)
+	public async Task<IEnumerable<ComicComment>> GetByUserIdAsync(long userId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicComment>(
 			_dbSet.AsNoTracking()
@@ -58,7 +58,7 @@ public class ComicCommentRepository : Repository<ComicComment>, IComicCommentRep
 		);
 	}
 
-	public async Task<IEnumerable<ComicComment>> GetRepliesAsync(ulong commentId)
+	public async Task<IEnumerable<ComicComment>> GetRepliesAsync(long commentId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicComment>(
 			_dbSet.AsNoTracking()

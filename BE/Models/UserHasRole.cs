@@ -12,9 +12,9 @@ public class UserHasRole : BaseEntity
 	[Required]
 	public required string role_name { get; set; }
     [Required]
-    public required ulong user_id {get;set;}
+    public required long user_id {get;set;}
     [Required]
-    public required ulong assigned_by {get;set;}
+    public required long assigned_by {get;set;}
     [JsonIgnore]
     public virtual User? User {get;set;}
     [JsonIgnore]

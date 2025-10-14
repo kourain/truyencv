@@ -12,14 +12,14 @@ public interface IComicChapterRepository : IRepository<ComicChapter>
 	/// </summary>
 	/// <param name="id">ID của chapter</param>
 	/// <returns>Chapter nếu tìm thấy, null nếu không tìm thấy</returns>
-	Task<ComicChapter?> GetByIdAsync(ulong id);
+	Task<ComicChapter?> GetByIdAsync(long id);
 
 	/// <summary>
 	/// Lấy danh sách chapter của một comic
 	/// </summary>
 	/// <param name="comicId">ID của comic</param>
 	/// <returns>Danh sách chapter</returns>
-	Task<IEnumerable<ComicChapter>> GetByComicIdAsync(ulong comicId);
+	Task<IEnumerable<ComicChapter>> GetByComicIdAsync(long comicId);
 
 	/// <summary>
 	/// Lấy chapter theo comic id và số chapter
@@ -27,5 +27,5 @@ public interface IComicChapterRepository : IRepository<ComicChapter>
 	/// <param name="comicId">ID của comic</param>
 	/// <param name="chapter">Số chapter</param>
 	/// <returns>Chapter nếu tìm thấy, null nếu không tìm thấy</returns>
-	Task<ComicChapter?> GetByComicIdAndChapterAsync(ulong comicId, int chapter);
+	Task<ComicChapter?> GetByComicIdAndChapterAsync(long comicId, int chapter);
 }

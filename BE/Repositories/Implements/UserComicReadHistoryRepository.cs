@@ -14,7 +14,7 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
     {
     }
 
-    public async Task<UserComicReadHistory?> GetByIdAsync(ulong id)
+    public async Task<UserComicReadHistory?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<UserComicReadHistory>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(h => h.id == id && h.deleted_at == null),
@@ -23,7 +23,7 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
         );
     }
 
-    public async Task<UserComicReadHistory?> GetByUserAndComicAsync(ulong userId, ulong comicId)
+    public async Task<UserComicReadHistory?> GetByUserAndComicAsync(long userId, long comicId)
     {
         return await _redisCache.GetFromRedisAsync<UserComicReadHistory>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(h => h.user_id == userId && h.comic_id == comicId && h.deleted_at == null),
@@ -32,7 +32,7 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
         );
     }
 
-    public async Task<IEnumerable<UserComicReadHistory>> GetByUserIdAsync(ulong userId, int limit)
+    public async Task<IEnumerable<UserComicReadHistory>> GetByUserIdAsync(long userId, int limit)
     {
         var safeLimit = Math.Max(1, limit);
         var result = await _redisCache.GetFromRedisAsync<UserComicReadHistory>(

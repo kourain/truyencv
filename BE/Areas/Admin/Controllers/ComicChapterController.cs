@@ -22,7 +22,7 @@ public sealed class ComicChapterController : ControllerBase
 	}
 
 	[HttpGet("{id}")]
-	public async Task<IActionResult> GetById(ulong id)
+	public async Task<IActionResult> GetById(long id)
 	{
 		var chapter = await _chapterService.GetChapterByIdAsync(id);
 		if (chapter == null)
@@ -32,7 +32,7 @@ public sealed class ComicChapterController : ControllerBase
 	}
 
 	[HttpGet("comic/{comicId}/chapter/{chapter}")]
-	public async Task<IActionResult> GetByComicAndChapter(ulong comicId, int chapter)
+	public async Task<IActionResult> GetByComicAndChapter(long comicId, int chapter)
 	{
 		var chapterEntity = await _chapterService.GetChapterByComicIdAndChapterAsync(comicId, chapter);
 		if (chapterEntity == null)
@@ -42,7 +42,7 @@ public sealed class ComicChapterController : ControllerBase
 	}
 
 	[HttpGet("comic/{comicId}")]
-	public async Task<IActionResult> GetByComicId(ulong comicId)
+	public async Task<IActionResult> GetByComicId(long comicId)
 	{
 		var chapters = await _chapterService.GetChaptersByComicIdAsync(comicId);
 		return Ok(chapters);
@@ -63,7 +63,7 @@ public sealed class ComicChapterController : ControllerBase
 	}
 
 	[HttpPut("{id}")]
-	public async Task<IActionResult> Update(ulong id, [FromBody] UpdateComicChapterRequest request)
+	public async Task<IActionResult> Update(long id, [FromBody] UpdateComicChapterRequest request)
 	{
 		if (id != request.id)
 			return BadRequest(new { message = "ID không khớp" });
@@ -83,7 +83,7 @@ public sealed class ComicChapterController : ControllerBase
 	}
 
 	[HttpDelete("{id}")]
-	public async Task<IActionResult> Delete(ulong id)
+	public async Task<IActionResult> Delete(long id)
 	{
 		var result = await _chapterService.DeleteChapterAsync(id);
 		if (!result)

@@ -76,7 +76,7 @@ Ví dụ với `UserController` trong `Admin` area:
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> Index(ulong id)
+		public async Task<IActionResult> Index(long id)
 		{
     // implementation
 		}

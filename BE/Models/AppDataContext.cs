@@ -161,7 +161,7 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
 public abstract class BaseEntity
 {
     [Key]
-    public ulong id { get; set; } = SnowflakeIdGenerator.NextId();
+    public long id { get; set; } = SnowflakeIdGenerator.NextId();
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
     public DateTime? deleted_at { get; set; }

@@ -20,7 +20,7 @@ public interface IUserRepository : IRepository<User>
     /// </summary>
     /// <param name="id">ID của user</param>
     /// <returns>User nếu tìm thấy, null nếu không tìm thấy</returns>
-    Task<User?> GetByIdAsync(ulong id);
+    Task<User?> GetByIdAsync(long id);
 
     /// <summary>
     /// Lấy danh sách người dùng mới nhất

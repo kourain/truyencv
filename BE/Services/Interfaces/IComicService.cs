@@ -13,7 +13,7 @@ public interface IComicService
 	/// </summary>
 	/// <param name="id">ID của comic</param>
 	/// <returns>Thông tin comic</returns>
-	Task<ComicResponse?> GetComicByIdAsync(ulong id);
+	Task<ComicResponse?> GetComicByIdAsync(long id);
 
 	/// <summary>
 	/// Lấy thông tin comic theo slug
@@ -64,12 +64,12 @@ public interface IComicService
 	/// <param name="id">ID của comic</param>
 	/// <param name="comicRequest">Thông tin cập nhật</param>
 	/// <returns>Thông tin comic đã cập nhật</returns>
-	Task<ComicResponse?> UpdateComicAsync(ulong id, UpdateComicRequest comicRequest);
+	Task<ComicResponse?> UpdateComicAsync(long id, UpdateComicRequest comicRequest);
 
 	/// <summary>
 	/// Xóa comic
 	/// </summary>
 	/// <param name="id">ID của comic</param>
 	/// <returns>True nếu xóa thành công, ngược lại là False</returns>
-	Task<bool> DeleteComicAsync(ulong id);
+	Task<bool> DeleteComicAsync(long id);
 }

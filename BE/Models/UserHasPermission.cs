@@ -13,10 +13,10 @@ public class UserHasPermission : BaseEntity
 	public required Permissions permissions { get; set; }
 
     [Required]
-    public required ulong user_id { get; set; }
+    public required long user_id { get; set; }
 
     [Required]
-    public required ulong assigned_by { get; set; }
+    public required long assigned_by { get; set; }
 
     [JsonIgnore]
     public virtual User? User { get; set; }

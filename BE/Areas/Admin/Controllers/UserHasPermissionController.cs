@@ -19,7 +19,7 @@ public sealed class UserHasPermissionController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(ulong id)
+    public async Task<IActionResult> GetById(long id)
     {
         var result = await _userHasPermissionService.GetUserHasPermissionByIdAsync(id);
         if (result == null)
@@ -31,7 +31,7 @@ public sealed class UserHasPermissionController : ControllerBase
     }
 
     [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetByUserId(ulong userId)
+    public async Task<IActionResult> GetByUserId(long userId)
     {
         var results = await _userHasPermissionService.GetPermissionsByUserIdAsync(userId);
         return Ok(results);
@@ -66,7 +66,7 @@ public sealed class UserHasPermissionController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(ulong id, [FromBody] UpdateUserHasPermissionRequest request)
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateUserHasPermissionRequest request)
     {
         if (id != request.id)
         {
@@ -90,7 +90,7 @@ public sealed class UserHasPermissionController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(ulong id)
+    public async Task<IActionResult> Delete(long id)
     {
         var deleted = await _userHasPermissionService.DeleteUserHasPermissionAsync(id);
         if (!deleted)

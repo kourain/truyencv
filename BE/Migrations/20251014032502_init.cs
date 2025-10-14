@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -17,7 +18,8 @@ namespace TruyenCV.Migrations
                 name: "comic_categories",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -32,16 +34,17 @@ namespace TruyenCV.Migrations
                 name: "users",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "text", nullable: false),
                     email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     password = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
                     phone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
                     email_verified_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    read_comic_count = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    read_chapter_count = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    bookmark_count = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    coin = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    read_comic_count = table.Column<long>(type: "bigint", nullable: false),
+                    read_chapter_count = table.Column<long>(type: "bigint", nullable: false),
+                    bookmark_count = table.Column<long>(type: "bigint", nullable: false),
+                    coin = table.Column<long>(type: "bigint", nullable: false),
                     is_banned = table.Column<bool>(type: "boolean", nullable: false),
                     banned_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     avatar = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
@@ -58,17 +61,18 @@ namespace TruyenCV.Migrations
                 name: "comics",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     description = table.Column<string>(type: "text", nullable: false),
                     slug = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     author = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     embedded_from = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     embedded_from_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    embedded_by = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    chapter_count = table.Column<long>(type: "bigint", nullable: false),
-                    bookmark_count = table.Column<long>(type: "bigint", nullable: false),
-                    published_year = table.Column<long>(type: "bigint", nullable: true),
+                    embedded_by = table.Column<long>(type: "bigint", nullable: false),
+                    chapter_count = table.Column<int>(type: "integer", nullable: false),
+                    bookmark_count = table.Column<int>(type: "integer", nullable: false),
+                    published_year = table.Column<int>(type: "integer", nullable: true),
                     rate = table.Column<float>(type: "real", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -90,9 +94,10 @@ namespace TruyenCV.Migrations
                 name: "refresh_tokens",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     token = table.Column<string>(type: "text", nullable: false),
-                    user_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
                     expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     revoked_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -114,10 +119,11 @@ namespace TruyenCV.Migrations
                 name: "user_has_permissions",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     permissions = table.Column<int>(type: "integer", nullable: false),
-                    user_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    assigned_by = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
+                    assigned_by = table.Column<long>(type: "bigint", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
@@ -143,10 +149,11 @@ namespace TruyenCV.Migrations
                 name: "user_has_roles",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     role_name = table.Column<string>(type: "text", nullable: false),
-                    user_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    assigned_by = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
+                    assigned_by = table.Column<long>(type: "bigint", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
@@ -172,8 +179,9 @@ namespace TruyenCV.Migrations
                 name: "comic_chapters",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    comic_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    comic_id = table.Column<long>(type: "bigint", nullable: false),
                     chapter = table.Column<int>(type: "integer", nullable: false),
                     content = table.Column<string>(type: "text", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -195,8 +203,8 @@ namespace TruyenCV.Migrations
                 name: "comic_have_categories",
                 columns: table => new
                 {
-                    comic_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    comic_category_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    comic_id = table.Column<long>(type: "bigint", nullable: false),
+                    comic_category_id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -219,9 +227,10 @@ namespace TruyenCV.Migrations
                 name: "user_comic_bookmarks",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    user_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    comic_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
+                    comic_id = table.Column<long>(type: "bigint", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
@@ -247,10 +256,11 @@ namespace TruyenCV.Migrations
                 name: "user_comic_read_history",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    user_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    comic_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    chapter_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
+                    comic_id = table.Column<long>(type: "bigint", nullable: false),
+                    chapter_id = table.Column<long>(type: "bigint", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     deleted_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
@@ -276,13 +286,14 @@ namespace TruyenCV.Migrations
                 name: "comic_comments",
                 columns: table => new
                 {
-                    id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    comic_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    comic_chapter_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
-                    user_id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    comic_id = table.Column<long>(type: "bigint", nullable: false),
+                    comic_chapter_id = table.Column<long>(type: "bigint", nullable: true),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
                     comment = table.Column<string>(type: "text", nullable: false),
                     like = table.Column<int>(type: "integer", nullable: false),
-                    reply_id = table.Column<decimal>(type: "numeric(20,0)", nullable: true),
+                    reply_id = table.Column<long>(type: "bigint", nullable: true),
                     is_rate = table.Column<bool>(type: "boolean", nullable: false),
                     rate_star = table.Column<int>(type: "integer", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -322,8 +333,8 @@ namespace TruyenCV.Migrations
                 columns: new[] { "id", "avatar", "banned_at", "bookmark_count", "coin", "created_at", "deleted_at", "email", "email_verified_at", "is_banned", "name", "password", "phone", "read_chapter_count", "read_comic_count", "updated_at" },
                 values: new object[,]
                 {
-                    { 1m, "default_avatar.png", null, 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "ht.kourain@gmail.com", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), false, "System", "$2a$12$0jPXKmQRxJHEGeuDoXrD7uKVfPk7MGISLXPmrSz62gKbBw1NDdaLC", "0000000000", 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 765443497779007488m, "default_avatar.png", null, 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "maiquyen16503@gmail.com", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), false, "kourain", "$2a$12$95O7eg4xl8Y8shqLTXgXH.zRvlpI8dITVTd8BHvojT04I8DPcNn6a", "0123456789", 0m, 0m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) }
+                    { 1L, "default_avatar.png", null, 0L, 0L, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "ht.kourain@gmail.com", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), false, "System", "$2a$12$IX70SAFiyBMxIKYeafybceq8mGOzRC8gKtQ4rLPgop//2soyYuOsy", "0000000000", 0L, 0L, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { 765777151059300352L, "default_avatar.png", null, 0L, 0L, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "maiquyen16503@gmail.com", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), false, "kourain", "$2a$12$TMBz3RFBpSJ1bAcsPHUAhubOL9faDXiUAZYmDnNqKRZEzRE7MU55C", "0123456789", 0L, 0L, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc) }
                 });
 
             migrationBuilder.InsertData(
@@ -331,9 +342,9 @@ namespace TruyenCV.Migrations
                 columns: new[] { "id", "assigned_by", "created_at", "deleted_at", "role_name", "updated_at", "user_id" },
                 values: new object[,]
                 {
-                    { 765443499280568320m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "Admin", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 765443497779007488m },
-                    { 765443499284762624m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "User", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 765443497779007488m },
-                    { 765443499284762625m, 1m, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "System", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 1m }
+                    { 765777152539889664L, 1L, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "Admin", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 765777151059300352L },
+                    { 765777152539889665L, 1L, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "User", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 765777151059300352L },
+                    { 765777152539889666L, 1L, new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), null, "System", new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc), 1L }
                 });
 
             migrationBuilder.CreateIndex(

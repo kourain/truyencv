@@ -81,7 +81,7 @@ namespace TruyenCV.Services
             return true;
         }
 
-        public async Task<bool> RevokeAllUserTokensAsync(ulong userId, string? exceptRefreshToken = null)
+        public async Task<bool> RevokeAllUserTokensAsync(long userId, string? exceptRefreshToken = null)
         {
             var query = _context.RefreshTokens
                 .Where(rt => rt.user_id == userId && rt.revoked_at == null);
@@ -106,7 +106,7 @@ namespace TruyenCV.Services
             return true;
         }
 
-        public async Task<List<string>> GetUserRolesAsync(ulong userId)
+        public async Task<List<string>> GetUserRolesAsync(long userId)
         {
             return await _context.UserHasRoles
                 .Where(role => role.user_id == userId && role.deleted_at == null)
@@ -114,7 +114,7 @@ namespace TruyenCV.Services
                 .ToListAsync();
         }
 
-        public async Task<List<string>> GetUserPermissionsAsync(ulong userId)
+        public async Task<List<string>> GetUserPermissionsAsync(long userId)
         {
             return await _context.UserHasPermissions
                 .Where(permission => permission.user_id == userId && permission.deleted_at == null)

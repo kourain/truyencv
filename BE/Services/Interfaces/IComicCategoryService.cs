@@ -13,7 +13,7 @@ public interface IComicCategoryService
 	/// </summary>
 	/// <param name="id">ID của category</param>
 	/// <returns>Thông tin category</returns>
-	Task<ComicCategoryResponse?> GetCategoryByIdAsync(ulong id);
+	Task<ComicCategoryResponse?> GetCategoryByIdAsync(long id);
 
 	/// <summary>
 	/// Lấy thông tin category theo tên
@@ -49,12 +49,12 @@ public interface IComicCategoryService
 	/// <param name="id">ID của category</param>
 	/// <param name="categoryRequest">Thông tin cập nhật</param>
 	/// <returns>Thông tin category đã cập nhật</returns>
-	Task<ComicCategoryResponse?> UpdateCategoryAsync(ulong id, UpdateComicCategoryRequest categoryRequest);
+	Task<ComicCategoryResponse?> UpdateCategoryAsync(long id, UpdateComicCategoryRequest categoryRequest);
 
 	/// <summary>
 	/// Xóa category
 	/// </summary>
 	/// <param name="id">ID của category</param>
 	/// <returns>True nếu xóa thành công, ngược lại là False</returns>
-	Task<bool> DeleteCategoryAsync(ulong id);
+	Task<bool> DeleteCategoryAsync(long id);
 }

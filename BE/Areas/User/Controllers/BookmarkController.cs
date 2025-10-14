@@ -45,7 +45,7 @@ public sealed class BookmarkController : ControllerBase
     }
 
     [HttpDelete("{comicId}")]
-    public async Task<IActionResult> Delete(ulong comicId)
+    public async Task<IActionResult> Delete(long comicId)
     {
         var userId = User.GetUserId();
         if (userId == null)
@@ -63,7 +63,7 @@ public sealed class BookmarkController : ControllerBase
     }
 
     [HttpGet("{comicId}/status")]
-    public async Task<IActionResult> CheckStatus(ulong comicId)
+    public async Task<IActionResult> CheckStatus(long comicId)
     {
         var userId = User.GetUserId();
         if (userId == null)

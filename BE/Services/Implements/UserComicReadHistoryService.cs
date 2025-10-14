@@ -22,13 +22,13 @@ public class UserComicReadHistoryService : IUserComicReadHistoryService
         _redisCache = redisCache;
     }
 
-    public async Task<IEnumerable<UserComicReadHistoryResponse>> GetReadHistoryByUserIdAsync(ulong userId, int limit = 20)
+    public async Task<IEnumerable<UserComicReadHistoryResponse>> GetReadHistoryByUserIdAsync(long userId, int limit = 20)
     {
         var histories = await _readHistoryRepository.GetByUserIdAsync(userId, limit);
         return histories.Select(h => h.ToRespDTO());
     }
 
-    public async Task<UserComicReadHistoryResponse> UpsertReadHistoryAsync(ulong userId, ulong comicId, ulong chapterId)
+    public async Task<UserComicReadHistoryResponse> UpsertReadHistoryAsync(long userId, long comicId, long chapterId)
     {
         var payload = new UpsertUserComicReadHistoryRequest
         {
@@ -52,7 +52,7 @@ public class UserComicReadHistoryService : IUserComicReadHistoryService
         return newHistory.ToRespDTO();
     }
 
-    public async Task<bool> RemoveReadHistoryAsync(ulong userId, ulong comicId)
+    public async Task<bool> RemoveReadHistoryAsync(long userId, long comicId)
     {
         var existing = await _readHistoryRepository.GetByUserAndComicAsync(userId, comicId);
         if (existing == null)
@@ -65,7 +65,7 @@ public class UserComicReadHistoryService : IUserComicReadHistoryService
         return true;
     }
 
-    private async Task InvalidateCaches(ulong userId, ulong comicId)
+    private async Task InvalidateCaches(long userId, long comicId)
     {
         await _redisCache.RemoveAsync($"UserComicReadHistory:user:{userId}");
         await _redisCache.RemoveAsync($"UserComicReadHistory:one:user:{userId}:comic:{comicId}");

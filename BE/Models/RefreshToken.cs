@@ -14,7 +14,7 @@ namespace TruyenCV.Models
         
         [Required]
         [ForeignKey(nameof(User))]
-        public required ulong user_id { get; set; }
+        public required long user_id { get; set; }
         
         [Required]
         public required DateTime expires_at { get; set; }

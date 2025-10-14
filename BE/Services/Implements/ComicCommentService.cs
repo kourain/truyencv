@@ -30,31 +30,31 @@ public class ComicCommentService : IComicCommentService
 		_redisCache = redisCache;
 	}
 
-	public async Task<ComicCommentResponse?> GetCommentByIdAsync(ulong id)
+	public async Task<ComicCommentResponse?> GetCommentByIdAsync(long id)
 	{
 		var comment = await _commentRepository.GetByIdAsync(id);
 		return comment?.ToRespDTO();
 	}
 
-	public async Task<IEnumerable<ComicCommentResponse>> GetCommentsByComicIdAsync(ulong comicId)
+	public async Task<IEnumerable<ComicCommentResponse>> GetCommentsByComicIdAsync(long comicId)
 	{
 		var comments = await _commentRepository.GetByComicIdAsync(comicId);
 		return comments.Select(c => c.ToRespDTO());
 	}
 
-	public async Task<IEnumerable<ComicCommentResponse>> GetCommentsByChapterIdAsync(ulong chapterId)
+	public async Task<IEnumerable<ComicCommentResponse>> GetCommentsByChapterIdAsync(long chapterId)
 	{
 		var comments = await _commentRepository.GetByChapterIdAsync(chapterId);
 		return comments.Select(c => c.ToRespDTO());
 	}
 
-	public async Task<IEnumerable<ComicCommentResponse>> GetCommentsByUserIdAsync(ulong userId)
+	public async Task<IEnumerable<ComicCommentResponse>> GetCommentsByUserIdAsync(long userId)
 	{
 		var comments = await _commentRepository.GetByUserIdAsync(userId);
 		return comments.Select(c => c.ToRespDTO());
 	}
 
-	public async Task<IEnumerable<ComicCommentResponse>> GetRepliesAsync(ulong commentId)
+	public async Task<IEnumerable<ComicCommentResponse>> GetRepliesAsync(long commentId)
 	{
 		var replies = await _commentRepository.GetRepliesAsync(commentId);
 		return replies.Select(r => r.ToRespDTO());
@@ -100,7 +100,7 @@ public class ComicCommentService : IComicCommentService
 		return newComment.ToRespDTO();
 	}
 
-	public async Task<ComicCommentResponse?> UpdateCommentAsync(ulong id, UpdateComicCommentRequest commentRequest)
+	public async Task<ComicCommentResponse?> UpdateCommentAsync(long id, UpdateComicCommentRequest commentRequest)
 	{
 		// Lấy comment từ database
 		var comment = await _commentRepository.GetByIdAsync(id);
@@ -119,7 +119,7 @@ public class ComicCommentService : IComicCommentService
 		return comment.ToRespDTO();
 	}
 
-	public async Task<bool> DeleteCommentAsync(ulong id)
+	public async Task<bool> DeleteCommentAsync(long id)
 	{
 		// Lấy comment từ database
 		var comment = await _commentRepository.GetByIdAsync(id);

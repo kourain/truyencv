@@ -25,7 +25,7 @@ namespace TruyenCV.Services
             _dbcontext = dbcontext;
         }
 
-        public async Task<UserResponse?> GetUserByIdAsync(ulong id)
+        public async Task<UserResponse?> GetUserByIdAsync(long id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             return user?.ToRespDTO();
@@ -34,6 +34,7 @@ namespace TruyenCV.Services
         public async Task<IEnumerable<UserResponse>> GetUsersAsync(int offset, int limit)
         {
             var users = await _userRepository.GetPagedAsync(offset, limit);
+            Serilog.Log.Error("Fetched {Count} users from database", users.Count());
             return users.Select(u => u.ToRespDTO());
         }
 
@@ -58,7 +59,7 @@ namespace TruyenCV.Services
             return newUser.ToRespDTO();
         }
 
-        public async Task<UserResponse?> UpdateUserAsync(ulong id, UpdateUserRequest userRequest)
+        public async Task<UserResponse?> UpdateUserAsync(long id, UpdateUserRequest userRequest)
         {
             // Lấy user từ database
             var user = await _userRepository.GetByIdAsync(id);
@@ -77,7 +78,7 @@ namespace TruyenCV.Services
             return user.ToRespDTO();
         }
 
-        public async Task<bool> DeleteUserAsync(ulong id)
+        public async Task<bool> DeleteUserAsync(long id)
         {
             // Lấy user từ database
             var user = await _userRepository.GetByIdAsync(id);
@@ -119,7 +120,7 @@ namespace TruyenCV.Services
             return await _userRepository.GetByEmailAsync(email);
         }
 
-        public async Task UpdatePasswordAsync(ulong userId, string newPassword)
+        public async Task UpdatePasswordAsync(long userId, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(newPassword))
             {
@@ -139,7 +140,7 @@ namespace TruyenCV.Services
             await _redisCache.RemoveAsync($"User:one:email:{user.email}");
         }
 
-        public async Task<UserProfileResponse?> GetProfileAsync(ulong userId)
+        public async Task<UserProfileResponse?> GetProfileAsync(long userId)
         {
             var user = await _dbcontext.Users
                 .Where(u => u.id == userId && u.deleted_at == null)
@@ -150,7 +151,7 @@ namespace TruyenCV.Services
             return user?.ToProfileDTO();
         }
 
-        public async Task ChangePasswordAsync(ulong userId, string currentPassword, string newPassword)
+        public async Task ChangePasswordAsync(long userId, string currentPassword, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(currentPassword))
             {
@@ -190,7 +191,7 @@ namespace TruyenCV.Services
             await _redisCache.RemoveAsync($"User:one:email:{user.email}");
         }
 
-        public async Task<UserProfileResponse?> VerifyEmailAsync(ulong userId)
+        public async Task<UserProfileResponse?> VerifyEmailAsync(long userId)
         {
             var user = await _dbcontext.Users
                 .Where(u => u.id == userId && u.deleted_at == null)

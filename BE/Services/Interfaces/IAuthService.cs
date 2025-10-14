@@ -5,8 +5,8 @@ namespace TruyenCV.Services
 		Task<(string accessToken, string refreshToken)> GenerateTokensAsync(Models.User user);
 		Task<(string accessToken, string refreshToken)?> RefreshTokenAsync(string refreshToken);
 		Task<bool> RevokeRefreshTokenAsync(string refreshToken);
-		Task<bool> RevokeAllUserTokensAsync(ulong userId, string? exceptRefreshToken = null);
-		Task<List<string>> GetUserRolesAsync(ulong userId);
-        Task<List<string>> GetUserPermissionsAsync(ulong userId);
+		Task<bool> RevokeAllUserTokensAsync(long userId, string? exceptRefreshToken = null);
+		Task<List<string>> GetUserRolesAsync(long userId);
+        Task<List<string>> GetUserPermissionsAsync(long userId);
 	}
 }

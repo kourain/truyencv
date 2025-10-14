@@ -121,12 +121,14 @@ namespace TruyenCV
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            SnowflakeIdGenerator.Init(uint.Parse(builder.Configuration.GetSection("Snowflake:MachineId").Value));
+            SnowflakeIdGenerator.Init(int.Parse(builder.Configuration.GetSection("Snowflake:MachineId").Value));
             Directory.CreateDirectory("logs"); // Tạo thư mục logs nếu chưa tồn tại
+            if(builder.Environment.IsDevelopment())
+            File.WriteAllText("errors.log", string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
             Log.Logger = new LoggerConfiguration()
                             .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose,
                                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-                            .WriteTo.File($"logs/{DateTime.Now:yyyyMMdd_HHmmss}_errors.log", Serilog.Events.LogEventLevel.Error)
+                            .WriteTo.File(builder.Environment.IsProduction() ? $"logs/{DateTime.Now:yyyyMMdd_HHmmss}_errors.log" : "errors.log", Serilog.Events.LogEventLevel.Error)
                             .CreateLogger();
             builder.Host.UseSerilog();
             builder.Services.AddControllers().AddNewtonsoftJson(options =>

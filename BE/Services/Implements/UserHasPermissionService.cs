@@ -22,13 +22,13 @@ public class UserHasPermissionService : IUserHasPermissionService
         _redisCache = redisCache;
     }
 
-    public async Task<UserHasPermissionResponse?> GetUserHasPermissionByIdAsync(ulong id)
+    public async Task<UserHasPermissionResponse?> GetUserHasPermissionByIdAsync(long id)
     {
         var entity = await _userHasPermissionRepository.GetByIdAsync(id);
         return entity?.ToRespDTO();
     }
 
-    public async Task<IEnumerable<UserHasPermissionResponse>> GetPermissionsByUserIdAsync(ulong userId)
+    public async Task<IEnumerable<UserHasPermissionResponse>> GetPermissionsByUserIdAsync(long userId)
     {
         var entities = await _userHasPermissionRepository.GetByUserIdAsync(userId);
         return entities.Select(e => e.ToRespDTO());
@@ -62,7 +62,7 @@ public class UserHasPermissionService : IUserHasPermissionService
         return newEntity.ToRespDTO();
     }
 
-    public async Task<UserHasPermissionResponse?> UpdateUserHasPermissionAsync(ulong id, UpdateUserHasPermissionRequest request)
+    public async Task<UserHasPermissionResponse?> UpdateUserHasPermissionAsync(long id, UpdateUserHasPermissionRequest request)
     {
         var entity = await _userHasPermissionRepository.GetByIdAsync(id);
         if (entity == null)
@@ -91,7 +91,7 @@ public class UserHasPermissionService : IUserHasPermissionService
         return entity.ToRespDTO();
     }
 
-    public async Task<bool> DeleteUserHasPermissionAsync(ulong id)
+    public async Task<bool> DeleteUserHasPermissionAsync(long id)
     {
         var entity = await _userHasPermissionRepository.GetByIdAsync(id);
         if (entity == null)
@@ -109,7 +109,7 @@ public class UserHasPermissionService : IUserHasPermissionService
         return true;
     }
 
-    private async Task ClearCaches(ulong userId, Permissions permission)
+    private async Task ClearCaches(long userId, Permissions permission)
     {
         await _redisCache.RemoveAsync($"UserHasPermission:user:{userId}");
         await _redisCache.RemoveAsync($"UserHasPermission:permission:{(int)permission}");

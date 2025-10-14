@@ -10,20 +10,20 @@ public interface IUserComicBookmarkRepository : IRepository<UserComicBookmark>
     /// <summary>
     /// Lấy bookmark theo id
     /// </summary>
-    Task<UserComicBookmark?> GetByIdAsync(ulong id);
+    Task<UserComicBookmark?> GetByIdAsync(long id);
 
     /// <summary>
     /// Lấy bookmark theo user và comic
     /// </summary>
-    Task<UserComicBookmark?> GetByUserAndComicAsync(ulong userId, ulong comicId);
+    Task<UserComicBookmark?> GetByUserAndComicAsync(long userId, long comicId);
 
     /// <summary>
     /// Lấy danh sách bookmark theo user
     /// </summary>
-    Task<IEnumerable<UserComicBookmark>> GetByUserIdAsync(ulong userId);
+    Task<IEnumerable<UserComicBookmark>> GetByUserIdAsync(long userId);
 
     /// <summary>
     /// Lấy danh sách bookmark theo comic
     /// </summary>
-    Task<IEnumerable<UserComicBookmark>> GetByComicIdAsync(ulong comicId);
+    Task<IEnumerable<UserComicBookmark>> GetByComicIdAsync(long comicId);
 }

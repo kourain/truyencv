@@ -10,15 +10,15 @@ public interface IUserComicReadHistoryRepository : IRepository<UserComicReadHist
     /// <summary>
     /// Lấy bản ghi theo id
     /// </summary>
-    Task<UserComicReadHistory?> GetByIdAsync(ulong id);
+    Task<UserComicReadHistory?> GetByIdAsync(long id);
 
     /// <summary>
     /// Lấy bản ghi đọc theo user và comic
     /// </summary>
-    Task<UserComicReadHistory?> GetByUserAndComicAsync(ulong userId, ulong comicId);
+    Task<UserComicReadHistory?> GetByUserAndComicAsync(long userId, long comicId);
 
     /// <summary>
     /// Lấy danh sách lịch sử đọc của user
     /// </summary>
-    Task<IEnumerable<UserComicReadHistory>> GetByUserIdAsync(ulong userId, int limit);
+    Task<IEnumerable<UserComicReadHistory>> GetByUserIdAsync(long userId, int limit);
 }

@@ -25,7 +25,7 @@ public class UserRepository : Repository<User>, IUserRepository
         );
     }
 
-    public async Task<User?> GetByIdAsync(ulong id)
+    public async Task<User?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<User>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.id == id),

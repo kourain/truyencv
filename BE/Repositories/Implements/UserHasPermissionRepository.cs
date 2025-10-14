@@ -14,7 +14,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
     {
     }
 
-    public async Task<UserHasPermission?> GetByIdAsync(ulong id)
+    public async Task<UserHasPermission?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<UserHasPermission>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.id == id && p.deleted_at == null),
@@ -23,7 +23,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
         );
     }
 
-    public async Task<IEnumerable<UserHasPermission>> GetByUserIdAsync(ulong userId)
+    public async Task<IEnumerable<UserHasPermission>> GetByUserIdAsync(long userId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserHasPermission>(
             _dbSet.AsNoTracking()
@@ -47,7 +47,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
         return result ?? Enumerable.Empty<UserHasPermission>();
     }
 
-    public async Task<UserHasPermission?> GetByUserPermissionAsync(ulong userId, Permissions permission)
+    public async Task<UserHasPermission?> GetByUserPermissionAsync(long userId, Permissions permission)
     {
         return await _redisCache.GetFromRedisAsync<UserHasPermission>(
             _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.user_id == userId && p.permissions == permission && p.deleted_at == null),

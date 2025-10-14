@@ -25,7 +25,7 @@ public sealed class ComicController : ControllerBase
 	/// Lấy thông tin comic theo ID
 	/// </summary>
 	[HttpGet("{id}")]
-	public async Task<IActionResult> GetById(ulong id)
+	public async Task<IActionResult> GetById(long id)
 	{
 		var comic = await _comicService.GetComicByIdAsync(id);
 		if (comic == null)
@@ -108,7 +108,7 @@ public sealed class ComicController : ControllerBase
 	/// Cập nhật thông tin comic
 	/// </summary>
 	[HttpPut("{id}")]
-	public async Task<IActionResult> Update(ulong id, [FromBody] UpdateComicRequest request)
+	public async Task<IActionResult> Update(long id, [FromBody] UpdateComicRequest request)
 	{
 		if (id != request.id)
 			return BadRequest(new { message = "ID không khớp" });
@@ -131,7 +131,7 @@ public sealed class ComicController : ControllerBase
 	/// Xóa comic
 	/// </summary>
 	[HttpDelete("{id}")]
-	public async Task<IActionResult> Delete(ulong id)
+	public async Task<IActionResult> Delete(long id)
 	{
 		var result = await _comicService.DeleteComicAsync(id);
 		if (!result)

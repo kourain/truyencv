@@ -27,10 +27,10 @@ public class Comic : BaseEntity
     [StringLength(500)]
     public string? embedded_from_url { get; set; }
     [ForeignKey(nameof(EmbeddedByUser))]
-    public ulong embedded_by { get; set; }
-    public uint chapter_count { get; set; } = 0;
-    public uint bookmark_count { get; set; } = 0;
-    public uint? published_year { get; set; } = (uint)DateTime.UtcNow.Year;
+    public long embedded_by { get; set; }
+    public int chapter_count { get; set; } = 0;
+    public int bookmark_count { get; set; } = 0;
+    public int? published_year { get; set; } = (int)DateTime.UtcNow.Year;
 
     public float rate { get; set; } = 0;
 

@@ -45,7 +45,7 @@ public sealed class ReadHistoryController : ControllerBase
     }
 
     [HttpDelete("{comicId}")]
-    public async Task<IActionResult> Delete(ulong comicId)
+    public async Task<IActionResult> Delete(long comicId)
     {
         var userId = User.GetUserId();
         if (userId == null)

@@ -19,7 +19,7 @@ public class AdminDashboardMetricsResponse
 
 public class AdminDashboardCategorySummaryResponse
 {
-	public ulong id { get; set; }
+	public long id { get; set; }
 	public string name { get; set; }
 	public int comics_count { get; set; }
 	public DateTime created_at { get; set; }

@@ -13,7 +13,7 @@ public static partial class RedisExtensions
     }
     public static T FromRedisCacheToObject<T>(this string json)
     {
-        return JsonConvert.DeserializeObject<T>(json)!;
+        return JsonConvert.DeserializeObject<T>(json);
     }
     /// <summary>
     /// Cache 1 Entity có key là id của Entity
@@ -53,7 +53,7 @@ public static partial class RedisExtensions
     {
         await RedisCache.RemoveAsync($"{typeof(T).Name}:one:{Entity.id}");
     }
-    public static async Task RemoveFromRedisAsync<T>(this IDistributedCache RedisCache, ulong Key) where T : BaseEntity
+    public static async Task RemoveFromRedisAsync<T>(this IDistributedCache RedisCache, long Key) where T : BaseEntity
     {
         await RedisCache.RemoveAsync($"{typeof(T).Name}:one:{Key}");
     }
@@ -76,7 +76,10 @@ public static partial class RedisExtensions
         {
             if (Key != null && await RedisCache.GetStringAsync($"{typeof(T).Name}:one:{Key}") is string redisValue)
             {
-                return redisValue.FromRedisCacheToObject<T>();
+                if (redisValue.FromRedisCacheToObject<T>() is T cachedValue)
+                {
+                    return cachedValue;
+                }
             }
         }
         catch (Exception ex)
@@ -117,8 +120,11 @@ public static partial class RedisExtensions
         {
             if (await RedisCache.GetStringAsync($"{typeof(T).Name}:all") is string redisValue)
             {
-                IEnumerable<long> ids = redisValue.FromRedisCacheToObject<IEnumerable<long>>();
-                return await Task.WhenAll(ids.Select(id => RedisCache.GetFromRedisAsync<T>(QueryOne: null, id, CacheMinutes)).Where(m => m is not null)) ?? [];
+                if (redisValue.FromRedisCacheToObject<IEnumerable<long>>() is IEnumerable<long> ids)
+                {
+                    if (await Task.WhenAll(ids.Select(id => RedisCache.GetFromRedisAsync<T>(QueryOne: null, id, CacheMinutes)).Where(m => m is not null)) is T[] result && result.Length == ids.Count())
+                        return result;
+                }
             }
             if (QueryMany == null) return [];
             var QueryResult = await QueryMany;
@@ -168,14 +174,17 @@ public static partial class RedisExtensions
     /// <param name="Limit"></param>
     /// <param name="CacheMinutes"></param>
     /// <returns></returns>
-    public static async Task<IEnumerable<T>> GetFromRedisAsync<T>(this IDistributedCache RedisCache, Task<List<T>>? QueryMany, ulong Pos, ulong Limit, double CacheMinutes) where T : BaseEntity
+    public static async Task<IEnumerable<T>> GetFromRedisAsync<T>(this IDistributedCache RedisCache, Task<List<T>>? QueryMany, long Pos, long Limit, double CacheMinutes) where T : BaseEntity
     {
         try
         {
             if (await RedisCache.GetStringAsync($"{typeof(T).Name}:many:{Pos}:{Limit}") is string redisValue)
             {
-                IEnumerable<long> ids = redisValue.FromRedisCacheToObject<IEnumerable<long>>();
-                return await Task.WhenAll(ids.Select(id => RedisCache.GetFromRedisAsync<T>(QueryOne: null, id, CacheMinutes)).Where(m => m is not null)) ?? [];
+                if (redisValue.FromRedisCacheToObject<IEnumerable<long>>() is IEnumerable<long> ids)
+                {
+                    if(await Task.WhenAll(ids.Select(id => RedisCache.GetFromRedisAsync<T>(QueryOne: null, id, CacheMinutes)).Where(m => m is not null)) is T[] result && result.Length == ids.Count())
+                        return result;
+                }
             }
             if (QueryMany == null) return [];
             var QueryResult = await QueryMany;
@@ -198,7 +207,7 @@ public static partial class RedisExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="RedisCache"></param>
     /// <param name="Entitys"></param>
-    public static async Task AddOrUpdateInRedisAsync<T>(this IDistributedCache RedisCache, IEnumerable<T> Entitys, ulong Pos, ulong Limit, double CacheMinutes) where T : BaseEntity
+    public static async Task AddOrUpdateInRedisAsync<T>(this IDistributedCache RedisCache, IEnumerable<T> Entitys, long Pos, long Limit, double CacheMinutes) where T : BaseEntity
     {
         try
         {
@@ -229,8 +238,11 @@ public static partial class RedisExtensions
     {
         if (await RedisCache.GetStringAsync($"{typeof(T).Name}:{Key}") is string redisValue)
         {
-            IEnumerable<object> ids = redisValue.FromRedisCacheToObject<IEnumerable<object>>();
-            return await Task.WhenAll(ids.Select(id => RedisCache.GetFromRedisAsync<T>(QueryOne: null, id, CacheMinutes)).Where(m => m is not null)) ?? [];
+            if (redisValue.FromRedisCacheToObject<IEnumerable<object>>() is IEnumerable<object> ids)
+            {
+                if(await Task.WhenAll(ids.Select(id => RedisCache.GetFromRedisAsync<T>(QueryOne: null, id, CacheMinutes)).Where(m => m is not null)) is T[] result && result.Length == ids.Count())
+                    return result;
+            }
         }
         if (QueryMany == null) return [];
         var QueryResult = await QueryMany;

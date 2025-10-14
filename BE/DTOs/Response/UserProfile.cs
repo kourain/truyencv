@@ -5,7 +5,7 @@ namespace TruyenCV.DTO.Response;
 
 public class UserProfileResponse
 {
-    public ulong id { get; set; }
+    public long id { get; set; }
     public string name { get; set; } = string.Empty;
     public string email { get; set; } = string.Empty;
     public string phone { get; set; } = string.Empty;
@@ -15,10 +15,10 @@ public class UserProfileResponse
     public DateTime? email_verified_at { get; set; }
     public DateTime? banned_at { get; set; }
     public bool is_banned { get; set; }
-    public ulong read_comic_count { get; set; }
-    public ulong read_chapter_count { get; set; }
-    public ulong bookmark_count { get; set; }
-    public ulong coin { get; set; }
+    public long read_comic_count { get; set; }
+    public long read_chapter_count { get; set; }
+    public long bookmark_count { get; set; }
+    public long coin { get; set; }
     public IReadOnlyCollection<string> roles { get; set; } = Array.Empty<string>();
     public IReadOnlyCollection<string> permissions { get; set; } = Array.Empty<string>();
 }

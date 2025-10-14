@@ -13,7 +13,7 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 	{
 	}
 
-	public async Task<ComicChapter?> GetByIdAsync(ulong id)
+	public async Task<ComicChapter?> GetByIdAsync(long id)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicChapter>(
 			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
@@ -22,7 +22,7 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 		);
 	}
 
-	public async Task<IEnumerable<ComicChapter>> GetByComicIdAsync(ulong comicId)
+	public async Task<IEnumerable<ComicChapter>> GetByComicIdAsync(long comicId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicChapter>(
 			_dbSet.AsNoTracking()
@@ -34,7 +34,7 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 		);
 	}
 
-	public async Task<ComicChapter?> GetByComicIdAndChapterAsync(ulong comicId, int chapter)
+	public async Task<ComicChapter?> GetByComicIdAndChapterAsync(long comicId, int chapter)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicChapter>(
 			_dbSet.AsNoTracking()

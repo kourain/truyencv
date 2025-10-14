@@ -14,7 +14,7 @@ namespace TruyenCV.Services
         /// </summary>
         /// <param name="id">ID của người dùng</param>
         /// <returns>Thông tin người dùng</returns>
-        Task<UserResponse?> GetUserByIdAsync(ulong id);
+        Task<UserResponse?> GetUserByIdAsync(long id);
         
         /// <summary>
         /// Lấy danh sách người dùng
@@ -37,14 +37,14 @@ namespace TruyenCV.Services
         /// <param name="id">ID của người dùng</param>
         /// <param name="userRequest">Thông tin cập nhật</param>
         /// <returns>Thông tin người dùng đã cập nhật</returns>
-        Task<UserResponse?> UpdateUserAsync(ulong id, UpdateUserRequest userRequest);
+        Task<UserResponse?> UpdateUserAsync(long id, UpdateUserRequest userRequest);
         
         /// <summary>
         /// Xóa người dùng
         /// </summary>
         /// <param name="id">ID của người dùng</param>
         /// <returns>True nếu xóa thành công, ngược lại là False</returns>
-        Task<bool> DeleteUserAsync(ulong id);
+        Task<bool> DeleteUserAsync(long id);
         
         /// <summary>
         /// Xác thực người dùng
@@ -66,22 +66,22 @@ namespace TruyenCV.Services
         /// </summary>
         /// <param name="userId">ID của người dùng</param>
         /// <param name="newPassword">Mật khẩu mới</param>
-        Task UpdatePasswordAsync(ulong userId, string newPassword);
+        Task UpdatePasswordAsync(long userId, string newPassword);
 
         /// <summary>
         /// Đổi mật khẩu từ trang cá nhân (yêu cầu mật khẩu hiện tại)
         /// </summary>
-        Task ChangePasswordAsync(ulong userId, string currentPassword, string newPassword);
+        Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
 
         /// <summary>
         /// Lấy thông tin trang cá nhân của người dùng
         /// </summary>
         /// <param name="userId">ID người dùng</param>
-        Task<UserProfileResponse?> GetProfileAsync(ulong userId);
+        Task<UserProfileResponse?> GetProfileAsync(long userId);
 
         /// <summary>
         /// Xác nhận email cho người dùng
         /// </summary>
-        Task<UserProfileResponse?> VerifyEmailAsync(ulong userId);
+        Task<UserProfileResponse?> VerifyEmailAsync(long userId);
     }
 }

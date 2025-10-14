@@ -8,11 +8,11 @@ namespace TruyenCV.Services;
 /// </summary>
 public interface IUserHasPermissionService
 {
-    Task<UserHasPermissionResponse?> GetUserHasPermissionByIdAsync(ulong id);
-    Task<IEnumerable<UserHasPermissionResponse>> GetPermissionsByUserIdAsync(ulong userId);
+    Task<UserHasPermissionResponse?> GetUserHasPermissionByIdAsync(long id);
+    Task<IEnumerable<UserHasPermissionResponse>> GetPermissionsByUserIdAsync(long userId);
     Task<IEnumerable<UserHasPermissionResponse>> GetUsersByPermissionAsync(Permissions permission);
     Task<IEnumerable<UserHasPermissionResponse>> GetUserHasPermissionsAsync(int offset, int limit);
     Task<UserHasPermissionResponse> CreateUserHasPermissionAsync(CreateUserHasPermissionRequest request);
-    Task<UserHasPermissionResponse?> UpdateUserHasPermissionAsync(ulong id, UpdateUserHasPermissionRequest request);
-    Task<bool> DeleteUserHasPermissionAsync(ulong id);
+    Task<UserHasPermissionResponse?> UpdateUserHasPermissionAsync(long id, UpdateUserHasPermissionRequest request);
+    Task<bool> DeleteUserHasPermissionAsync(long id);
 }

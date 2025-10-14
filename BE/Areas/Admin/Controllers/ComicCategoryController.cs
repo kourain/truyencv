@@ -22,7 +22,7 @@ public sealed class ComicCategoryController : ControllerBase
 	}
 
 	[HttpGet("{id}")]
-	public async Task<IActionResult> GetById(ulong id)
+	public async Task<IActionResult> GetById(long id)
 	{
 		var category = await _categoryService.GetCategoryByIdAsync(id);
 		if (category == null)
@@ -70,7 +70,7 @@ public sealed class ComicCategoryController : ControllerBase
 	}
 
 	[HttpPut("{id}")]
-	public async Task<IActionResult> Update(ulong id, [FromBody] UpdateComicCategoryRequest request)
+	public async Task<IActionResult> Update(long id, [FromBody] UpdateComicCategoryRequest request)
 	{
 		if (id != request.id)
 			return BadRequest(new { message = "ID không khớp" });
@@ -90,7 +90,7 @@ public sealed class ComicCategoryController : ControllerBase
 	}
 
 	[HttpDelete("{id}")]
-	public async Task<IActionResult> Delete(ulong id)
+	public async Task<IActionResult> Delete(long id)
 	{
 		var result = await _categoryService.DeleteCategoryAsync(id);
 		if (!result)

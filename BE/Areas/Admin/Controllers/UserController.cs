@@ -29,11 +29,13 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser(ulong id)
+        public async Task<IActionResult> GetUser(long id)
         {
             var user = await _userService.GetUserByIdAsync(id);
+            Serilog.Log.Error("Fetched user with ID {UserId} from database", user?.id);
             if (user == null)
             {
+                Serilog.Log.Error("Fetching user with ID {UserId} failed", id);
                 return NotFound(new { message = "Không tìm thấy người dùng" });
             }
 
@@ -48,7 +50,7 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpGet("{id}/refresh-tokens")]
-        public async Task<IActionResult> GetUserRefreshTokens(ulong id)
+        public async Task<IActionResult> GetUserRefreshTokens(long id)
         {
             // Kiểm tra user có tồn tại không
             var user = await _userService.GetUserByIdAsync(id);
@@ -73,7 +75,7 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpDelete("{id}/refresh-tokens/{tokenId}")]
-        public async Task<IActionResult> RevokeUserRefreshToken(ulong id, ulong tokenId)
+        public async Task<IActionResult> RevokeUserRefreshToken(long id, long tokenId)
         {
             // Kiểm tra user có tồn tại không
             var user = await _userService.GetUserByIdAsync(id);
@@ -103,7 +105,7 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpDelete("{id}/refresh-tokens")]
-        public async Task<IActionResult> RevokeAllUserRefreshTokens(ulong id)
+        public async Task<IActionResult> RevokeAllUserRefreshTokens(long id)
         {
             // Kiểm tra user có tồn tại không
             var user = await _userService.GetUserByIdAsync(id);

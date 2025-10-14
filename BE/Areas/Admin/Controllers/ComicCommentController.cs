@@ -22,7 +22,7 @@ public sealed class ComicCommentController : ControllerBase
 	}
 
 	[HttpGet("{id}")]
-	public async Task<IActionResult> GetById(ulong id)
+	public async Task<IActionResult> GetById(long id)
 	{
 		var comment = await _commentService.GetCommentByIdAsync(id);
 		if (comment == null)
@@ -32,28 +32,28 @@ public sealed class ComicCommentController : ControllerBase
 	}
 
 	[HttpGet("comic/{comicId}")]
-	public async Task<IActionResult> GetByComicId(ulong comicId)
+	public async Task<IActionResult> GetByComicId(long comicId)
 	{
 		var comments = await _commentService.GetCommentsByComicIdAsync(comicId);
 		return Ok(comments);
 	}
 
 	[HttpGet("chapter/{chapterId}")]
-	public async Task<IActionResult> GetByChapterId(ulong chapterId)
+	public async Task<IActionResult> GetByChapterId(long chapterId)
 	{
 		var comments = await _commentService.GetCommentsByChapterIdAsync(chapterId);
 		return Ok(comments);
 	}
 
 	[HttpGet("user/{userId}")]
-	public async Task<IActionResult> GetByUserId(ulong userId)
+	public async Task<IActionResult> GetByUserId(long userId)
 	{
 		var comments = await _commentService.GetCommentsByUserIdAsync(userId);
 		return Ok(comments);
 	}
 
 	[HttpGet("replies/{commentId}")]
-	public async Task<IActionResult> GetReplies(ulong commentId)
+	public async Task<IActionResult> GetReplies(long commentId)
 	{
 		var replies = await _commentService.GetRepliesAsync(commentId);
 		return Ok(replies);
@@ -74,7 +74,7 @@ public sealed class ComicCommentController : ControllerBase
 	}
 
 	[HttpPut("{id}")]
-	public async Task<IActionResult> Update(ulong id, [FromBody] UpdateComicCommentRequest request)
+	public async Task<IActionResult> Update(long id, [FromBody] UpdateComicCommentRequest request)
 	{
 		if (id != request.id)
 			return BadRequest(new { message = "ID không khớp" });
@@ -94,7 +94,7 @@ public sealed class ComicCommentController : ControllerBase
 	}
 
 	[HttpDelete("{id}")]
-	public async Task<IActionResult> Delete(ulong id)
+	public async Task<IActionResult> Delete(long id)
 	{
 		var result = await _commentService.DeleteCommentAsync(id);
 		if (!result)
