@@ -40,7 +40,9 @@ public sealed class ReadHistoryController : ControllerBase
             return Unauthorized(new { message = "Không thể xác định người dùng" });
         }
 
-        var history = await _readHistoryService.UpsertReadHistoryAsync(userId.Value, request.comic_id, request.chapter_id);
+        var comicId = request.comic_id.ToSnowflakeId(nameof(request.comic_id));
+        var chapterId = request.chapter_id.ToSnowflakeId(nameof(request.chapter_id));
+        var history = await _readHistoryService.UpsertReadHistoryAsync(userId.Value, comicId, chapterId);
         return Ok(history);
     }
 

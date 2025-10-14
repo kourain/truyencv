@@ -19,7 +19,7 @@ public class UserRepository : Repository<User>, IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await _redisCache.GetFromRedisAsync<User>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.email == email),
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.email == email),
             $"email:{email}",
 			DefaultCacheMinutes
         );
@@ -28,8 +28,8 @@ public class UserRepository : Repository<User>, IUserRepository
     public async Task<User?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<User>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.id == id),
-            $"{id}",
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.id == id),
+            id,
 			DefaultCacheMinutes
 		);
     }
@@ -38,7 +38,7 @@ public class UserRepository : Repository<User>, IUserRepository
     {
         limit = Math.Clamp(limit, 1, 50);
         return await _redisCache.GetFromRedisAsync<User>(
-            _dbSet.AsNoTracking()
+            () => _dbSet.AsNoTracking()
                 .OrderByDescending(u => u.created_at)
                 .Take(limit)
                 .ToListAsync(),

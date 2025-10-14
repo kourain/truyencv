@@ -2,7 +2,7 @@ namespace TruyenCV.DTO.Response;
 
 public class ComicResponse
 {
-	public long id { get; set; }
+	public string id { get; set; }
 	public string name { get; set; }
 	public string description { get; set; }
 	public string slug { get; set; }

@@ -46,8 +46,10 @@ public class UserHasRoleService : IUserHasRoleService
 
     public async Task<UserHasRoleResponse> CreateUserHasRoleAsync(CreateUserHasRoleRequest request)
     {
+        var userId = request.user_id.ToSnowflakeId(nameof(request.user_id));
+
         // Kiểm tra user đã có role này chưa
-        var existingRoles = await _userHasRoleRepository.GetByUserIdAsync(request.user_id);
+        var existingRoles = await _userHasRoleRepository.GetByUserIdAsync(userId);
         if (existingRoles.Any(r => r.role_name == request.role_name))
             throw new Exception("User đã có role này");
 
@@ -61,7 +63,7 @@ public class UserHasRoleService : IUserHasRoleService
         await _redisCache.AddOrUpdateInRedisAsync(newUserHasRole, newUserHasRole.id);
 
         // Xóa cache của danh sách role của user
-        await _redisCache.RemoveAsync($"UserHasRole:user:{request.user_id}");
+        await _redisCache.RemoveAsync($"UserHasRole:user:{userId}");
         await _redisCache.RemoveAsync($"UserHasRole:role:{request.role_name}");
 
         return newUserHasRole.ToRespDTO();
@@ -76,6 +78,7 @@ public class UserHasRoleService : IUserHasRoleService
 
         var oldUserId = userHasRole.user_id;
         var oldRoleName = userHasRole.role_name;
+        var newUserId = request.user_id.ToSnowflakeId(nameof(request.user_id));
 
         // Cập nhật thông tin
         userHasRole.UpdateFromRequest(request);
@@ -89,7 +92,7 @@ public class UserHasRoleService : IUserHasRoleService
         // Xóa cache cũ
         await _redisCache.RemoveAsync($"UserHasRole:user:{oldUserId}");
         await _redisCache.RemoveAsync($"UserHasRole:role:{oldRoleName}");
-        await _redisCache.RemoveAsync($"UserHasRole:user:{request.user_id}");
+        await _redisCache.RemoveAsync($"UserHasRole:user:{newUserId}");
         await _redisCache.RemoveAsync($"UserHasRole:role:{request.role_name}");
 
         return userHasRole.ToRespDTO();

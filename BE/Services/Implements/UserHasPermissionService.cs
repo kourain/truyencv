@@ -48,7 +48,9 @@ public class UserHasPermissionService : IUserHasPermissionService
 
     public async Task<UserHasPermissionResponse> CreateUserHasPermissionAsync(CreateUserHasPermissionRequest request)
     {
-        var existing = await _userHasPermissionRepository.GetByUserPermissionAsync(request.user_id, request.permissions);
+        var userId = request.user_id.ToSnowflakeId(nameof(request.user_id));
+
+        var existing = await _userHasPermissionRepository.GetByUserPermissionAsync(userId, request.permissions);
         if (existing != null)
         {
             throw new Exception("User đã có permission này");
@@ -57,7 +59,7 @@ public class UserHasPermissionService : IUserHasPermissionService
         var entity = request.ToEntity();
         var newEntity = await _userHasPermissionRepository.AddAsync(entity);
 
-        await ClearCaches(request.user_id, request.permissions);
+        await ClearCaches(userId, request.permissions);
 
         return newEntity.ToRespDTO();
     }
@@ -70,9 +72,11 @@ public class UserHasPermissionService : IUserHasPermissionService
             return null;
         }
 
-        if (entity.user_id != request.user_id || entity.permissions != request.permissions)
+        var userId = request.user_id.ToSnowflakeId(nameof(request.user_id));
+
+        if (entity.user_id != userId || entity.permissions != request.permissions)
         {
-            var duplicate = await _userHasPermissionRepository.GetByUserPermissionAsync(request.user_id, request.permissions);
+            var duplicate = await _userHasPermissionRepository.GetByUserPermissionAsync(userId, request.permissions);
             if (duplicate != null && duplicate.id != id)
             {
                 throw new Exception("User đã có permission này");
@@ -86,7 +90,7 @@ public class UserHasPermissionService : IUserHasPermissionService
         await _userHasPermissionRepository.UpdateAsync(entity);
 
         await ClearCaches(oldUserId, oldPermission);
-        await ClearCaches(request.user_id, request.permissions);
+        await ClearCaches(userId, request.permissions);
 
         return entity.ToRespDTO();
     }

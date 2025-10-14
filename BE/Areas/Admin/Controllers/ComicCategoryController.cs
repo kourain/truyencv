@@ -72,12 +72,13 @@ public sealed class ComicCategoryController : ControllerBase
 	[HttpPut("{id}")]
 	public async Task<IActionResult> Update(long id, [FromBody] UpdateComicCategoryRequest request)
 	{
-		if (id != request.id)
+		var requestId = request.id.ToSnowflakeId(nameof(request.id));
+		if (id != requestId)
 			return BadRequest(new { message = "ID không khớp" });
 
 		try
 		{
-			var category = await _categoryService.UpdateCategoryAsync(id, request);
+			var category = await _categoryService.UpdateCategoryAsync(requestId, request);
 			if (category == null)
 				return NotFound(new { message = "Không tìm thấy thể loại" });
 			

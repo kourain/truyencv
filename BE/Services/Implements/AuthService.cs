@@ -46,6 +46,7 @@ namespace TruyenCV.Services
         public async Task<(string accessToken, string refreshToken)?> RefreshTokenAsync(string refreshTokenValue)
         {
             var refreshToken = await _context.RefreshTokens
+                .AsSplitQuery()
                 .Include(rt => rt.User)
                 .Where(rt => rt.User.deleted_at == null)
                 .Include(rt => rt.User.Roles.Where(role => role.deleted_at == null))

@@ -53,9 +53,9 @@ public sealed class AdminDashboardService : IAdminDashboardService
             total_users = await _userRepository.CountAsync(),
             new_users_7_days = await _userRepository.CountAsync(user => user.created_at >= sevenDaysAgo),
             categories_count = await _comicCategoryRepository.CountAsync(),
-            total_chapters = await _comicChapterRepository.CountAsync(),
-            total_comments = await _comicCommentRepository.CountAsync(),
-            total_bookmarks = await _comicRepository.SumBookmarkCountAsync(),
+            total_chapters = (await _comicChapterRepository.CountAsync()).ToString(),
+            total_comments = (await _comicCommentRepository.CountAsync()).ToString(),
+            total_bookmarks = (await _comicRepository.SumBookmarkCountAsync()).ToString(),
             active_admins = await _userHasRoleRepository.CountAsync(role => role.role_name == Roles.Admin)
         };
 
@@ -71,7 +71,7 @@ public sealed class AdminDashboardService : IAdminDashboardService
             var comics = await _comicHaveCategoryRepository.GetComicsByCategoryIdAsync(category.id);
             var summary = new AdminDashboardCategorySummaryResponse
             {
-                id = category.id,
+                id = category._id,
                 name = category.name,
                 created_at = category.created_at,
                 updated_at = category.updated_at,

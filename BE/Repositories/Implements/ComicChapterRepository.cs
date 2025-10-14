@@ -16,8 +16,8 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 	public async Task<ComicChapter?> GetByIdAsync(long id)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicChapter>(
-			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
-			$"{id}",
+			() => _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
+			id,
 			DefaultCacheMinutes
 		);
 	}
@@ -25,7 +25,7 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 	public async Task<IEnumerable<ComicChapter>> GetByComicIdAsync(long comicId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicChapter>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.Where(c => c.comic_id == comicId)
 				.OrderBy(c => c.chapter)
 				.ToListAsync(),
@@ -37,7 +37,7 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 	public async Task<ComicChapter?> GetByComicIdAndChapterAsync(long comicId, int chapter)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicChapter>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.FirstOrDefaultAsync(c => c.comic_id == comicId && c.chapter == chapter),
 			$"comic:{comicId}:chapter:{chapter}",
 			DefaultCacheMinutes

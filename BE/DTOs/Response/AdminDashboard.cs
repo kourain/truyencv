@@ -11,15 +11,15 @@ public class AdminDashboardMetricsResponse
 	public int total_users { get; set; }
 	public int new_users_7_days { get; set; }
 	public int categories_count { get; set; }
-	public long total_chapters { get; set; }
-	public long total_comments { get; set; }
-	public long total_bookmarks { get; set; }
+	public string total_chapters { get; set; }
+	public string total_comments { get; set; }
+	public string total_bookmarks { get; set; }
 	public int active_admins { get; set; }
 }
 
 public class AdminDashboardCategorySummaryResponse
 {
-	public long id { get; set; }
+	public string id { get; set; }
 	public string name { get; set; }
 	public int comics_count { get; set; }
 	public DateTime created_at { get; set; }

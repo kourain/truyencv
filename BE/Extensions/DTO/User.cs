@@ -18,7 +18,7 @@ public static partial class Extensions
     {
         return new DTO.Response.UserResponse
         {
-            id = user.id,
+            id = user._id,
             name = user.name,
             FullName = user.name,
             email = user.email,
@@ -29,7 +29,7 @@ public static partial class Extensions
     {
         return new DTO.Response.UserProfileResponse
         {
-            id = user.id,
+            id = user._id,
             name = user.name,
             email = user.email,
             phone = user.phone,
@@ -39,10 +39,10 @@ public static partial class Extensions
             email_verified_at = user.email_verified_at,
             banned_at = user.banned_at,
             is_banned = user.is_banned,
-            read_comic_count = user.read_comic_count,
-            read_chapter_count = user.read_chapter_count,
-            bookmark_count = user.bookmark_count,
-            coin = user.coin,
+            read_comic_count = user.read_comic_count.ToString(),
+            read_chapter_count = user.read_chapter_count.ToString(),
+            bookmark_count = user.bookmark_count.ToString(),
+            coin = user.coin.ToString(),
             roles = (user.Roles ?? Enumerable.Empty<Models.UserHasRole>())
                 .Where(role => role.deleted_at == null)
                 .Select(role => role.role_name)

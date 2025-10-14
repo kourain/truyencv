@@ -21,8 +21,8 @@ type CategoryFormState = {
 };
 
 type MappingFormState = {
-  categoryId: number | null;
-  comicId: number | null;
+  categoryId: string | null;
+  comicId: string | null;
 };
 
 const initialCategoryForm: CategoryFormState = {
@@ -37,7 +37,7 @@ const initialMappingForm: MappingFormState = {
 const AdminCategoriesPage = () => {
   const queryClient = useQueryClient();
   const [offset, setOffset] = useState(0);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(initialCategoryForm);
   const [mappingForm, setMappingForm] = useState<MappingFormState>(initialMappingForm);
 
@@ -74,7 +74,7 @@ const AdminCategoriesPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteComicCategory(id),
+    mutationFn: (id: string) => deleteComicCategory(id),
     onSuccess: () => {
       invalidateCategories();
     }
@@ -93,7 +93,7 @@ const AdminCategoriesPage = () => {
   });
 
   const removeMappingMutation = useMutation({
-    mutationFn: ({ comicId, categoryId }: { comicId: number; categoryId: number }) =>
+    mutationFn: ({ comicId, categoryId }: { comicId: string; categoryId: string }) =>
       removeComicFromCategory(comicId, categoryId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-category-comics", variables.categoryId] });
@@ -278,11 +278,12 @@ const AdminCategoriesPage = () => {
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">ID thể loại</span>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={mappingForm.categoryId ?? ""}
                 onChange={(event) =>
-                  setMappingForm((prev) => ({ ...prev, categoryId: event.target.value ? Number(event.target.value) : null }))
+                  setMappingForm((prev) => ({ ...prev, categoryId: event.target.value.trim() ? event.target.value.trim() : null }))
                 }
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
                 placeholder="Nhập ID thể loại"
@@ -291,11 +292,12 @@ const AdminCategoriesPage = () => {
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">ID truyện</span>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={mappingForm.comicId ?? ""}
                 onChange={(event) =>
-                  setMappingForm((prev) => ({ ...prev, comicId: event.target.value ? Number(event.target.value) : null }))
+                  setMappingForm((prev) => ({ ...prev, comicId: event.target.value.trim() ? event.target.value.trim() : null }))
                 }
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
                 placeholder="Nhập ID truyện"

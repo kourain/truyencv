@@ -16,8 +16,8 @@ public class UserHasRoleRepository : Repository<UserHasRole>, IUserHasRoleReposi
     public async Task<UserHasRole?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<UserHasRole>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
-            $"{id}",
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
+            id,
             DefaultCacheMinutes
         );
     }
@@ -25,7 +25,7 @@ public class UserHasRoleRepository : Repository<UserHasRole>, IUserHasRoleReposi
     public async Task<IEnumerable<UserHasRole>> GetByUserIdAsync(long userId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserHasRole>(
-            _dbSet.AsNoTracking().Where(r => r.user_id == userId).ToListAsync(),
+            () => _dbSet.AsNoTracking().Where(r => r.user_id == userId).ToListAsync(),
             $"user:{userId}",
             DefaultCacheMinutes
         );
@@ -35,7 +35,7 @@ public class UserHasRoleRepository : Repository<UserHasRole>, IUserHasRoleReposi
     public async Task<IEnumerable<UserHasRole>> GetByRoleNameAsync(string roleName)
     {
         var result = await _redisCache.GetFromRedisAsync<UserHasRole>(
-            _dbSet.AsNoTracking().Where(r => r.role_name == roleName).ToListAsync(),
+            () => _dbSet.AsNoTracking().Where(r => r.role_name == roleName).ToListAsync(),
             $"role:{roleName}",
             DefaultCacheMinutes
         );

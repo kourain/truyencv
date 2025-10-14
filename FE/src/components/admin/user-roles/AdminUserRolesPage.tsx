@@ -17,8 +17,8 @@ const DEFAULT_LIMIT = 20;
 
 type RoleFormState = {
   role_name: string;
-  user_id: number | null;
-  assigned_by: number | null;
+  user_id: string | null;
+  assigned_by: string | null;
 };
 
 type FilterState = {
@@ -40,7 +40,7 @@ const initialFilter: FilterState = {
 const AdminUserRolesPage = () => {
   const queryClient = useQueryClient();
   const [offset, setOffset] = useState(0);
-  const [editingRoleId, setEditingRoleId] = useState<number | null>(null);
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [formState, setFormState] = useState<RoleFormState>(initialForm);
   const [filter, setFilter] = useState<FilterState>(initialFilter);
 
@@ -51,7 +51,7 @@ const AdminUserRolesPage = () => {
 
   const filterQuery = useQuery({
     queryKey: ["admin-user-roles-filter", filter.type, filter.key],
-    queryFn: () => (filter.type === "user" ? fetchUserRolesByUser(Number(filter.key)) : fetchUsersByRole(filter.key)),
+    queryFn: () => (filter.type === "user" ? fetchUserRolesByUser(filter.key) : fetchUsersByRole(filter.key)),
     enabled: filter.key.trim().length > 0
   });
 
@@ -64,8 +64,8 @@ const AdminUserRolesPage = () => {
     mutationFn: () =>
       createUserRole({
         role_name: formState.role_name,
-        user_id: formState.user_id!,
-        assigned_by: formState.assigned_by ?? formState.user_id!
+  user_id: formState.user_id!,
+  assigned_by: formState.assigned_by ?? formState.user_id!
       }),
     onSuccess: () => {
       invalidateRoles();
@@ -78,8 +78,8 @@ const AdminUserRolesPage = () => {
       updateUserRole({
         id: editingRoleId!,
         role_name: formState.role_name,
-        user_id: formState.user_id!,
-        assigned_by: formState.assigned_by ?? formState.user_id!
+  user_id: formState.user_id!,
+  assigned_by: formState.assigned_by ?? formState.user_id!
       }),
     onSuccess: () => {
       invalidateRoles();
@@ -88,7 +88,7 @@ const AdminUserRolesPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteUserRole(id),
+    mutationFn: (id: string) => deleteUserRole(id),
     onSuccess: () => invalidateRoles()
   });
 
@@ -156,12 +156,13 @@ const AdminUserRolesPage = () => {
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">ID người dùng</span>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 required
                 value={formState.user_id ?? ""}
                 onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, user_id: event.target.value ? Number(event.target.value) : null }))
+                  setFormState((prev) => ({ ...prev, user_id: event.target.value.trim() ? event.target.value.trim() : null }))
                 }
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
               />
@@ -169,11 +170,12 @@ const AdminUserRolesPage = () => {
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">ID người gán quyền (tùy chọn)</span>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formState.assigned_by ?? ""}
                 onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, assigned_by: event.target.value ? Number(event.target.value) : null }))
+                  setFormState((prev) => ({ ...prev, assigned_by: event.target.value.trim() ? event.target.value.trim() : null }))
                 }
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
               />

@@ -40,7 +40,8 @@ public sealed class BookmarkController : ControllerBase
             return Unauthorized(new { message = "Không thể xác định người dùng" });
         }
 
-        var bookmark = await _bookmarkService.CreateBookmarkAsync(userId.Value, request.comic_id);
+        var comicId = request.comic_id.ToSnowflakeId(nameof(request.comic_id));
+        var bookmark = await _bookmarkService.CreateBookmarkAsync(userId.Value, comicId);
         return Ok(bookmark);
     }
 

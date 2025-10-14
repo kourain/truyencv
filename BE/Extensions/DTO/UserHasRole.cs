@@ -12,8 +12,8 @@ public static partial class Extensions
         return new UserHasRole
         {
             role_name = request.role_name,
-            user_id = request.user_id,
-            assigned_by = request.assigned_by,
+            user_id = request.user_id.ToSnowflakeId(nameof(request.user_id)),
+            assigned_by = request.assigned_by.ToSnowflakeId(nameof(request.assigned_by)),
             created_at = DateTime.UtcNow,
             updated_at = DateTime.UtcNow
         };
@@ -24,10 +24,10 @@ public static partial class Extensions
     {
         return new UserHasRoleResponse
         {
-            id = userHasRole.id,
+            id = userHasRole._id,
             role_name = userHasRole.role_name,
-            user_id = userHasRole.user_id,
-            assigned_by = userHasRole.assigned_by,
+            user_id = userHasRole.user_id.ToString(),
+            assigned_by = userHasRole.assigned_by.ToString(),
             created_at = userHasRole.created_at,
             updated_at = userHasRole.updated_at
         };
@@ -37,8 +37,8 @@ public static partial class Extensions
     public static void UpdateFromRequest(this UserHasRole userHasRole, UpdateUserHasRoleRequest request)
     {
         userHasRole.role_name = request.role_name;
-        userHasRole.user_id = request.user_id;
-        userHasRole.assigned_by = request.assigned_by;
+        userHasRole.user_id = request.user_id.ToSnowflakeId(nameof(request.user_id));
+        userHasRole.assigned_by = request.assigned_by.ToSnowflakeId(nameof(request.assigned_by));
         userHasRole.updated_at = DateTime.UtcNow;
     }
 }

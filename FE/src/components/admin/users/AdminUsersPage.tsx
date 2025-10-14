@@ -17,7 +17,7 @@ const DEFAULT_LIMIT = 15;
 const AdminUsersPage = () => {
   const queryClient = useQueryClient();
   const [offset, setOffset] = useState(0);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const usersQuery = useQuery({
     queryKey: ["admin-users", offset],
@@ -26,25 +26,25 @@ const AdminUsersPage = () => {
 
   const selectedUserQuery = useQuery({
     queryKey: ["admin-user", selectedUserId],
-    queryFn: () => fetchUserById(selectedUserId!),
+  queryFn: () => fetchUserById(selectedUserId!),
     enabled: selectedUserId !== null
   });
 
   const refreshTokensQuery = useQuery({
     queryKey: ["admin-user-refresh-tokens", selectedUserId],
-    queryFn: () => fetchUserRefreshTokens(selectedUserId!),
+  queryFn: () => fetchUserRefreshTokens(selectedUserId!),
     enabled: selectedUserId !== null
   });
 
   const revokeTokenMutation = useMutation({
-    mutationFn: ({ userId, tokenId }: { userId: number; tokenId: number }) => revokeUserRefreshToken(userId, tokenId),
+    mutationFn: ({ userId, tokenId }: { userId: string; tokenId: string }) => revokeUserRefreshToken(userId, tokenId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-user-refresh-tokens", variables.userId] });
     }
   });
 
   const revokeAllMutation = useMutation({
-    mutationFn: (userId: number) => revokeAllUserRefreshTokens(userId),
+    mutationFn: (userId: string) => revokeAllUserRefreshTokens(userId),
     onSuccess: (_, userId) => {
       queryClient.invalidateQueries({ queryKey: ["admin-user-refresh-tokens", userId] });
     }

@@ -11,7 +11,7 @@ public static partial class Extensions
         return new UserComicBookmark
         {
             user_id = userId,
-            comic_id = request.comic_id,
+            comic_id = request.comic_id.ToSnowflakeId(nameof(request.comic_id)),
             created_at = DateTime.UtcNow,
             updated_at = DateTime.UtcNow
         };
@@ -21,9 +21,9 @@ public static partial class Extensions
     {
         return new UserComicBookmarkResponse
         {
-            id = bookmark.id,
-            user_id = bookmark.user_id,
-            comic_id = bookmark.comic_id,
+            id = bookmark._id,
+            user_id = bookmark.user_id.ToString(),
+            comic_id = bookmark.comic_id.ToString(),
             created_at = bookmark.created_at,
             updated_at = bookmark.updated_at
         };

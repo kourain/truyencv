@@ -32,8 +32,8 @@ public class UserComicReadHistoryService : IUserComicReadHistoryService
     {
         var payload = new UpsertUserComicReadHistoryRequest
         {
-            comic_id = comicId,
-            chapter_id = chapterId
+            comic_id = comicId.ToString(),
+            chapter_id = chapterId.ToString()
         };
 
         var existing = await _readHistoryRepository.GetByUserAndComicAsync(userId, comicId);

@@ -18,8 +18,8 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	public async Task<Comic?> GetByIdAsync(long id)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
-			$"{id}",
+			() => _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
+			id,
 			DefaultCacheMinutes
 		);
 	}
@@ -27,7 +27,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	public async Task<Comic?> GetBySlugAsync(string slug)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.slug == slug),
+			() => _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.slug == slug),
 			$"slug:{slug}",
 			DefaultCacheMinutes
 		);
@@ -36,7 +36,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	public async Task<IEnumerable<Comic>> SearchAsync(string keyword)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.Where(c => c.name.Contains(keyword) || c.author.Contains(keyword) || c.description.Contains(keyword))
 				.ToListAsync(),
 			$"search:{keyword}",
@@ -47,7 +47,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	public async Task<IEnumerable<Comic>> GetByAuthorAsync(string author)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.Where(c => c.author == author)
 				.ToListAsync(),
 			$"author:{author}",
@@ -58,7 +58,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	public async Task<IEnumerable<Comic>> GetByStatusAsync(ComicStatus status)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.Where(c => c.status == status)
 				.ToListAsync(),
 			$"status:{status}",
@@ -70,7 +70,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	{
 		limit = Math.Clamp(limit, 1, 50);
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.OrderByDescending(c => c.rate)
 				.ThenByDescending(c => c.updated_at)
 				.Take(limit)

@@ -23,7 +23,7 @@ const createMockComics = (limit = 8): ComicResponse[] => {
 	const total = Math.max(1, limit);
 
 	return Array.from({ length: total }).map((_, index) => ({
-		id: index + 1,
+		id: String(index + 1),
 		name: `Truyện demo ${index + 1}`,
 		description: "Nội dung demo cho mục dashboard khi API chưa sẵn sàng.",
 		slug: `truyen-demo-${index + 1}`,
@@ -55,7 +55,7 @@ export const fetchComicsWithFallback = async (params: ComicListParams = {}) => {
 	}
 };
 
-export const fetchComicById = async (id: number) => {
+export const fetchComicById = async (id: string) => {
 	const client = getHttpClient();
 	const response = await client.get<ComicResponse>(`${resource}/${id}`);
 
@@ -83,7 +83,7 @@ export const updateComic = async (payload: UpdateComicRequest) => {
 	return response.data;
 };
 
-export const deleteComic = async (id: number) => {
+export const deleteComic = async (id: string) => {
 	const client = getHttpClient();
 	const response = await client.delete<BaseResponse>(`${resource}/${id}`);
 

@@ -31,7 +31,7 @@ public static partial class Extensions
 	{
 		return new ComicResponse
 		{
-			id = comic.id,
+			id = comic._id,
 			name = comic.name,
 			description = comic.description,
 			slug = comic.slug,

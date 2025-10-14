@@ -87,12 +87,13 @@ public sealed class UserHasRoleController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateUserHasRoleRequest request)
     {
-        if (id != request.id)
+        var requestId = request.id.ToSnowflakeId(nameof(request.id));
+        if (id != requestId)
             return BadRequest(new { message = "ID không khớp" });
 
         try
         {
-            var userHasRole = await _userHasRoleService.UpdateUserHasRoleAsync(id, request);
+            var userHasRole = await _userHasRoleService.UpdateUserHasRoleAsync(requestId, request);
             if (userHasRole == null)
                 return NotFound(new { message = "Không tìm thấy user role" });
 

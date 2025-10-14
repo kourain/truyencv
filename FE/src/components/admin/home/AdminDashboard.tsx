@@ -28,7 +28,7 @@ const AdminDashboardPage = () => {
   const { data: pingData, isLoading: isPingLoading, isError: isPingError, refetch: refetchPing } = useQuery({
     queryKey: ["admin-dashboard", "ping"],
     queryFn: fetchPing,
-    refetchInterval: 60_000
+    refetchInterval: 1_000
   });
 
   const metrics = data?.metrics ?? {
@@ -38,10 +38,23 @@ const AdminDashboardPage = () => {
     total_users: 0,
     new_users_7_days: 0,
     categories_count: 0,
-    total_chapters: 0,
-    total_comments: 0,
-    total_bookmarks: 0,
+    total_chapters: "0",
+    total_comments: "0",
+    total_bookmarks: "0",
     active_admins: 0
+  };
+
+  const parseMetricCount = (value: string | number | null | undefined) => {
+    if (value === undefined || value === null) {
+      return 0;
+    }
+
+    if (typeof value === "number") {
+      return value;
+    }
+
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
   };
 
   const overview = useMemo<OverviewStats>(
@@ -52,9 +65,9 @@ const AdminDashboardPage = () => {
       totalUsers: metrics.total_users,
       newUsers: metrics.new_users_7_days,
       categoriesCount: metrics.categories_count,
-      totalChapters: metrics.total_chapters,
-      totalComments: metrics.total_comments,
-      totalBookmarks: metrics.total_bookmarks,
+      totalChapters: parseMetricCount(metrics.total_chapters),
+      totalComments: parseMetricCount(metrics.total_comments),
+      totalBookmarks: parseMetricCount(metrics.total_bookmarks),
       activeAdmins: metrics.active_admins
     }),
     [metrics]

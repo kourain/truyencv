@@ -11,7 +11,7 @@ public static partial class Extensions
 	{
 		return new ComicChapter
 		{
-			comic_id = request.comic_id,
+			comic_id = request.comic_id.ToSnowflakeId(nameof(request.comic_id)),
 			chapter = request.chapter,
 			content = request.content,
 			created_at = DateTime.UtcNow,
@@ -24,8 +24,8 @@ public static partial class Extensions
 	{
 		return new ComicChapterResponse
 		{
-			id = chapter.id,
-			comic_id = chapter.comic_id,
+			id = chapter._id,
+			comic_id = chapter.comic_id.ToString(),
 			chapter = chapter.chapter,
 			content = chapter.content,
 			created_at = chapter.created_at,
@@ -36,7 +36,7 @@ public static partial class Extensions
 	// Update ComicChapter entity from UpdateComicChapterRequest
 	public static void UpdateFromRequest(this ComicChapter chapter, UpdateComicChapterRequest request)
 	{
-		chapter.comic_id = request.comic_id;
+		chapter.comic_id = request.comic_id.ToSnowflakeId(nameof(request.comic_id));
 		chapter.chapter = request.chapter;
 		chapter.content = request.content;
 		chapter.updated_at = DateTime.UtcNow;

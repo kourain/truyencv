@@ -10,7 +10,7 @@ type CommentFilterType = "comic" | "chapter" | "user" | "replies";
 
 type CommentFilterState = {
   type: CommentFilterType;
-  id: number | null;
+  id: string | null;
 };
 
 const initialFilter: CommentFilterState = {
@@ -21,7 +21,7 @@ const initialFilter: CommentFilterState = {
 const AdminCommentsPage = () => {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<CommentFilterState>(initialFilter);
-  const [focusedCommentId, setFocusedCommentId] = useState<number | null>(null);
+  const [focusedCommentId, setFocusedCommentId] = useState<string | null>(null);
 
   const commentsQuery = useQuery({
     queryKey: ["admin-comments", filter.type, filter.id],
@@ -36,7 +36,7 @@ const AdminCommentsPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteComicComment(id),
+    mutationFn: (id: string) => deleteComicComment(id),
     onSuccess: () => {
       if (filter.id !== null) {
         queryClient.invalidateQueries({ queryKey: ["admin-comments", filter.type, filter.id] });
@@ -81,10 +81,11 @@ const AdminCommentsPage = () => {
           <label className="space-y-2 text-sm">
             <span className="font-medium text-primary-foreground">ID tương ứng</span>
             <input
-              type="number"
-              min={1}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={filter.id ?? ""}
-              onChange={(event) => setFilter((prev) => ({ ...prev, id: event.target.value ? Number(event.target.value) : null }))}
+              onChange={(event) => setFilter((prev) => ({ ...prev, id: event.target.value.trim() ? event.target.value.trim() : null }))}
               className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
               placeholder={filter.type === "user" ? "ID người dùng" : "ID truyện/chương"}
             />

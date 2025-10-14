@@ -28,7 +28,7 @@ const AdminComicsPage = () => {
   const queryClient = useQueryClient();
   const [offset, setOffset] = useState(0);
   const [formState, setFormState] = useState<ComicFormState>(initialFormState);
-  const [editingComicId, setEditingComicId] = useState<number | null>(null);
+  const [editingComicId, setEditingComicId] = useState<string | null>(null);
 
   const comicsQuery = useQuery({
     queryKey: ["admin-comics", offset],
@@ -57,7 +57,7 @@ const AdminComicsPage = () => {
   const updateMutation = useMutation({
     mutationFn: () =>
       updateComic({
-        id: editingComicId!,
+  id: editingComicId!,
         name: formState.name,
         slug: formState.slug,
         description: formState.description,
@@ -75,7 +75,7 @@ const AdminComicsPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteComic(id),
+    mutationFn: (id: string) => deleteComic(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-comics"] });
     }

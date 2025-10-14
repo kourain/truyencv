@@ -8,10 +8,10 @@ import { createComicChapter, deleteComicChapter, fetchChaptersByComic, updateCom
 
 const AdminChaptersPage = () => {
   const queryClient = useQueryClient();
-  const [selectedComicId, setSelectedComicId] = useState<number | null>(null);
-  const [editingChapterId, setEditingChapterId] = useState<number | null>(null);
+  const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
+  const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   const [formState, setFormState] = useState<{
-    comic_id: number | null;
+    comic_id: string | null;
     chapter: number;
     content: string;
   }>({
@@ -63,7 +63,7 @@ const AdminChaptersPage = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteComicChapter(id),
+    mutationFn: (id: string) => deleteComicChapter(id),
     onSuccess: () => {
       invalidate();
     }
@@ -81,7 +81,7 @@ const AdminChaptersPage = () => {
     }
   };
 
-  const handleSelectComic = (comicIdValue: number | null) => {
+  const handleSelectComic = (comicIdValue: string | null) => {
     setSelectedComicId(comicIdValue);
     setEditingChapterId(null);
     setFormState({ comic_id: comicIdValue, chapter: 1, content: "" });
@@ -96,11 +96,12 @@ const AdminChaptersPage = () => {
             <h2 className="text-lg font-semibold text-primary-foreground">Nhập ID truyện để quản lý chương</h2>
           </header>
           <input
-            type="number"
-            min={1}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             placeholder="VD: 101"
             value={selectedComicId ?? ""}
-            onChange={(event) => handleSelectComic(event.target.value ? Number(event.target.value) : null)}
+            onChange={(event) => handleSelectComic(event.target.value.trim() ? event.target.value.trim() : null)}
             className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
           />
           <button
@@ -137,12 +138,13 @@ const AdminChaptersPage = () => {
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">ID truyện</span>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 required
                 value={formState.comic_id ?? ""}
                 onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, comic_id: event.target.value ? Number(event.target.value) : null }))
+                  setFormState((prev) => ({ ...prev, comic_id: event.target.value.trim() ? event.target.value.trim() : null }))
                 }
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
               />

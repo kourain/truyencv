@@ -8,6 +8,6 @@ public class CreateComicCategoryRequest
 
 public class UpdateComicCategoryRequest
 {
-	public required long id { get; set; }
+	public required string id { get; set; }
 	public required string name { get; set; }
 }

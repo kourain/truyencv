@@ -19,7 +19,7 @@ const createMockUsers = (limit = 6): UserResponse[] => {
 	const total = Math.max(1, limit);
 
 	return Array.from({ length: total }).map((_, index) => ({
-		id: index + 1_000,
+		id: String(index + 1_000),
 		name: `Người dùng ${index + 1}`,
 		full_name: `Quản trị viên ${index + 1}`,
 		email: `admin${index + 1}@example.com`,
@@ -43,7 +43,7 @@ export const fetchUsersWithFallback = async (params: UserListParams = {}) => {
 	}
 };
 
-export const fetchUserById = async (id: number) => {
+export const fetchUserById = async (id: string) => {
 	const client = getHttpClient();
 	const response = await client.get<UserResponse>(`${resource}/${id}`);
 
@@ -51,28 +51,28 @@ export const fetchUserById = async (id: number) => {
 };
 
 export type RefreshTokenInfo = {
-	id: number;
+	id: string;
 	token: string;
 	expires_at: string;
 	is_active: boolean;
 	created_at: string;
 };
 
-export const fetchUserRefreshTokens = async (userId: number) => {
+export const fetchUserRefreshTokens = async (userId: string) => {
 	const client = getHttpClient();
 	const response = await client.get<RefreshTokenInfo[]>(`${resource}/${userId}/refresh-tokens`);
 
 	return response.data;
 };
 
-export const revokeUserRefreshToken = async (userId: number, tokenId: number) => {
+export const revokeUserRefreshToken = async (userId: string, tokenId: string) => {
 	const client = getHttpClient();
 	const response = await client.delete<BaseResponse>(`${resource}/${userId}/refresh-tokens/${tokenId}`);
 
 	return response.data;
 };
 
-export const revokeAllUserRefreshTokens = async (userId: number) => {
+export const revokeAllUserRefreshTokens = async (userId: string) => {
 	const client = getHttpClient();
 	const response = await client.delete<BaseResponse>(`${resource}/${userId}/refresh-tokens`);
 

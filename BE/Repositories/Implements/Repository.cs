@@ -25,7 +25,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     public virtual async Task<IEnumerable<T>> GetAllAsync()
     {
         return await _redisCache.GetFromRedisAsync<T>(
-            _dbSet.AsNoTracking().ToListAsync(),
+            () => _dbSet.AsNoTracking().ToListAsync(),
             DefaultCacheMinutes
         ) ?? [];
     }
@@ -45,7 +45,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     public virtual async Task<IEnumerable<T>> GetPagedAsync(int offset, int limit)
     {
         return await _redisCache.GetFromRedisAsync<T>(
-            _dbSet.AsNoTracking().Skip(offset).Take(limit).ToListAsync(),
+            () => _dbSet.AsNoTracking().Skip(offset).Take(limit).ToListAsync(),
             offset, limit
         ) ?? [];
     }

@@ -118,7 +118,7 @@ const AdminSidebar = () => {
           } overflow-x-hidden`}
       >
         <div className="flex flex-col gap-2 px-3 py-4">
-          <div className="relative h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="relative h-[calc(100vh-200px)] overflow-y-auto overflow-x-hidden">
             {renderNavigationItems()}
           </div>
           <div className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${collapsed

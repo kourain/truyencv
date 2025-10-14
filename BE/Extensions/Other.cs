@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
+namespace TruyenCV;
+
 public static partial class Extensions
 {
 	public static string ToBase64(this string source)
@@ -16,5 +18,35 @@ public static partial class Extensions
 		var field = value.GetType().GetField(value.ToString());
 		var attribute = Attribute.GetCustomAttribute(field!, typeof(DisplayAttribute)) as DisplayAttribute;
 		return attribute == null ? value.ToString() : attribute.Name!;
+	}
+
+	public static long ToSnowflakeId(this string? value, string fieldName = "ID")
+	{
+		if (string.IsNullOrWhiteSpace(value))
+		{
+			throw new ArgumentException($"{fieldName} không được để trống", fieldName);
+		}
+
+		if (!long.TryParse(value, out var parsed))
+		{
+			throw new ArgumentException($"{fieldName} không hợp lệ", fieldName);
+		}
+
+		return parsed;
+	}
+
+	public static long? ToNullableSnowflakeId(this string? value, string fieldName)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+		{
+			return null;
+		}
+
+		if (!long.TryParse(value, out var parsed))
+		{
+			throw new ArgumentException($"{fieldName} không hợp lệ", fieldName);
+		}
+
+		return parsed;
 	}
 }

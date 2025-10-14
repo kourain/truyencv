@@ -85,7 +85,7 @@ namespace TruyenCV.Controllers
                 {
                     role_name = Roles.User,
                     user_id = newUser.id,
-                    assigned_by = SystemUser.id
+                    assigned_by = SystemUser.id.ToString()
                 });
 
                 var userEntity = await _userService.AuthenticateAsync(request.email, request.password);

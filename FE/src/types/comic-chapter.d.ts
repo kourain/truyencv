@@ -1,19 +1,19 @@
 interface CreateComicChapterRequest {
-	comic_id: number;
+	comic_id: string;
 	chapter: number;
 	content: string;
 }
 
 interface UpdateComicChapterRequest {
-	id: number;
-	comic_id: number;
+	id: string;
+	comic_id: string;
 	chapter: number;
 	content: string;
 }
 
 interface ComicChapterResponse {
-	id: number;
-	comic_id: number;
+	id: string;
+	comic_id: string;
 	chapter: number;
 	content: string;
 	created_at: string;

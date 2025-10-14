@@ -143,6 +143,7 @@ namespace TruyenCV.Services
         public async Task<UserProfileResponse?> GetProfileAsync(long userId)
         {
             var user = await _dbcontext.Users
+                .AsSplitQuery()
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .Include(u => u.Roles.Where(role => role.deleted_at == null))
                 .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))

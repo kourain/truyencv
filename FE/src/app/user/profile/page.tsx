@@ -97,7 +97,7 @@ const UserProfilePage = () => {
       <ProfileStatsGrid profile={profile} />
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <ActivityCard label="Tổng lượt tương tác" value={profile.read_comic_count + profile.bookmark_count} />
+        <ActivityCard label="Tổng lượt tương tác" value={Number(profile.read_comic_count) + Number(profile.bookmark_count)} />
         <div className="flex flex-col gap-3 rounded-3xl border border-surface-muted/70 bg-surface/70 p-6 shadow-lg">
           <div className="flex items-center gap-2 text-primary-foreground">
             <ShieldCheck className="h-5 w-5 text-primary" />

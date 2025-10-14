@@ -1,21 +1,21 @@
 interface CreateUserHasRoleRequest {
 	role_name: string;
-	user_id: number;
-	assigned_by: number;
+	user_id: string;
+	assigned_by: string;
 }
 
 interface UpdateUserHasRoleRequest {
-	id: number;
+	id: string;
 	role_name: string;
-	user_id: number;
-	assigned_by: number;
+	user_id: string;
+	assigned_by: string;
 }
 
 interface UserHasRoleResponse {
-	id: number;
+	id: string;
 	role_name: string;
-	user_id: number;
-	assigned_by: number;
+	user_id: string;
+	assigned_by: string;
 	created_at: string;
 	updated_at: string;
 }

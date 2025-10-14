@@ -62,28 +62,33 @@ public class ComicCommentService : IComicCommentService
 
 	public async Task<ComicCommentResponse> CreateCommentAsync(CreateComicCommentRequest commentRequest)
 	{
+		var comicId = commentRequest.comic_id.ToSnowflakeId(nameof(commentRequest.comic_id));
+		var userId = commentRequest.user_id.ToSnowflakeId(nameof(commentRequest.user_id));
+		var chapterId = commentRequest.comic_chapter_id.ToNullableSnowflakeId(nameof(commentRequest.comic_chapter_id));
+		var replyId = commentRequest.reply_id.ToNullableSnowflakeId(nameof(commentRequest.reply_id));
+
 		// Kiểm tra comic có tồn tại không
-		var comic = await _comicRepository.GetByIdAsync(commentRequest.comic_id);
+		var comic = await _comicRepository.GetByIdAsync(comicId);
 		if (comic == null)
 			throw new Exception("Comic không tồn tại");
 
 		// Kiểm tra user có tồn tại không
-		var user = await _userRepository.GetByIdAsync(commentRequest.user_id);
+		var user = await _userRepository.GetByIdAsync(userId);
 		if (user == null)
 			throw new Exception("User không tồn tại");
 
 		// Kiểm tra chapter nếu có
-		if (commentRequest.comic_chapter_id.HasValue)
+		if (chapterId.HasValue)
 		{
-			var chapter = await _chapterRepository.GetByIdAsync(commentRequest.comic_chapter_id.Value);
+			var chapter = await _chapterRepository.GetByIdAsync(chapterId.Value);
 			if (chapter == null)
 				throw new Exception("Chapter không tồn tại");
 		}
 
 		// Kiểm tra comment cha nếu có
-		if (commentRequest.reply_id.HasValue)
+		if (replyId.HasValue)
 		{
-			var parentComment = await _commentRepository.GetByIdAsync(commentRequest.reply_id.Value);
+			var parentComment = await _commentRepository.GetByIdAsync(replyId.Value);
 			if (parentComment == null)
 				throw new Exception("Comment cha không tồn tại");
 		}

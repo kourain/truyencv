@@ -44,14 +44,16 @@ public class ComicChapterService : IComicChapterService
 
 	public async Task<ComicChapterResponse> CreateChapterAsync(CreateComicChapterRequest chapterRequest)
 	{
+		var comicId = chapterRequest.comic_id.ToSnowflakeId(nameof(chapterRequest.comic_id));
+
 		// Kiểm tra comic có tồn tại không
-		var comic = await _comicRepository.GetByIdAsync(chapterRequest.comic_id);
+		var comic = await _comicRepository.GetByIdAsync(comicId);
 		if (comic == null)
 			throw new Exception("Comic không tồn tại");
 
 		// Kiểm tra chapter đã tồn tại chưa
 		if (await _chapterRepository.ExistsAsync(c =>
-			c.comic_id == chapterRequest.comic_id && c.chapter == chapterRequest.chapter))
+			c.comic_id == comicId && c.chapter == chapterRequest.chapter))
 			throw new Exception("Chapter đã tồn tại");
 
 		// Chuyển đổi từ DTO sang Entity

@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
 import { useToast } from "@components/providers/ToastProvider";
-import { changePassword, type ChangePasswordPayload } from "@services/user/profile.service";
+import { changePassword } from "@services/user/profile.service";
 
 interface ChangePasswordFormProps {
   username: string;

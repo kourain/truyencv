@@ -3,24 +3,24 @@ interface CreateComicCategoryRequest {
 }
 
 interface UpdateComicCategoryRequest {
-	id: number;
+	id: string;
 	name: string;
 }
 
 interface CreateComicHaveCategoryRequest {
-	comic_id: number;
-	comic_category_id: number;
+	comic_id: string;
+	comic_category_id: string;
 }
 
 interface UpdateComicHaveCategoryRequest {
-	comic_id: number;
-	comic_category_id: number;
-	new_comic_id: number;
-	new_comic_category_id: number;
+	comic_id: string;
+	comic_category_id: string;
+	new_comic_id: string;
+	new_comic_category_id: string;
 }
 
 interface ComicCategoryResponse {
-	id: number;
+	id: string;
 	name: string;
 	created_at: string;
 	updated_at: string;

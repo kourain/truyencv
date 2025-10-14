@@ -110,12 +110,13 @@ public sealed class ComicController : ControllerBase
 	[HttpPut("{id}")]
 	public async Task<IActionResult> Update(long id, [FromBody] UpdateComicRequest request)
 	{
-		if (id != request.id)
+		var requestId = request.id.ToSnowflakeId(nameof(request.id));
+		if (id != requestId)
 			return BadRequest(new { message = "ID không khớp" });
 
 		try
 		{
-			var comic = await _comicService.UpdateComicAsync(id, request);
+			var comic = await _comicService.UpdateComicAsync(requestId, request);
 			if (comic == null)
 				return NotFound(new { message = "Không tìm thấy comic" });
 			

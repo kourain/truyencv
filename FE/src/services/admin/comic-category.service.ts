@@ -21,7 +21,7 @@ const createMockCategories = (limit?: number): ComicCategoryResponse[] => {
 	const total = Math.min(Math.max(1, limit ?? fallbackCategoryNames.length), fallbackCategoryNames.length);
 
 	return Array.from({ length: total }).map((_, index) => ({
-		id: index + 1,
+		id: String(index + 1),
 		name: fallbackCategoryNames[index],
 		created_at: new Date(now - index * 86_400_000).toISOString(),
 		updated_at: new Date(now - index * 43_200_000).toISOString()
@@ -65,7 +65,7 @@ export const updateComicCategory = async (payload: UpdateComicCategoryRequest) =
 	return response.data;
 };
 
-export const deleteComicCategory = async (id: number) => {
+export const deleteComicCategory = async (id: string) => {
 	const client = getHttpClient();
 	const response = await client.delete<BaseResponse>(`${resource}/${id}`);
 

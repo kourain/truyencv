@@ -14,7 +14,7 @@ export const fetchUserRoles = async (params: UserRoleListParams = {}) => {
 	return response.data;
 };
 
-export const fetchUserRolesByUser = async (userId: number) => {
+export const fetchUserRolesByUser = async (userId: string) => {
 	const client = getHttpClient();
 	const response = await client.get<UserHasRoleResponse[]>(`${resource}/user/${userId}`);
 
@@ -42,7 +42,7 @@ export const updateUserRole = async (payload: UpdateUserHasRoleRequest) => {
 	return response.data;
 };
 
-export const deleteUserRole = async (id: number) => {
+export const deleteUserRole = async (id: string) => {
 	const client = getHttpClient();
 	const response = await client.delete<BaseResponse>(`${resource}/${id}`);
 

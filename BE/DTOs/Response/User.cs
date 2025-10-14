@@ -3,7 +3,7 @@ namespace TruyenCV.DTO.Response;
 
 public class UserResponse
 {
-	public long id { get; set; }
+	public string id { get; set; }
 	public string name { get; set; }
 	public string FullName { get; set; }
 	public string email { get; set; }

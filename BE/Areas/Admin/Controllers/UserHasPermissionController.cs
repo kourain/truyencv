@@ -68,14 +68,15 @@ public sealed class UserHasPermissionController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateUserHasPermissionRequest request)
     {
-        if (id != request.id)
+        var requestId = request.id.ToSnowflakeId(nameof(request.id));
+        if (id != requestId)
         {
             return BadRequest(new { message = "ID không khớp" });
         }
 
         try
         {
-            var result = await _userHasPermissionService.UpdateUserHasPermissionAsync(id, request);
+            var result = await _userHasPermissionService.UpdateUserHasPermissionAsync(requestId, request);
             if (result == null)
             {
                 return NotFound(new { message = "Không tìm thấy permission" });

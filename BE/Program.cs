@@ -1,6 +1,7 @@
 using TruyenCV.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Serilog.Events;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.ComponentModel.DataAnnotations;
@@ -121,14 +122,26 @@ namespace TruyenCV
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            SnowflakeIdGenerator.Init(int.Parse(builder.Configuration.GetSection("Snowflake:MachineId").Value));
+            SnowflakeIdGenerator.Init(uint.Parse(builder.Configuration.GetSection("Snowflake:MachineId").Value));
             Directory.CreateDirectory("logs"); // Tạo thư mục logs nếu chưa tồn tại
+            var errorLogPath = builder.Environment.IsProduction()
+                ? $"logs/{DateTime.Now:yyyyMMdd_HHmmss}_errors.log"
+                : "errors.log";
+            var warnLogPath = builder.Environment.IsProduction()
+                ? $"logs/{DateTime.Now:yyyyMMdd_HHmmss}_warnings.log"
+                : "warn.log";
             if(builder.Environment.IsDevelopment())
-            File.WriteAllText("errors.log", string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
+            {
+                File.WriteAllText(errorLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
+                File.WriteAllText(warnLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
+            }
             Log.Logger = new LoggerConfiguration()
                             .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose,
                                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-                            .WriteTo.File(builder.Environment.IsProduction() ? $"logs/{DateTime.Now:yyyyMMdd_HHmmss}_errors.log" : "errors.log", Serilog.Events.LogEventLevel.Error)
+                            .WriteTo.File(errorLogPath, restrictedToMinimumLevel: LogEventLevel.Error)
+                            .WriteTo.Logger(lc =>
+                                lc.Filter.ByIncludingOnly(evt => evt.Level == LogEventLevel.Warning)
+                                    .WriteTo.File(warnLogPath))
                             .CreateLogger();
             builder.Host.UseSerilog();
             builder.Services.AddControllers().AddNewtonsoftJson(options =>

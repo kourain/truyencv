@@ -11,7 +11,7 @@ public class CreateUserRequest
 
 public class UpdateUserRequest
 {
-	public required long id { get; set; }
+	public required string id { get; set; }
 	public required string user_name { get; set; }
 	public required string name { get; set; }
 	public required string email { get; set; }

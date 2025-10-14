@@ -27,7 +27,7 @@ Tất cả các repository đều sử dụng Redis cache pattern từ `Extensio
 // Lấy entity theo ID
 return await _redisCache.GetFromRedisAsync<Entity>(
     _dbSet.AsNoTracking().FirstOrDefaultAsync(e => e.id == id),
-    $"{id}",
+    id,
     DefaultCacheMinutes
 );
 ```
@@ -37,7 +37,7 @@ KHÔNG SỬ DỤNG
 public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(long chapterId)
 {
     return await _redisCache.GetFromRedisAsync<ComicComment>(
-        _dbSet.AsNoTracking()
+        () => _dbSet.AsNoTracking()
             .Where(c => c.comic_chapter_id == chapterId)
             .OrderByDescending(c => c.created_at)
             .ToListAsync(),
@@ -51,7 +51,7 @@ Hãy sử dụng
 public async Task<IEnumerable<ComicComment>> GetByChapterIdAsync(long chapterId)
 {
     return await _redisCache.GetFromRedisAsync<ComicComment>(
-        _dbSet.AsNoTracking()
+        () => _dbSet.AsNoTracking()
             .Where(c => c.comic_chapter_id == chapterId)
             .OrderByDescending(c => c.created_at)
             .ToListAsync(),
@@ -74,7 +74,7 @@ return await _redisCache.GetFromRedisAsync<Entity>(
 public async Task<IEnumerable<ComicCategory>> GetAllAsync()
 {
     var result = await _redisCache.GetFromRedisAsync<ComicCategory>(
-        _dbSet.AsNoTracking().ToListAsync(),
+        () => _dbSet.AsNoTracking().ToListAsync(),
         DefaultCacheMinutes
     );
     return result ?? [];

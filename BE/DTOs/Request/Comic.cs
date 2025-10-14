@@ -16,7 +16,7 @@ public class CreateComicRequest
 
 public class UpdateComicRequest
 {
-	public required long id { get; set; }
+	public required string id { get; set; }
 	public required string name { get; set; }
 	public required string description { get; set; }
 	public required string slug { get; set; }

@@ -24,7 +24,7 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 	public async Task<IEnumerable<ComicCategory>> GetCategoriesByComicIdAsync(long comicId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicCategory>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.Where(chc => chc.comic_id == comicId)
 				.Select(chc => chc.ComicCategory!)
 				.ToListAsync(),
@@ -36,7 +36,7 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
 	public async Task<IEnumerable<Comic>> GetComicsByCategoryIdAsync(long categoryId)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.Where(chc => chc.comic_category_id == categoryId)
 				.Select(chc => chc.Comic!)
 				.ToListAsync(),

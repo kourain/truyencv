@@ -17,8 +17,8 @@ public class ComicCategoryRepository : Repository<ComicCategory>, IComicCategory
 	public async Task<ComicCategory?> GetByIdAsync(long id)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicCategory>(
-			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
-			$"{id}",
+			() => _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
+			id,
 			DefaultCacheMinutes
 		);
 	}
@@ -26,7 +26,7 @@ public class ComicCategoryRepository : Repository<ComicCategory>, IComicCategory
 	public async Task<ComicCategory?> GetByNameAsync(string name)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicCategory>(
-			_dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.name == name),
+			() => _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.name == name),
 			$"name:{name}",
 			DefaultCacheMinutes
 		);
@@ -36,7 +36,7 @@ public class ComicCategoryRepository : Repository<ComicCategory>, IComicCategory
 	{
 		limit = Math.Max(1, Math.Min(limit, 50));
 		return await _redisCache.GetFromRedisAsync<ComicCategory>(
-			_dbSet.AsNoTracking()
+			() => _dbSet.AsNoTracking()
 				.OrderByDescending(c => c.created_at)
 				.ThenByDescending(c => c.updated_at)
 				.Take(limit)

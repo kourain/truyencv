@@ -13,7 +13,7 @@ export interface CreateComicRequest {
 }
 
 export interface UpdateComicRequest {
-	id: number;
+	id: string;
 	name: string;
 	description: string;
 	slug: string;
@@ -26,7 +26,7 @@ export interface UpdateComicRequest {
 }
 
 export interface ComicResponse {
-	id: number;
+	id: string;
 	name: string;
 	description: string;
 	slug: string;

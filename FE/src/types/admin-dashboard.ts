@@ -7,9 +7,9 @@ export type AdminDashboardMetrics = {
 	total_users: number;
 	new_users_7_days: number;
 	categories_count: number;
-	total_chapters: number;
-	total_comments: number;
-	total_bookmarks: number;
+	total_chapters: string;
+	total_comments: string;
+	total_bookmarks: string;
 	active_admins: number;
 };
 

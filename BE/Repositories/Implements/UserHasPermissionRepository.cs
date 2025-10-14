@@ -17,8 +17,8 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
     public async Task<UserHasPermission?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<UserHasPermission>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.id == id && p.deleted_at == null),
-            $"{id}",
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.id == id && p.deleted_at == null),
+            id,
             DefaultCacheMinutes
         );
     }
@@ -26,7 +26,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
     public async Task<IEnumerable<UserHasPermission>> GetByUserIdAsync(long userId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserHasPermission>(
-            _dbSet.AsNoTracking()
+            () => _dbSet.AsNoTracking()
                 .Where(p => p.user_id == userId && p.deleted_at == null)
                 .ToListAsync(),
             $"user:{userId}",
@@ -38,7 +38,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
     public async Task<IEnumerable<UserHasPermission>> GetByPermissionAsync(Permissions permission)
     {
         var result = await _redisCache.GetFromRedisAsync<UserHasPermission>(
-            _dbSet.AsNoTracking()
+            () => _dbSet.AsNoTracking()
                 .Where(p => p.permissions == permission && p.deleted_at == null)
                 .ToListAsync(),
             $"permission:{(int)permission}",
@@ -50,7 +50,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
     public async Task<UserHasPermission?> GetByUserPermissionAsync(long userId, Permissions permission)
     {
         return await _redisCache.GetFromRedisAsync<UserHasPermission>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.user_id == userId && p.permissions == permission && p.deleted_at == null),
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.user_id == userId && p.permissions == permission && p.deleted_at == null),
             $"user:{userId}:permission:{(int)permission}",
             DefaultCacheMinutes
         );

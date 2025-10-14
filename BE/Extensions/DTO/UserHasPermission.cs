@@ -11,8 +11,8 @@ public static partial class Extensions
         return new UserHasPermission
         {
             permissions = request.permissions,
-            user_id = request.user_id,
-            assigned_by = request.assigned_by,
+            user_id = request.user_id.ToSnowflakeId(nameof(request.user_id)),
+            assigned_by = request.assigned_by.ToSnowflakeId(nameof(request.assigned_by)),
             created_at = DateTime.UtcNow,
             updated_at = DateTime.UtcNow
         };
@@ -21,8 +21,8 @@ public static partial class Extensions
     public static void UpdateFromRequest(this UserHasPermission entity, UpdateUserHasPermissionRequest request)
     {
         entity.permissions = request.permissions;
-        entity.user_id = request.user_id;
-        entity.assigned_by = request.assigned_by;
+        entity.user_id = request.user_id.ToSnowflakeId(nameof(request.user_id));
+        entity.assigned_by = request.assigned_by.ToSnowflakeId(nameof(request.assigned_by));
         entity.updated_at = DateTime.UtcNow;
     }
 
@@ -30,10 +30,10 @@ public static partial class Extensions
     {
         return new UserHasPermissionResponse
         {
-            id = entity.id,
+            id = entity._id,
             permissions = entity.permissions,
-            user_id = entity.user_id,
-            assigned_by = entity.assigned_by,
+            user_id = entity.user_id.ToString(),
+            assigned_by = entity.assigned_by.ToString(),
             created_at = entity.created_at,
             updated_at = entity.updated_at
         };

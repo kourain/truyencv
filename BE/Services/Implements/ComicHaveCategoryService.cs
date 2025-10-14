@@ -41,22 +41,25 @@ public class ComicHaveCategoryService : IComicHaveCategoryService
 
 	public async Task<bool> AddComicToCategoryAsync(CreateComicHaveCategoryRequest request)
 	{
+		var comicId = request.comic_id.ToSnowflakeId(nameof(request.comic_id));
+		var categoryId = request.comic_category_id.ToSnowflakeId(nameof(request.comic_category_id));
+
 		// Kiểm tra comic có tồn tại không
-		var comic = await _comicRepository.GetByIdAsync(request.comic_id);
+		var comic = await _comicRepository.GetByIdAsync(comicId);
 		if (comic == null)
 			throw new Exception("Comic không tồn tại");
 
 		// Kiểm tra category có tồn tại không
-		var category = await _categoryRepository.GetByIdAsync(request.comic_category_id);
+		var category = await _categoryRepository.GetByIdAsync(categoryId);
 		if (category == null)
 			throw new Exception("Category không tồn tại");
 
 		// Kiểm tra đã tồn tại chưa
-		if (await _comicHaveCategoryRepository.ExistsAsync(request.comic_id, request.comic_category_id))
+		if (await _comicHaveCategoryRepository.ExistsAsync(comicId, categoryId))
 			throw new Exception("Comic đã có trong category này");
 
 		// Thêm vào database
-		await _comicHaveCategoryRepository.AddAsync(request.comic_id, request.comic_category_id);
+		await _comicHaveCategoryRepository.AddAsync(comicId, categoryId);
 
 		return true;
 	}

@@ -76,12 +76,13 @@ public sealed class ComicCommentController : ControllerBase
 	[HttpPut("{id}")]
 	public async Task<IActionResult> Update(long id, [FromBody] UpdateComicCommentRequest request)
 	{
-		if (id != request.id)
+		var requestId = request.id.ToSnowflakeId(nameof(request.id));
+		if (id != requestId)
 			return BadRequest(new { message = "ID không khớp" });
 
 		try
 		{
-			var comment = await _commentService.UpdateCommentAsync(id, request);
+			var comment = await _commentService.UpdateCommentAsync(requestId, request);
 			if (comment == null)
 				return NotFound(new { message = "Không tìm thấy comment" });
 

@@ -18,7 +18,7 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
     public async Task<RefreshToken?> GetByTokenAsync(string token)
     {
         return await _redisCache.GetFromRedisAsync<RefreshToken>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.token == token),
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.token == token),
             $"token:{token}",
             DefaultCacheMinutes
         );
@@ -27,17 +27,16 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
     public async Task<RefreshToken?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<RefreshToken>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
-            $"{id}",
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
+            id,
             DefaultCacheMinutes
         );
     }
 
     public async Task<IEnumerable<RefreshToken>> GetByUserIdAsync(long userId)
     {
-        var users = await _redisCache.GetFromRedisAsync<Models.User>(_dbcontext.Users.Skip(0).Take(10).ToListAsync(), 0, 10);
         return await _redisCache.GetFromRedisAsync<RefreshToken>(
-            _dbSet.AsNoTracking().Where(r => r.user_id == userId).ToListAsync(),
+            () => _dbSet.AsNoTracking().Where(r => r.user_id == userId).ToListAsync(),
             $"user:{userId}",
             DefaultCacheMinutes
         ) ?? [];

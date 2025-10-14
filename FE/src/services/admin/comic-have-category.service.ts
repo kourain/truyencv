@@ -3,14 +3,14 @@ import type { ComicResponse } from "../../types/comic";
 
 const resource = "/admin/ComicHaveCategory";
 
-export const fetchCategoriesOfComic = async (comicId: number) => {
+export const fetchCategoriesOfComic = async (comicId: string) => {
 	const client = getHttpClient();
 	const response = await client.get<ComicCategoryResponse[]>(`${resource}/comic/${comicId}/categories`);
 
 	return response.data;
 };
 
-export const fetchComicsOfCategory = async (categoryId: number) => {
+export const fetchComicsOfCategory = async (categoryId: string) => {
 	const client = getHttpClient();
 	const response = await client.get<ComicResponse[]>(`${resource}/category/${categoryId}/comics`);
 
@@ -24,7 +24,7 @@ export const addComicToCategory = async (payload: CreateComicHaveCategoryRequest
 	return response.data;
 };
 
-export const removeComicFromCategory = async (comicId: number, categoryId: number) => {
+export const removeComicFromCategory = async (comicId: string, categoryId: string) => {
 	const client = getHttpClient();
 	const response = await client.delete<BaseResponse>(`${resource}/comic/${comicId}/category/${categoryId}`);
 

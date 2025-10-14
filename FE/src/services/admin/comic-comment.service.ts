@@ -3,10 +3,10 @@ import { getHttpClient } from "@helpers/httpClient";
 const resource = "/admin/ComicComment";
 
 export type CommentQueryParams =
-	| { type: "comic"; id: number }
-	| { type: "chapter"; id: number }
-	| { type: "user"; id: number }
-	| { type: "replies"; id: number };
+	| { type: "comic"; id: string }
+	| { type: "chapter"; id: string }
+	| { type: "user"; id: string }
+	| { type: "replies"; id: string };
 
 export const fetchComments = async ({ type, id }: CommentQueryParams) => {
 	const client = getHttpClient();
@@ -15,7 +15,7 @@ export const fetchComments = async ({ type, id }: CommentQueryParams) => {
 	return response.data;
 };
 
-export const fetchCommentById = async (id: number) => {
+export const fetchCommentById = async (id: string) => {
 	const client = getHttpClient();
 	const response = await client.get<ComicCommentResponse>(`${resource}/${id}`);
 
@@ -36,7 +36,7 @@ export const updateComicComment = async (payload: UpdateComicCommentRequest) => 
 	return response.data;
 };
 
-export const deleteComicComment = async (id: number) => {
+export const deleteComicComment = async (id: string) => {
 	const client = getHttpClient();
 	const response = await client.delete<BaseResponse>(`${resource}/${id}`);
 

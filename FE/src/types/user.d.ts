@@ -21,7 +21,7 @@ interface RegisterResponse extends AuthTokensResponse {
 	refresh_token_days: number;
 }
 interface UpdateUserRequest {
-	id: number;
+	id: string;
 	user_name: string;
 	name: string;
 	email: string;
@@ -54,7 +54,7 @@ interface RefreshTokenRequest {
 }
 
 interface UserResponse {
-	id: number;
+	id: string;
 	name: string;
 	full_name: string;
 	email: string;
@@ -72,25 +72,25 @@ interface ConfirmPasswordResetRequest {
 }
 
 interface UserProfileResponse {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  avatar: string;
-  created_at: string;
-  updated_at: string;
-  email_verified_at: string | null;
-  banned_at: string | null;
-  is_banned: boolean;
-  read_comic_count: number;
-  read_chapter_count: number;
-  bookmark_count: number;
-  coin: number;
-  roles: string[];
-  permissions: string[];
+	id: string;
+	name: string;
+	email: string;
+	phone: string;
+	avatar: string;
+	created_at: string;
+	updated_at: string;
+	email_verified_at: string | null;
+	banned_at: string | null;
+	is_banned: boolean;
+	read_comic_count: string;
+	read_chapter_count: string;
+	bookmark_count: string;
+	coin: string;
+	roles: string[];
+	permissions: string[];
 };
 
 interface ChangePasswordPayload {
-  current_password: string;
-  new_password: string;
+	current_password: string;
+	new_password: string;
 };

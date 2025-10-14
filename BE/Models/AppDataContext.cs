@@ -162,6 +162,8 @@ public abstract class BaseEntity
 {
     [Key]
     public long id { get; set; } = SnowflakeIdGenerator.NextId();
+    [NotMapped]
+    public string _id { get => id.ToString(); set => id = long.Parse(value); }
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
     public DateTime? deleted_at { get; set; }

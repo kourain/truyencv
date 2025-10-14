@@ -1,34 +1,34 @@
 interface CreateComicCommentRequest {
-	comic_id: number;
-	comic_chapter_id?: number | null;
-	user_id: number;
+	comic_id: string;
+	comic_chapter_id?: string | null;
+	user_id: string;
 	comment: string;
 	like?: number;
-	reply_id?: number | null;
+	reply_id?: string | null;
 	is_rate?: boolean;
 	rate_star?: number | null;
 }
 
 interface UpdateComicCommentRequest {
-	id: number;
-	comic_id: number;
-	comic_chapter_id?: number | null;
-	user_id: number;
+	id: string;
+	comic_id: string;
+	comic_chapter_id?: string | null;
+	user_id: string;
 	comment: string;
 	like: number;
-	reply_id?: number | null;
+	reply_id?: string | null;
 	is_rate: boolean;
 	rate_star?: number | null;
 }
 
 interface ComicCommentResponse {
-	id: number;
-	comic_id: number;
-	comic_chapter_id: number | null;
-	user_id: number;
+	id: string;
+	comic_id: string;
+	comic_chapter_id: string | null;
+	user_id: string;
 	comment: string;
 	like: number;
-	reply_id: number | null;
+	reply_id: string | null;
 	is_rate: boolean;
 	rate_star: number | null;
 	created_at: string;

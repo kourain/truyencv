@@ -17,8 +17,8 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
     public async Task<UserComicBookmark?> GetByIdAsync(long id)
     {
         return await _redisCache.GetFromRedisAsync<UserComicBookmark>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.id == id && b.deleted_at == null),
-            $"{id}",
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.id == id && b.deleted_at == null),
+            id,
             DefaultCacheMinutes
         );
     }
@@ -26,7 +26,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
     public async Task<UserComicBookmark?> GetByUserAndComicAsync(long userId, long comicId)
     {
         return await _redisCache.GetFromRedisAsync<UserComicBookmark>(
-            _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.user_id == userId && b.comic_id == comicId && b.deleted_at == null),
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(b => b.user_id == userId && b.comic_id == comicId && b.deleted_at == null),
             $"user:{userId}:comic:{comicId}",
             DefaultCacheMinutes
         );
@@ -35,7 +35,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
     public async Task<IEnumerable<UserComicBookmark>> GetByUserIdAsync(long userId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserComicBookmark>(
-            _dbSet.AsNoTracking()
+            () => _dbSet.AsNoTracking()
                 .Where(b => b.user_id == userId && b.deleted_at == null)
                 .OrderByDescending(b => b.updated_at)
                 .ToListAsync(),
@@ -48,7 +48,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
     public async Task<IEnumerable<UserComicBookmark>> GetByComicIdAsync(long comicId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserComicBookmark>(
-            _dbSet.AsNoTracking()
+            () => _dbSet.AsNoTracking()
                 .Where(b => b.comic_id == comicId && b.deleted_at == null)
                 .ToListAsync(),
             $"comic:{comicId}",
