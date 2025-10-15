@@ -19,4 +19,9 @@ public class UserHasRole : BaseEntity
     public virtual User? User {get;set;}
     [JsonIgnore]
     public virtual User? AssignedBy {get;set;}
+
+    public DateTime? revoked_at { get; set; }
+
+    [NotMapped]
+    public bool is_active => revoked_at == null && deleted_at == null;
 }

@@ -1,6 +1,6 @@
 import { ComicStatus } from "@const/comic-status";
 
-export interface CreateComicRequest {
+interface CreateComicRequest {
 	name: string;
 	description: string;
 	slug: string;
@@ -12,7 +12,7 @@ export interface CreateComicRequest {
 	status?: ComicStatus;
 }
 
-export interface UpdateComicRequest {
+interface UpdateComicRequest {
 	id: string;
 	name: string;
 	description: string;
@@ -25,7 +25,7 @@ export interface UpdateComicRequest {
 	status: ComicStatus;
 }
 
-export interface ComicResponse {
+interface ComicResponse {
 	id: string;
 	name: string;
 	description: string;

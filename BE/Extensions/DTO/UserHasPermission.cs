@@ -35,7 +35,10 @@ public static partial class Extensions
             user_id = entity.user_id.ToString(),
             assigned_by = entity.assigned_by.ToString(),
             created_at = entity.created_at,
-            updated_at = entity.updated_at
+            updated_at = entity.updated_at,
+            revoked_at = entity.revoked_at,
+            revoke_until = entity.revoke_until,
+            is_active = entity.is_active
         };
     }
 }

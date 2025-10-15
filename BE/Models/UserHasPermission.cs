@@ -17,10 +17,15 @@ public class UserHasPermission : BaseEntity
 
     [Required]
     public required long assigned_by { get; set; }
-
     [JsonIgnore]
     public virtual User? User { get; set; }
 
     [JsonIgnore]
     public virtual User? AssignedBy { get; set; }
+
+    public DateTime? revoked_at { get; set; }
+    public DateTime? revoke_until { get; set; }
+
+    [NotMapped]
+    public bool is_active => revoked_at == null && (revoke_until == null || revoke_until < DateTime.UtcNow) && deleted_at == null;
 }

@@ -29,7 +29,9 @@ public static partial class Extensions
             user_id = userHasRole.user_id.ToString(),
             assigned_by = userHasRole.assigned_by.ToString(),
             created_at = userHasRole.created_at,
-            updated_at = userHasRole.updated_at
+            updated_at = userHasRole.updated_at,
+            revoked_at = userHasRole.revoked_at,
+            is_active = userHasRole.is_active
         };
     }
 

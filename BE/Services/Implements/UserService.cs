@@ -102,9 +102,9 @@ namespace TruyenCV.Services
             if (user != null && Bcrypt.VerifyPassword(password, user.password) && user.deleted_at == null)
             {
                 return await _dbcontext.Users
-                    .Where(u => u.id == user.id && u.deleted_at == null)
+                    .Where(u => u.id == user.id && u.deleted_at == null && u.is_banned == false)
                     .Include(u => u.Roles.Where(role => role.deleted_at == null))
-                    .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                    .Include(u => u.Permissions.Where(permission => permission.is_active))
                     .FirstOrDefaultAsync();
             }
             return null;

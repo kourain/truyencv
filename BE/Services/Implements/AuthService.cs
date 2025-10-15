@@ -48,7 +48,7 @@ namespace TruyenCV.Services
             var refreshToken = await _context.RefreshTokens
                 .AsSplitQuery()
                 .Include(rt => rt.User)
-                .Where(rt => rt.User.deleted_at == null)
+                .Where(rt => rt.User.deleted_at == null && rt.User.is_banned == false)
                 .Include(rt => rt.User.Roles.Where(role => role.deleted_at == null))
                 .Include(rt => rt.User.Permissions.Where(permission => permission.deleted_at == null))
                 .FirstOrDefaultAsync(rt => rt.token == refreshTokenValue);

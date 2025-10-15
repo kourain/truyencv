@@ -18,4 +18,6 @@ interface UserHasRoleResponse {
 	assigned_by: string;
 	created_at: string;
 	updated_at: string;
+	revoked_at: string | null;
+	is_active: boolean;
 }

@@ -47,7 +47,7 @@
         "./src/services/*"
       ],
       "@types/*": [
-        "./src/types/*.ts"
+        "./src/types/*"
       ],
     },
     "noEmit": true

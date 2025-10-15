@@ -1,6 +1,6 @@
 import type { ComicResponse } from "./comic";
 
-export type AdminDashboardMetrics = {
+interface AdminDashboardMetrics {
 	total_comics: number;
 	continuing_comics: number;
 	completed_comics: number;
@@ -13,11 +13,11 @@ export type AdminDashboardMetrics = {
 	active_admins: number;
 };
 
-export type AdminDashboardCategorySummary = ComicCategoryResponse & {
+interface AdminDashboardCategorySummary extends ComicCategoryResponse {
 	comics_count?: number;
 };
 
-export type AdminDashboardOverview = {
+interface AdminDashboardOverview {
 	metrics: AdminDashboardMetrics;
 	top_comics: ComicResponse[];
 	recent_users: UserResponse[];

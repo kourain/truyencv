@@ -8,4 +8,7 @@ public class UserHasPermissionResponse
     public string assigned_by { get; set; }
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
+    public DateTime? revoked_at { get; set; }
+    public DateTime? revoke_until { get; set; }
+    public bool is_active { get; set; }
 }

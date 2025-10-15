@@ -36,7 +36,7 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
     public async Task<IEnumerable<RefreshToken>> GetByUserIdAsync(long userId)
     {
         return await _redisCache.GetFromRedisAsync<RefreshToken>(
-            () => _dbSet.AsNoTracking().Where(r => r.user_id == userId).ToListAsync(),
+            () => _dbSet.AsNoTracking().Where(r => r.user_id == userId && r.revoked_at == null && r.deleted_at == null && r.expires_at > DateTime.UtcNow).ToListAsync(),
             $"user:{userId}",
             DefaultCacheMinutes
         ) ?? [];

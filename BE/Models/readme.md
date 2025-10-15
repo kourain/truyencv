@@ -6,7 +6,7 @@ Tất cả Entity class đều phải được kế thừa từ class TruyenCV.M
 
 ## Coding
 
-Mỗt khi tạo Entity mới hoặc có thay đổi, bắt buộc phải tạo hoặc cập nhật Repository("../Repositories"), Service("../Services"), Controller("../Controlers","../Areas/Admin/Controllers","../Areas/User/Controllers"), DTOs("../DTOs") tương ứng
+Mỗt khi tạo Entity mới hoặc có thay đổi, bắt buộc phải tạo hoặc cập nhật Repository("../Repositories"), Service("../Services"), Controller("../Controlers","../Areas/Admin/Controllers","../Areas/User/Controllers"), DTOs("../DTOs") tương ứng. Cuối cùng hãy chỉnh sửa các types có trong FrontEnd thư mục src/types tương ứng
 
 ## [Required] attribute và required
 

@@ -13,9 +13,9 @@ import ServiceStatusSection from "./service-status-section";
 import type { MetricCardConfig, OverviewStats } from "@components/admin/types";
 
 import { formatNumber } from "@helpers/format";
-import { fetchPing } from "@services/health.service";
 import { fetchAdminDashboardOverview } from "@services/admin/dashboard.service";
 import type { AdminDashboardOverview } from "../../../types/admin-dashboard";
+import { usePingQuery } from "@hooks/usePingQuery";
 
 const AdminDashboardPage = () => {
   const { data, isLoading, isFetching, isError, error, refetch } = useQuery<AdminDashboardOverview>({
@@ -25,11 +25,7 @@ const AdminDashboardPage = () => {
     retry: 1
   });
 
-  const { data: pingData, isLoading: isPingLoading, isError: isPingError, refetch: refetchPing } = useQuery({
-    queryKey: ["admin-dashboard", "ping"],
-    queryFn: fetchPing,
-    refetchInterval: 1_000
-  });
+  const { data: pingData, isLoading: isPingLoading, isError: isPingError, refetch: refetchPing } = usePingQuery();
 
   const metrics = data?.metrics ?? {
     total_comics: 0,
