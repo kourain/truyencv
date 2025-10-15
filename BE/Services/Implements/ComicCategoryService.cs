@@ -1,5 +1,6 @@
-using TruyenCV.DTO.Request;
-using TruyenCV.DTO.Response;
+using System;
+using TruyenCV.DTOs.Request;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -45,6 +46,8 @@ public class ComicCategoryService : IComicCategoryService
 
 	public async Task<ComicCategoryResponse> CreateCategoryAsync(CreateComicCategoryRequest categoryRequest)
 	{
+		EnsureValidCategoryType(categoryRequest.category_type);
+
 		// Kiểm tra tên đã tồn tại chưa
 		if (await _categoryRepository.ExistsAsync(c => c.name == categoryRequest.name))
 			throw new Exception("Tên category đã tồn tại");
@@ -63,6 +66,8 @@ public class ComicCategoryService : IComicCategoryService
 
 	public async Task<ComicCategoryResponse?> UpdateCategoryAsync(long id, UpdateComicCategoryRequest categoryRequest)
 	{
+		EnsureValidCategoryType(categoryRequest.category_type);
+
 		// Lấy category từ database
 		var category = await _categoryRepository.GetByIdAsync(id);
 		if (category == null)
@@ -95,5 +100,11 @@ public class ComicCategoryService : IComicCategoryService
 		await _redisCache.AddOrUpdateInRedisAsync(category, category.id);
 
 		return true;
+	}
+
+	private static void EnsureValidCategoryType(CategoryType categoryType)
+	{
+		if (!Enum.IsDefined(typeof(CategoryType), categoryType))
+			throw new ArgumentException("Loại thể loại không hợp lệ");
 	}
 }

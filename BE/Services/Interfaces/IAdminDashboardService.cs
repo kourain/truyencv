@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Response;
 
 namespace TruyenCV.Services;
 

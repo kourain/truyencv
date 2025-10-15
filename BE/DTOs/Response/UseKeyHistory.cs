@@ -1,7 +1,6 @@
 using System;
-using TruyenCV.Const;
 
-namespace TruyenCV.DTO.Response;
+namespace TruyenCV.DTOs.Response;
 
 public class UserUseKeyHistoryResponse
 {

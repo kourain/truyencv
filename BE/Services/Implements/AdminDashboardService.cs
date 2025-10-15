@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TruyenCV;
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
 
 namespace TruyenCV.Services;

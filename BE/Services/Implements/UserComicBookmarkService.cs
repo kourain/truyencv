@@ -1,6 +1,6 @@
 using System.Linq;
 using Microsoft.Extensions.Caching.Distributed;
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Models;
 using TruyenCV.Repositories;
 

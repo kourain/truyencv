@@ -2,7 +2,7 @@
 
 ## coding
 
-tất cả mọi class, enum ở trong thư mục này đều không khai báo namespace
+tất cả mọi class, enum ở trong thư mục này đều sử dụng `namespace TruyenCV;`
 
 ## using
 

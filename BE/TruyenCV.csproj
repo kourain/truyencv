@@ -17,6 +17,7 @@
     <NoWarn>$(NoWarn);IDE0037</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE0090</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE0290</NoWarn> <!-- IDE -->
+    <NoWarn>$(NoWarn);IDE0310</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- IDE -->
   </PropertyGroup>
 

@@ -102,6 +102,9 @@ namespace TruyenCV.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
+                    b.Property<int>("category_type")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("created_at")
                         .HasColumnType("timestamp with time zone");
 
@@ -456,7 +459,7 @@ namespace TruyenCV.Migrations
                             is_banned = false,
                             key = 0L,
                             name = "System",
-                            password = "$2a$12$3YxsjLQBcitvIFdaKsRafOjObtBwZ/Zp11YAm.cMIUC77.GiaFRIi",
+                            password = "$2a$12$4mDXXIMuUV8.QstZN1crHeml7Wbhen1O6QvJ6bXDMJ8z2dHxUnDYi",
                             phone = "0000000000",
                             read_chapter_count = 0L,
                             read_comic_count = 0L,
@@ -464,7 +467,7 @@ namespace TruyenCV.Migrations
                         },
                         new
                         {
-                            id = 766130039581315072L,
+                            id = 766206485104431104L,
                             avatar = "default_avatar.png",
                             bookmark_count = 0L,
                             coin = 0L,
@@ -474,7 +477,7 @@ namespace TruyenCV.Migrations
                             is_banned = false,
                             key = 0L,
                             name = "kourain",
-                            password = "$2a$12$lLwkSfSmAN651GucYOizkejIYkKz5kNgmBu.I72gWk3EQTXl7k0i2",
+                            password = "$2a$12$Gws/QykY/zHKBnzvvb8lGuFtxmfMPFK0EV9ECV7LBzrQKfA.EiTIe",
                             phone = "0123456789",
                             read_chapter_count = 0L,
                             read_comic_count = 0L,
@@ -681,25 +684,25 @@ namespace TruyenCV.Migrations
                     b.HasData(
                         new
                         {
-                            id = 766130041045127168L,
+                            id = 766206486589214720L,
                             assigned_by = 1L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "Admin",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            user_id = 766130039581315072L
+                            user_id = 766206485104431104L
                         },
                         new
                         {
-                            id = 766130041049321472L,
+                            id = 766206486593409024L,
                             assigned_by = 1L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "User",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
-                            user_id = 766130039581315072L
+                            user_id = 766206485104431104L
                         },
                         new
                         {
-                            id = 766130041049321473L,
+                            id = 766206486593409025L,
                             assigned_by = 1L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             role_name = "System",

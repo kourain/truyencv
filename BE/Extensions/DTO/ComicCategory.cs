@@ -1,5 +1,5 @@
-using TruyenCV.DTO.Request;
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Request;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Models;
 
 namespace TruyenCV;
@@ -12,6 +12,7 @@ public static partial class Extensions
 		return new ComicCategory
 		{
 			name = request.name,
+			category_type = request.category_type,
 			created_at = DateTime.UtcNow,
 			updated_at = DateTime.UtcNow
 		};
@@ -24,6 +25,7 @@ public static partial class Extensions
 		{
 			id = category._id,
 			name = category.name,
+			category_type = category.category_type,
 			created_at = category.created_at,
 			updated_at = category.updated_at
 		};
@@ -33,6 +35,7 @@ public static partial class Extensions
 	public static void UpdateFromRequest(this ComicCategory category, UpdateComicCategoryRequest request)
 	{
 		category.name = request.name;
+		category.category_type = request.category_type;
 		category.updated_at = DateTime.UtcNow;
 	}
 }

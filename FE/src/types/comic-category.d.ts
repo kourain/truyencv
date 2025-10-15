@@ -1,10 +1,14 @@
+import { CategoryType } from "@const/enum/category-type";
+
 interface CreateComicCategoryRequest {
 	name: string;
+	category_type: CategoryType;
 }
 
 interface UpdateComicCategoryRequest {
 	id: string;
 	name: string;
+	category_type: CategoryType;
 }
 
 interface CreateComicHaveCategoryRequest {
@@ -22,6 +26,7 @@ interface UpdateComicHaveCategoryRequest {
 interface ComicCategoryResponse {
 	id: string;
 	name: string;
+	category_type: CategoryType;
 	created_at: string;
 	updated_at: string;
 }

@@ -1,6 +1,5 @@
-using TruyenCV.Const;
 
-namespace TruyenCV.DTO.Request;
+namespace TruyenCV.DTOs.Request;
 
 public class CreateUserCoinHistoryRequest
 {

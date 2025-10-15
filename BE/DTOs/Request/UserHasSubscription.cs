@@ -1,6 +1,6 @@
 using System;
 
-namespace TruyenCV.DTO.Request;
+namespace TruyenCV.DTOs.Request;
 
 public class CreateUserSubscriptionRequest
 {

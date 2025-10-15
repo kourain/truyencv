@@ -4,7 +4,7 @@ namespace TruyenCV;
 
 public static partial class Extensions
 {
-    public static Models.User ToEntity(this DTO.Request.CreateUserRequest user)
+    public static Models.User ToEntity(this DTOs.Request.CreateUserRequest user)
     {
         return new Models.User
         {
@@ -14,9 +14,9 @@ public static partial class Extensions
             created_at = DateTime.UtcNow,
         };
     }
-    public static DTO.Response.UserResponse ToRespDTO(this Models.User user)
+    public static DTOs.Response.UserResponse ToRespDTO(this Models.User user)
     {
-        return new DTO.Response.UserResponse
+        return new DTOs.Response.UserResponse
         {
             id = user._id,
             name = user.name,
@@ -25,9 +25,9 @@ public static partial class Extensions
             created_at = user.created_at
         };
     }
-    public static DTO.Response.UserProfileResponse ToProfileDTO(this Models.User user)
+    public static DTOs.Response.UserProfileResponse ToProfileDTO(this Models.User user)
     {
-        return new DTO.Response.UserProfileResponse
+        return new DTOs.Response.UserProfileResponse
         {
             id = user._id,
             name = user.name,
@@ -53,7 +53,7 @@ public static partial class Extensions
                 .ToArray()
         };
     }
-    public static Models.User UpdateFromRequest(this Models.User user, DTO.Request.UpdateUserRequest request)
+    public static Models.User UpdateFromRequest(this Models.User user, DTOs.Request.UpdateUserRequest request)
     {
         user.name = request.name;
         user.email = request.email;

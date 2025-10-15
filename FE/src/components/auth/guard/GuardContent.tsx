@@ -1,4 +1,4 @@
-import { UserRole } from "@const/role";
+import { UserRole } from "@const/enum/role";
 import {
   clearAuthTokens,
   getAccessTokenPayload,

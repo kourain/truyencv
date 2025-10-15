@@ -58,12 +58,13 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
             .Where(r => r.user_id == userId && r.revoked_at == null)
             .ToListAsync();
         if (!userTokens.Any()) return 0;
-        foreach (var token in userTokens)
+        var now = DateTime.UtcNow;
+        await Task.WhenAll(userTokens.Select(async token =>
         {
-            token.revoked_at = DateTime.UtcNow;
+            token.revoked_at = now;
             // Cập nhật cache cho mỗi token
             await _redisCache.AddOrUpdateInRedisAsync(token, $"token:{token.token}", DefaultCacheMinutes);
-        }
+        }));
         await _dbcontext.SaveChangesAsync();
         // Xóa cache danh sách token của user
         // Không cần triển khai tại đây, chỉ xóa từng token trong cache

@@ -1,6 +1,6 @@
 using System.Linq;
-using TruyenCV.DTO.Request;
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Request;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
 
 namespace TruyenCV.Services;

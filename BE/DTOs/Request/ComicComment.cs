@@ -1,4 +1,4 @@
-namespace TruyenCV.DTO.Request;
+namespace TruyenCV.DTOs.Request;
 
 // Request DTOs for creating and updating comic comments
 public class CreateComicCommentRequest

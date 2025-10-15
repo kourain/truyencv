@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Services;
 
 namespace TruyenCV.Areas.Admin.Controllers;

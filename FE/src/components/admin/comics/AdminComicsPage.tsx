@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, PlusCircle, RefreshCcw, Trash2 } from "lucide-react";
 
 import { createComic, deleteComic, fetchComics, updateComic } from "@services/admin";
-import { ComicStatus } from "../../../const/comic-status";
+import { ComicStatus } from "../../../const/enum/comic-status";
 import type { ComicResponse } from "../../../types/comic";
 
 const DEFAULT_LIMIT = 12;

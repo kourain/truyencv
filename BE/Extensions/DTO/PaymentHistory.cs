@@ -1,6 +1,6 @@
 using System;
-using TruyenCV.DTO.Request;
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Request;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Models;
 
 namespace TruyenCV;

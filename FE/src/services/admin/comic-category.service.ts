@@ -1,4 +1,10 @@
+import { CategoryType } from "@const/enum/category-type";
 import { getHttpClient } from "@helpers/httpClient";
+import type {
+	ComicCategoryResponse,
+	CreateComicCategoryRequest,
+	UpdateComicCategoryRequest
+} from "../../types/comic-category";
 
 const resource = "/admin/ComicCategory";
 
@@ -14,15 +20,23 @@ export const fetchComicCategories = async (params: CategoryListParams = {}) => {
 	return response.data;
 };
 
-const fallbackCategoryNames = ["Huyền huyễn", "Tiên hiệp", "Đô thị", "Khoa huyễn", "Kiếm hiệp", "Hài hước"];
+const fallbackCategories: Array<{ name: string; category_type: CategoryType }> = [
+	{ name: "Huyền huyễn", category_type: CategoryType.Genre },
+	{ name: "Tiên hiệp", category_type: CategoryType.Genre },
+	{ name: "Đô thị", category_type: CategoryType.Genre },
+	{ name: "Khoa huyễn", category_type: CategoryType.Genre },
+	{ name: "Kiếm hiệp", category_type: CategoryType.Genre },
+	{ name: "Hài hước", category_type: CategoryType.Genre }
+];
 
 const createMockCategories = (limit?: number): ComicCategoryResponse[] => {
 	const now = Date.now();
-	const total = Math.min(Math.max(1, limit ?? fallbackCategoryNames.length), fallbackCategoryNames.length);
+	const total = Math.min(Math.max(1, limit ?? fallbackCategories.length), fallbackCategories.length);
 
 	return Array.from({ length: total }).map((_, index) => ({
 		id: String(index + 1),
-		name: fallbackCategoryNames[index],
+		name: fallbackCategories[index].name,
+		category_type: fallbackCategories[index].category_type,
 		created_at: new Date(now - index * 86_400_000).toISOString(),
 		updated_at: new Date(now - index * 43_200_000).toISOString()
 	}));
