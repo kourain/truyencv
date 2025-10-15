@@ -1,8 +1,8 @@
 using TruyenCV.Models;
 using TruyenCV.Services;
 using TruyenCV.Repositories;
-using TruyenCV.DTO.Response;
-using TruyenCV.DTO.Request;
+using TruyenCV.DTOs.Response;
+using TruyenCV.DTOs.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;

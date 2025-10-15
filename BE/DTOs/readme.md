@@ -5,9 +5,9 @@
 tất cả id có trong DTO đều có kiểu dữ liệu là string, Lý do: các Snowflake ID (~7.6e17) vượt quá giới hạn 53-bit nên phía client (JavaScript)
 khi chuyển đổi từ Entity sang DTOs, hãy sử dụng trường _id (kiểu string) có trong Entity thay vì sử dụng các hàm chuyển đổi
 ```csharp
-public static DTO.Response.UserResponse ToRespDTO(this Models.User user)
+public static DTOs.Response.UserResponse ToRespDTO(this Models.User user)
 {
-    return new DTO.Response.UserResponse
+    return new DTOs.Response.UserResponse
     {
         id = user._id,
         name = user.name,

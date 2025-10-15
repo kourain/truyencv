@@ -1,5 +1,5 @@
 import { getHttpClient } from "@helpers/httpClient";
-import { ComicStatus } from "@const/comic-status";
+import { ComicStatus } from "@const/enum/comic-status";
 import { ComicResponse, CreateComicRequest, UpdateComicRequest } from "../../types/comic";
 
 export type ComicListParams = {

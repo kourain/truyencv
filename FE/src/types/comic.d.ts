@@ -1,4 +1,4 @@
-import { ComicStatus } from "@const/comic-status";
+import { ComicStatus } from "@const/enum/comic-status";
 
 interface CreateComicRequest {
 	name: string;

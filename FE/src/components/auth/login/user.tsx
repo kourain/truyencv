@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@hooks/useAuth";
-import { UserRole } from "@const/role";
+import { UserRole } from "@const/enum/role";
 import { useToast } from "@components/providers/ToastProvider";
 
 export const UserLoginContent = () => {

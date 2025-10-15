@@ -1,4 +1,4 @@
-using TruyenCV.DTO.Request;
+using TruyenCV.DTOs.Request;
 using TruyenCV.Services;
 using System;
 using Microsoft.AspNetCore.Authorization;

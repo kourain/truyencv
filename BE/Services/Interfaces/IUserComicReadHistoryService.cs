@@ -1,4 +1,4 @@
-using TruyenCV.DTO.Response;
+using TruyenCV.DTOs.Response;
 
 namespace TruyenCV.Services;
 

@@ -7,4 +7,11 @@ public static partial class Extensions
 			action(item);
 		}
 	}
+	public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> action)
+	{
+		foreach (var item in source)
+		{
+			await action(item);
+		}
+	}
 }

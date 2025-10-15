@@ -1,4 +1,4 @@
-namespace TruyenCV.DTO.Response;
+namespace TruyenCV.DTOs.Response;
 
 public class ComicChapterResponse
 {

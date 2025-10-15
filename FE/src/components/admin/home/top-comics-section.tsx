@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ArrowRight } from "lucide-react";
 
-import { ComicStatus, ComicStatusLabel } from "@const/comic-status";
+import { ComicStatus, ComicStatusLabel } from "@const/enum/comic-status";
 import { formatNumber, formatRelativeTime } from "@helpers/format";
 import type { ComicResponse } from "../../../types/comic";
 

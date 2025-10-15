@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TruyenCV.Const;
-using TruyenCV.DTO.Request;
+
+using TruyenCV.DTOs.Request;
 using TruyenCV.Services;
 
 namespace TruyenCV.Areas.Admin.Controllers;

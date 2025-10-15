@@ -266,7 +266,7 @@ dotnet ef database update
 ### Tổ Chức File
 
 - **Partial Classes**: `public static partial class Extensions` cho extension methods
-- **Namespace**: Khớp với cấu trúc thư mục nhưng sử dụng dấu chấm (e.g., `TruyenCV.DTO.Response`), ngoại trừ Extensions, Const luôn là `TruyenCV`
+- **Namespace**: Khớp với cấu trúc thư mục nhưng sử dụng dấu chấm (e.g., `TruyenCV.DTOs.Response`), ngoại trừ Extensions, Const luôn là `TruyenCV`
 - **Documentation**: Vietnamese comments trong markdown files giải thích các patterns
 
 ### Extension Methods

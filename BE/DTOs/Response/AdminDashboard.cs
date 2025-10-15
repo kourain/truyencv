@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace TruyenCV.DTO.Response;
+namespace TruyenCV.DTOs.Response;
 
 public class AdminDashboardMetricsResponse
 {

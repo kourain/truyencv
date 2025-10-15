@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { login } from "@services/auth.service";
 import { clearAuthTokens } from "@helpers/authTokens";
 import { useAuth } from "@hooks/useAuth";
-import { UserRole } from "@const/role";
+import { UserRole } from "@const/enum/role";
 import { useToast } from "@components/providers/ToastProvider";
 
 export const AdminLoginContent = () => {

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TruyenCV.DTO.Request;
+namespace TruyenCV.DTOs.Request;
 
 public class RequestPasswordResetRequest
 {

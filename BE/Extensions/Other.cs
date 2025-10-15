@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -13,11 +14,12 @@ public static partial class Extensions
 	{
 		return Encoding.UTF8.GetString(Convert.FromBase64String(base64));
 	}
-	public static string GetDisplayName(this Enum value)
+	public static string ToString(this Enum value)
 	{
 		var field = value.GetType().GetField(value.ToString());
-		var attribute = Attribute.GetCustomAttribute(field!, typeof(DisplayAttribute)) as DisplayAttribute;
-		return attribute == null ? value.ToString() : attribute.Name!;
+		var displayAttribute = Attribute.GetCustomAttribute(field!, typeof(DisplayAttribute)) as DisplayAttribute;
+		var descriptionAttribute = Attribute.GetCustomAttribute(field!, typeof(DescriptionAttribute)) as DescriptionAttribute;
+		return displayAttribute == null ? value.ToString() : displayAttribute.Name!;
 	}
 
 	public static long ToSnowflakeId(this string? value, string fieldName = "ID")
