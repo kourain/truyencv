@@ -1,6 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source "./**/*.{ts,tsx}";
+@source "../components/**/*.{ts,tsx}";
+@source "../hooks/**/*.{ts,tsx}";
+
+@theme {
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: #ffffff;
+  --color-primary-subtle: #c4b5fd;
+  --color-secondary: #f97316;
+  --color-secondary-foreground: #ffffff;
+  --color-surface: #0f172a;
+  --color-surface-foreground: #e2e8f0;
+  --color-surface-muted: #1e293b;
+  --shadow-glow: 0 20px 40px -15px rgba(139, 92, 246, 0.45);
+}
 
 :root {
   color-scheme: light dark;
