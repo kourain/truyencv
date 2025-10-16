@@ -2,6 +2,7 @@ using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
+using Pgvector;
 
 namespace TruyenCV.Services;
 
@@ -12,11 +13,13 @@ public class ComicService : IComicService
 {
 	private readonly IComicRepository _comicRepository;
 	private readonly IDistributedCache _redisCache;
+    private readonly ITextEmbeddingService _embeddingService;
 
-	public ComicService(IComicRepository comicRepository, IDistributedCache redisCache)
+	public ComicService(IComicRepository comicRepository, IDistributedCache redisCache, ITextEmbeddingService embeddingService)
 	{
 		_comicRepository = comicRepository;
 		_redisCache = redisCache;
+        _embeddingService = embeddingService;
 	}
 
 	public async Task<ComicResponse?> GetComicByIdAsync(long id)
@@ -31,9 +34,22 @@ public class ComicService : IComicService
 		return comic?.ToRespDTO();
 	}
 
-	public async Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword)
+	public async Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword, int limit, double minScore)
 	{
-		var comics = await _comicRepository.SearchAsync(keyword);
+		var normalizedKeyword = keyword?.Trim();
+		if (string.IsNullOrWhiteSpace(normalizedKeyword))
+			return [];
+
+        limit = Math.Clamp(limit, 1, _embeddingService.Options.MaxResults);
+        minScore = Math.Clamp(minScore, 0.0, 0.99);
+
+		Vector? queryVector = null;
+		if (_embeddingService.TryCreateEmbedding(out var embeddingValues, normalizedKeyword))
+		{
+			queryVector = new Vector(embeddingValues);
+		}
+
+		var comics = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
 		return comics.Select(c => c.ToRespDTO());
 	}
 
@@ -64,6 +80,11 @@ public class ComicService : IComicService
 		// Chuyển đổi từ DTO sang Entity
 		var comic = comicRequest.ToEntity();
 
+		if (_embeddingService.TryCreateEmbedding(out var embeddingValues, comic.name, comic.description))
+		{
+			comic.search_vector = new Vector(embeddingValues);
+		}
+
 		// Thêm comic vào database
 		var newComic = await _comicRepository.AddAsync(comic);
 
@@ -82,6 +103,15 @@ public class ComicService : IComicService
 
 		// Cập nhật thông tin
 		comic.UpdateFromRequest(comicRequest);
+
+		if (_embeddingService.TryCreateEmbedding(out var embeddingValues, comic.name, comic.description))
+		{
+			comic.search_vector = new Vector(embeddingValues);
+		}
+		else
+		{
+			comic.search_vector = null;
+		}
 
 		// Cập nhật vào database
 		await _comicRepository.UpdateAsync(comic);

@@ -1,4 +1,3 @@
-import { CategoryType } from "@const/enum/category-type";
 
 interface CreateComicCategoryRequest {
 	name: string;

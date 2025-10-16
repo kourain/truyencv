@@ -15,7 +15,7 @@ const routeRequiredRoles: Record<string, UserRole[]> = {
   user: [UserRole.User]
 };
 
-export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp, routeFor: string }) => {
+export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp[], routeFor: string }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
@@ -40,7 +40,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
     };
 
     const ensureUserSession = async () => {
-      const isAuthPage = USER_AUTH_ROUTE_REGEX.test(pathname ?? "");
+      const isSkip = USER_AUTH_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""));
       const hasRole = hasRequiredRole(authState.roles);
       const isSessionValid = hasRole && authState.isAuthenticated;
 
@@ -57,7 +57,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
         }
       };
 
-      if (isAuthPage) {
+      if (isSkip) {
         if (isSessionValid) {
           router.replace(`/${routeFor}` as Route);
           finish();
