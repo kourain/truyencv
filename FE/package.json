@@ -1,37 +1,53 @@
 {
   "name": "truyencv-fe",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts",
+    "check": "npm run build && tsc",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview"
+  },
+  "cloudflare": {
+    "label": "Next.js Framework Starter",
+    "products": [
+      "Workers"
+    ],
+    "categories": [],
+    "preview_icon_url": "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/05eee9e0-2c04-48fd-11bf-84e65f839000/public",
+    "preview_image_url": "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/4e913a56-fd99-4372-0586-9f1364173100/preview",
+    "publish": true
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.48.0",
+    "@opennextjs/cloudflare": "1.11.0",
+    "@tanstack/react-query": "^5.90.3",
     "axios": "^1.7.7",
     "jsonwebtoken": "^9.0.2",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.460.0",
-    "next": "^15.5.4",
-    "next-themes": "^0.3.0",
+    "lucide-react": "^0.545.0",
+    "next": "^15.5.5",
+    "next-themes": "^0.4.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.16.5",
-    "@types/react": "^18.3.8",
-    "@types/react-dom": "^18.3.2",
-    "@types/jsonwebtoken": "^9.0.7",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.5",
-    "postcss": "^8.4.47",
-    "prettier": "^3.3.3",
-    "tailwind-merge": "^2.6.0",
-    "tailwindcss": "^3.4.13",
-    "typescript": "^5.6.3"
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.37.0",
+    "eslint-config-next": "^15.5.5",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.14",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.43.0"
   }
 }
