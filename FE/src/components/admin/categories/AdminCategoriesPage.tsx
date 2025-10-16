@@ -58,7 +58,7 @@ const AdminCategoriesPage = () => {
   };
 
   const createMutation = useMutation({
-    mutationFn: () => createComicCategory({ name: categoryForm.name }),
+    mutationFn: () => createComicCategory({ name: categoryForm.name } as CreateComicCategoryRequest),
     onSuccess: () => {
       invalidateCategories();
       resetCategoryForm();
@@ -66,7 +66,7 @@ const AdminCategoriesPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: () => updateComicCategory({ id: editingId!, name: categoryForm.name }),
+    mutationFn: () => updateComicCategory({ id: editingId!, name: categoryForm.name } as UpdateComicCategoryRequest),
     onSuccess: () => {
       invalidateCategories();
       resetCategoryForm();
