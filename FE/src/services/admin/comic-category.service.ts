@@ -1,10 +1,5 @@
 import { CategoryType } from "@const/enum/category-type";
 import { getHttpClient } from "@helpers/httpClient";
-import type {
-	ComicCategoryResponse,
-	CreateComicCategoryRequest,
-	UpdateComicCategoryRequest
-} from "../../types/comic-category";
 
 const resource = "/admin/ComicCategory";
 
