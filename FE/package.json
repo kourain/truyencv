@@ -47,6 +47,7 @@
     "prettier": "^3.6.2",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.14",
+    "@tailwindcss/postcss": "^4.1.14",
     "typescript": "^5.9.3",
     "wrangler": "^4.43.0"
   }

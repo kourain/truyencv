@@ -228,7 +228,8 @@ async def start_service(service_id: str):
         if os.name == 'nt':
             command = command.replace("&&", "&")
         else:
-            command = f'/bin/bash -c "source /root/truyencv/.venv/bin/activate && {command.replace("uv", "/root/.local/bin/uv")}"'
+            if "uv" in command:
+                command = f'/bin/bash -c "source /root/truyencv/.venv/bin/activate && {command.replace("uv", "/root/.local/bin/uv")}"'
         process = subprocess.Popen(
             command,
             shell=True,
