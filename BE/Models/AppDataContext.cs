@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using TruyenCV.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Pgvector.EntityFrameworkCore;
+using TruyenCV.Models.ConfigHardFKey;
+using TruyenCV.Models.SeedData;
 
 namespace TruyenCV.Models;
 
@@ -30,137 +32,11 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
     public static readonly DateTime defaultDate = DateTime.Parse("2025-09-23T00:00:00Z").ToUniversalTime();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasPostgresExtension("vector");
+        ComicConfig.Configure(modelBuilder);
+        UserConfig.Configure(modelBuilder);
+        SubscriptionConfig.Configure(modelBuilder);
 
-        modelBuilder.Entity<Comic>()
-            .Property(c => c.search_vector)
-            .HasColumnType($"vector({EmbeddingDefaults.Dimensions})");
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.RefreshTokens)
-            .WithOne(token => token.User)
-            .HasForeignKey(token => token.user_id)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Permissions)
-            .WithOne(permission => permission.User)
-            .HasForeignKey(permission => permission.user_id)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.PermissionsAssigned)
-            .WithOne(permission => permission.AssignedBy)
-            .HasForeignKey(permission => permission.assigned_by)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Roles)
-            .WithOne(role => role.User)
-            .HasForeignKey(role => role.user_id)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.RolesAssigned)
-            .WithOne(role => role.AssignedBy)
-            .HasForeignKey(role => role.assigned_by)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Subscriptions)
-            .WithOne(subscription => subscription.User)
-            .HasForeignKey(subscription => subscription.user_id)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.PaymentHistories)
-            .WithOne(history => history.User)
-            .HasForeignKey(history => history.user_id)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.CoinHistories)
-            .WithOne(history => history.User)
-            .HasForeignKey(history => history.user_id)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.KeyHistories)
-            .WithOne(history => history.User)
-            .HasForeignKey(history => history.user_id)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Subscription>()
-            .HasMany(subscription => subscription.UserSubscriptions)
-            .WithOne(link => link.Subscription)
-            .HasForeignKey(link => link.subscription_id)
-            .OnDelete(DeleteBehavior.Cascade);
-        var system = new User()
-        {
-            id = SystemUser.id,
-            name = "System",
-            email = "ht.kourain@gmail.com",
-            password = "$2a$12$2TFakadQVfOIOz1XsDPhkOFBHFFKSzJMtjyUkkIBJokTaRgiY6LJa",
-            phone = "0000000000",
-            email_verified_at = defaultDate,
-            read_comic_count = 0,
-            read_chapter_count = 0,
-            bookmark_count = 0,
-            coin = 0,
-            key = 0,
-            is_banned = false,
-            created_at = defaultDate,
-            updated_at = defaultDate
-        };
-        var baseUser = new User()
-        {
-            id = 766206485104431104L,
-            name = "kourain",
-            email = "maiquyen16503@gmail.com",
-            password = "$2a$12$DF.qp7O4zo5G.OIaYOxXouJqIIiUMJ5r/67yqJHi7cjtr7WAkbZnu", // BCrypt cho mật khẩu mẫu
-            phone = "0123456789",
-            email_verified_at = defaultDate,
-            read_comic_count = 0,
-            read_chapter_count = 0,
-            bookmark_count = 0,
-            coin = 0,
-            key = 0,
-            is_banned = false,
-            created_at = defaultDate,
-            updated_at = defaultDate
-        };
-        modelBuilder.Entity<User>().HasData([system, baseUser]);
-        modelBuilder.Entity<UserHasRole>().HasData(
-        [
-            new UserHasRole
-            {
-                id = 766206486589214720L,
-                user_id = baseUser.id,
-                role_name = Roles.Admin,
-                assigned_by = system.id,
-                created_at = defaultDate,
-                updated_at = defaultDate
-            },
-            new UserHasRole
-            {
-                id = 766206486593409024L,
-                user_id = baseUser.id,
-                role_name = Roles.User,
-                assigned_by = system.id,
-                created_at = defaultDate,
-                updated_at = defaultDate
-            },
-            new UserHasRole
-            {
-                id = 766206486593409025L,
-                user_id = system.id,
-                role_name = Roles.System,
-                assigned_by = system.id,
-                created_at = defaultDate,
-                updated_at = defaultDate
-            }
-        ]
-        );
+        UserSeed.Seed(modelBuilder, defaultDate);
     }
     private void Save()
     {

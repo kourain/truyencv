@@ -4,7 +4,7 @@
  */ {
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "datn-fe",
-    "main": "src/index.ts",
+    "main": ".open-next/worker.js",
     "compatibility_date": "2025-10-08",
     "compatibility_flags": [
         "nodejs_compat",
@@ -12,7 +12,7 @@
     ],
     "assets": {
         "binding": "ASSETS",
-        "directory": "./public"
+        "directory": ".open-next/assets"
     },
     "observability": {
         "enabled": true
