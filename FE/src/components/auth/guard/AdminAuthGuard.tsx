@@ -7,7 +7,9 @@ interface AdminAuthGuardProps {
   children: ReactNode
 }
 
-const ADMIN_AUTH_ROUTE_REGEX = /^\/admin\/auth\/(login|register|reset-password)/;
+const ADMIN_AUTH_ROUTE_REGEX = [
+  /^\/admin\/auth\/(login|reset-password)/
+];
 
 const AdminAuthGuard = ({ children }: AdminAuthGuardProps) => {
   return (
