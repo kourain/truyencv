@@ -8,6 +8,35 @@ Tất cả Entity class đều phải được kế thừa từ class TruyenCV.M
 
 Mỗt khi tạo Entity mới hoặc có thay đổi, bắt buộc phải tạo hoặc cập nhật Repository("../Repositories"), Service("../Services"), Controller("../Controlers","../Areas/Admin/Controllers","../Areas/User/Controllers"), DTOs("../DTOs") tương ứng. Cuối cùng hãy chỉnh sửa các types có trong FrontEnd thư mục src/types tương ứng
 
+## SeedData
+
+tạo tệp Entity tương ứng .cs và đặt vào đó, gọi SeedData thông qua AppDataContext.OnModelCreating
+
+## Các FK cấu hình phức tạp
+
+nếu Entity sử dụng nhiều lần 1 Entity khác như:
+```cs
+public class UserHasRole : BaseEntity
+{
+	[Required]
+	public required string role_name { get; set; }
+    [Required]
+    public required long user_id {get;set;}
+    [Required]
+    public required long assigned_by {get;set;}
+    [JsonIgnore]
+    public virtual User? User {get;set;}
+    [JsonIgnore]
+    public virtual User? AssignedBy {get;set;}
+
+    public DateTime? revoked_at { get; set; }
+
+    [NotMapped]
+    public bool is_active => revoked_at == null && deleted_at == null;
+}
+```
+Hãy đặt nó vào bên trong file Entity tương ứng .cs thuộc thư mục ConfigHardFKey
+
 ## [Required] attribute và required
 
 [Required] khiến trường trong bảng được tạo ra từ ``dotnet ef migrate`` ``not null``
