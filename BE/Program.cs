@@ -7,6 +7,8 @@ using System.Net;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Pgvector.EntityFrameworkCore;
+using TruyenCV.Services;
 namespace TruyenCV
 {
     public class Program
@@ -155,6 +157,7 @@ namespace TruyenCV
                     optionsBuilder.UseNpgsql(connectionString, options =>
                     {
                         options.EnableRetryOnFailure(50);
+                        options.UseVector();
                     }).ConfigureWarnings(warnings =>
                     {
                         warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
@@ -192,6 +195,7 @@ namespace TruyenCV
             // Đăng ký Repositories
             builder.Services.AddRepositories();
             // Đăng ký Services
+            builder.Services.Configure<EmbeddingOptions>(builder.Configuration.GetSection("Search:ComicVector"));
             builder.Services.AddServices();
 
             if (builder.Environment.IsDevelopment())

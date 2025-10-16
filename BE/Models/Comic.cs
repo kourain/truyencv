@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Pgvector;
 
 namespace TruyenCV.Models;
 
@@ -36,6 +37,8 @@ public class Comic : BaseEntity
 
     [Required]
     public ComicStatus status { get; set; } = ComicStatus.Continuing;
+
+    public Vector? search_vector { get; set; }
 
     public virtual User? EmbeddedByUser { get; set; }
     [JsonIgnore] //, DeleteBehavior(DeleteBehavior.Cascade)]

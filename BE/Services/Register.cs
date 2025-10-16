@@ -14,6 +14,7 @@ public static class ServicesRegisterExtensions
 	/// <returns>IServiceCollection</returns>
 	public static IServiceCollection AddServices(this IServiceCollection Services)
 	{
+		Services.AddSingleton<TruyenCV.Services.ITextEmbeddingService, TruyenCV.Services.TextEmbeddingService>();
 		Services.AddScoped<TruyenCV.Services.IAuthService, TruyenCV.Services.AuthService>();
 		Services.AddScoped<TruyenCV.Services.IUserService, TruyenCV.Services.UserService>();
 		Services.AddScoped<TruyenCV.Services.IUserHasRoleService, TruyenCV.Services.UserHasRoleService>();

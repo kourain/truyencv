@@ -51,9 +51,9 @@ public sealed class ComicController : ControllerBase
 	/// Tìm kiếm comic
 	/// </summary>
 	[HttpGet("search")]
-	public async Task<IActionResult> Search([FromQuery] string keyword)
+	public async Task<IActionResult> Search([FromQuery] string keyword, [FromQuery] int limit = TruyenCV.EmbeddingDefaults.MaxResults, [FromQuery(Name = "min_score")] double minScore = TruyenCV.EmbeddingDefaults.MinScore)
 	{
-		var comics = await _comicService.SearchComicsAsync(keyword);
+		var comics = await _comicService.SearchComicsAsync(keyword, limit, minScore);
 		return Ok(comics);
 	}
 

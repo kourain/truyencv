@@ -3,6 +3,8 @@ using System.Linq;
 using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Pgvector;
+using Pgvector.EntityFrameworkCore;
 
 namespace TruyenCV.Repositories;
 
@@ -33,15 +35,92 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 		);
 	}
 
-	public async Task<IEnumerable<Comic>> SearchAsync(string keyword)
+	public async Task<IEnumerable<Comic>> SearchAsync(Vector? vector, string keyword, int limit, double minScore)
 	{
-		return await _redisCache.GetFromRedisAsync<Comic>(
-			() => _dbSet.AsNoTracking()
-				.Where(c => c.name.Contains(keyword) || c.author.Contains(keyword) || c.description.Contains(keyword))
-				.ToListAsync(),
-			$"search:{keyword}",
-			DefaultCacheMinutes
-		);
+		if (string.IsNullOrWhiteSpace(keyword))
+			return [];
+
+		limit = Math.Clamp(limit, 1, 50);
+		minScore = Math.Clamp(minScore, 0.0, 0.99);
+		var results = new List<Comic>(capacity: limit);
+
+		if (vector is { } vectorQuery)
+		{
+			var vectorResults = await QueryByVectorAsync(vectorQuery, limit, minScore);
+			results.AddRange(vectorResults);
+		}
+
+		if (results.Count < limit)
+		{
+			var remaining = limit - results.Count;
+			var excluded = results.Count > 0 ? results.Select(c => c.id).ToArray() : Array.Empty<long>();
+			var fallback = await SearchFallbackAsync(keyword, remaining, excluded);
+			results.AddRange(fallback);
+		}
+
+		return results;
+	}
+
+	private async Task<List<Comic>> QueryByVectorAsync(Vector queryVector, int limit, double minScore)
+	{
+		var query = _dbSet.AsNoTracking()
+			.Where(c => c.search_vector != null);
+
+		if (minScore > 0)
+		{
+			var distanceThreshold = (float)(1.0 - minScore);
+			query = query.Where(c => c.search_vector!.CosineDistance(queryVector) <= distanceThreshold);
+		}
+
+		var orderedQuery = query
+			.OrderBy(c => c.search_vector!.CosineDistance(queryVector))
+			.Take(limit);
+
+		var candidates = await orderedQuery.ToListAsync();
+		if (candidates.Count == 0 && minScore > 0)
+		{
+			candidates = await _dbSet.AsNoTracking()
+				.Where(c => c.search_vector != null)
+				.OrderBy(c => c.search_vector!.CosineDistance(queryVector))
+				.Take(limit)
+				.ToListAsync();
+		}
+
+		return candidates;
+	}
+
+	private Task<List<Comic>> SearchFallbackAsync(string keyword, int limit, long[]? excludedIds)
+	{
+		if (limit <= 0)
+			return Task.FromResult(new List<Comic>());
+
+		var sanitized = SanitizeKeyword(keyword);
+		var pattern = $"%{sanitized}%";
+
+		var query = _dbSet.AsNoTracking()
+			.Where(c => EF.Functions.ILike(c.name, pattern, "\\")
+				|| EF.Functions.ILike(c.description, pattern, "\\")
+				|| EF.Functions.ILike(c.author, pattern, "\\"));
+
+		if (excludedIds is { Length: > 0 })
+		{
+			query = query.Where(c => !excludedIds.Contains(c.id));
+		}
+
+		return query
+			.OrderByDescending(c => c.updated_at)
+			.ThenBy(c => c.id)
+			.Take(limit)
+			.ToListAsync();
+	}
+
+	private static string SanitizeKeyword(string keyword)
+	{
+		return keyword
+			.Trim()
+			.Replace("\\", "\\\\")
+			.Replace("%", "\\%")
+			.Replace("_", "\\_");
 	}
 
 	public async Task<IEnumerable<Comic>> GetByAuthorAsync(string author)

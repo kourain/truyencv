@@ -16,6 +16,7 @@
     <NoWarn>$(NoWarn);IDE0028</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE0037</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE0090</NoWarn> <!-- IDE -->
+    <NoWarn>$(NoWarn);IDE0130</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE0290</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE0310</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- IDE -->
@@ -37,6 +38,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  <PackageReference Include="Pgvector.EntityFrameworkCore" Version="0.2.2" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
   </ItemGroup>

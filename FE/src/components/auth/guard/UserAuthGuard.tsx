@@ -7,7 +7,13 @@ interface UserAuthGuardProps {
   children: ReactNode
 }
 
-const USER_AUTH_ROUTE_REGEX = /^\/user\/auth\/(login|register|reset-password)/;
+const USER_AUTH_ROUTE_REGEX = [
+  /^\/user\/auth\/(login|register|reset-password)/,
+  /^\/user\/auth\/verify-email/,
+  /^\/user\/comic\//,
+  /^\/user\/comic\/[^/]+\/chapter\/[^/]+/,
+  /^\/user/,
+];
 
 const UserAuthGuard = ({ children }: UserAuthGuardProps) => {
   return (

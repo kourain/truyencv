@@ -1,3 +1,4 @@
+using Pgvector;
 using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
@@ -24,9 +25,12 @@ public interface IComicRepository : IRepository<Comic>
 	/// <summary>
 	/// Tìm kiếm comic theo từ khóa
 	/// </summary>
+	/// <param name="vector">Vector truy vấn, null nếu không thể sinh embedding</param>
 	/// <param name="keyword">Từ khóa tìm kiếm</param>
+	/// <param name="limit">Giới hạn kết quả</param>
+	/// <param name="minScore">Ngưỡng điểm tương đồng (0-1)</param>
 	/// <returns>Danh sách comic</returns>
-	Task<IEnumerable<Comic>> SearchAsync(string keyword);
+	Task<IEnumerable<Comic>> SearchAsync(Vector? vector, string keyword, int limit, double minScore);
 
 	/// <summary>
 	/// Lấy danh sách comic theo tác giả
