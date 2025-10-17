@@ -45,23 +45,45 @@ def clean_html_content(html):
     lines = [' '.join(line.split()) for line in lines]  # Loại bỏ khoảng trắng thừa mỗi dòng
     html = '\n'.join(line for line in lines if line.strip())  # Loại bỏ dòng trống
     return re.sub(r'ch[ưu][ơo]ng\s+\d+\s*[.:\-\)].*\n?', '', html.strip(), flags=re.MULTILINE | re.IGNORECASE).strip()
-async def crawl_chapter(comic_slug:str,from_chap:int,step:int=10):
-    os.makedirs(f"comic-crawled/{comic_slug}",exist_ok=True)
-    browser = await launch(headless=True, args=['--no-sandbox'])
-    for i in range(from_chap,from_chap+step):
+
+cookie = json.loads(open("metruyencv.biz.cookies.json",'r',encoding='utf-8').read())
+import asyncio
+async def scrape(urls:list[str],from_chap:int,step:int=10):
+    browser = await launch(headless=True, executablePath='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
+    os.makedirs("truyen",exist_ok=True)
+    async def run(slug,chap):
+        page = await browser.newPage()
         try:
             # Step 2: Create a new page in the browser
-            page = await browser.newPage()
             await page.setCookie(*cookie)
             # Step 3: Navigate to the webpage
-            url = f'https://metruyencv.biz/truyen/{comic_slug}/chuong-{i}'
-            await page.goto(url)
+            await page.goto(f"https://metruyencv.biz/truyen/{slug}/chuong-{chap}")
 
             # Step 4: Locate the element with id "chapter-content"
             container:ElementHandle = await page.querySelector('#chapter-content') 
 
             text = await page.evaluate('(element) => element.innerHTML', container)
-            open(f"comic-crawled/{comic_slug}/chap-{i}",'w',encoding='utf-8').write(clean_html_content(text))
+            if text.__len__() < 1000:
+                print(f"{chap} Chapter not found or too short.")
+                await page.close()
+                return
+            open(f"truyen/{slug}/chap-{chap}",'w',encoding='utf-8').write(clean_html_content(text))
         except Exception as e:
-            print(f"{i} An error occurred: {e}")
+            print(f"{chap} An error occurred: {e}")
+        await page.close()
+    for url in urls:
+        print(f"Scraping story: {url}")
+        os.makedirs(f"truyen/{url}",exist_ok=True)
+        task = []
+        for i in range(from_chap,from_chap+step):
+            task.append(run(url,i))
+            if i % 20 == 0:
+                print(f"Processing up to chapter {i}...")
+                await asyncio.gather(*task)
+                task = []
     await browser.close()
+# await scrape([
+#     "chi-kiem-tien-khong-noi-tinh-cam-nghe-nghiep-liem-cau-ta-nhat-di",
+#     "tu-tien-mot-lan-co-gang-gap-tram-lan-thu-hoach",
+#     "no-le-bong-toi"
+# ],1,1000)
