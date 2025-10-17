@@ -213,6 +213,8 @@ async def start_service(service_id: str):
     
     service_config:dict = commands[service_id]
     command:str = service_config["command"]
+    build:str = service_config.get("build", "")
+    build_directory:str = service_config.get("buildDirectory", "")
     working_dir:str = service_config.get("workingDirectory", ".")
     env_vars:dict = service_config.get("env", {})
     
@@ -224,6 +226,23 @@ async def start_service(service_id: str):
         # Expand working directory if it starts with ~
         if working_dir.startswith("~"):
             working_dir = os.path.expanduser(working_dir)
+        if build != "" and build_directory != "":
+            # Run build command first
+            build_process = subprocess.Popen(
+                build,
+                shell=True,
+                cwd=build_directory,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            stdout, stderr = build_process.communicate()
+            if build_process.returncode != 0:
+                logger.error(f"Build command failed for service '{service_id}': {stderr}")
+                raise HTTPException(status_code=500, detail=f"Build command failed: {stderr}")
+            else:
+                logger.info(f"Build command output for service '{service_id}': {stdout}")
         # Start the process
         if os.name == 'nt':
             command = command.replace("&&", "&")

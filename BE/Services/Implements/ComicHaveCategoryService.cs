@@ -47,16 +47,16 @@ public class ComicHaveCategoryService : IComicHaveCategoryService
 		// Kiểm tra comic có tồn tại không
 		var comic = await _comicRepository.GetByIdAsync(comicId);
 		if (comic == null)
-			throw new Exception("Comic không tồn tại");
+			throw new UserRequestException("Comic không tồn tại");
 
 		// Kiểm tra category có tồn tại không
 		var category = await _categoryRepository.GetByIdAsync(categoryId);
 		if (category == null)
-			throw new Exception("Category không tồn tại");
+			throw new UserRequestException("Category không tồn tại");
 
 		// Kiểm tra đã tồn tại chưa
 		if (await _comicHaveCategoryRepository.ExistsAsync(comicId, categoryId))
-			throw new Exception("Comic đã có trong category này");
+			throw new UserRequestException("Comic đã có trong category này");
 
 		// Thêm vào database
 		await _comicHaveCategoryRepository.AddAsync(comicId, categoryId);

@@ -28,7 +28,7 @@ public class SnowflakeIdGenerator
     public static long NextId()
     {
         if (MachineId < 0 || MaxMachineId - MachineId < 0)
-            throw new ArgumentException($"MachineId phải nằm trong khoảng 0 - {MaxMachineId}");
+            throw new UserRequestException($"MachineId phải nằm trong khoảng 0 - {MaxMachineId}");
         lock (_lock[MachineId])
         {
             var timestamp = GetCurrentTimestamp();

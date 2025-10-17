@@ -28,4 +28,20 @@ public interface IComicChapterRepository : IRepository<ComicChapter>
 	/// <param name="chapter">Số chapter</param>
 	/// <returns>Chapter nếu tìm thấy, null nếu không tìm thấy</returns>
 	Task<ComicChapter?> GetByComicIdAndChapterAsync(long comicId, int chapter);
+
+	/// <summary>
+	/// Lấy chapter trước đó của một comic
+	/// </summary>
+	/// <param name="comicId">ID của comic</param>
+	/// <param name="chapter">Số chapter hiện tại</param>
+	/// <returns>Chapter nếu tìm thấy, null nếu không</returns>
+	Task<ComicChapter?> GetPreviousChapterAsync(long comicId, int chapter);
+
+	/// <summary>
+	/// Lấy chapter tiếp theo của một comic
+	/// </summary>
+	/// <param name="comicId">ID của comic</param>
+	/// <param name="chapter">Số chapter hiện tại</param>
+	/// <returns>Chapter nếu tìm thấy, null nếu không</returns>
+	Task<ComicChapter?> GetNextChapterAsync(long comicId, int chapter);
 }

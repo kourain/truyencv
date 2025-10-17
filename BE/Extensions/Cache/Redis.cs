@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 
 public static partial class RedisExtensions
 {
+    private const double DefaultCacheMinutes = 5;
+
     public static string ToRedisCache<T>(this T obj)
     {
         return JsonConvert.SerializeObject(obj, new JsonSerializerSettings
@@ -27,6 +29,9 @@ public static partial class RedisExtensions
     /// <returns></returns>
     public static async Task AddOrUpdateInRedisAsync<T>(this IDistributedCache RedisCache, T Entity, double CacheMinutes) where T : BaseEntity
         => await RedisCache.AddOrUpdateInRedisAsync(Entity, $"{Entity.id}", CacheMinutes);
+
+    public static async Task AddOrUpdateInRedisAsync<T>(this IDistributedCache RedisCache, T Entity, object Key) where T : BaseEntity
+        => await RedisCache.AddOrUpdateInRedisAsync(Entity, Key, DefaultCacheMinutes);
     /// <summary>
     /// Cache 1 Entity với điều kiện cụ thể, có key cụ thể
     /// </summary>

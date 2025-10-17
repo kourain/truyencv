@@ -31,6 +31,22 @@ public interface IComicChapterService
 	Task<ComicChapterResponse?> GetChapterByComicIdAndChapterAsync(long comicId, int chapter);
 
 	/// <summary>
+	/// Lấy chương trước đó
+	/// </summary>
+	/// <param name="comicId">ID truyện</param>
+	/// <param name="chapter">Số chương hiện tại</param>
+	/// <returns>Chapter trước nếu có</returns>
+	Task<ComicChapterResponse?> GetPreviousChapterAsync(long comicId, int chapter);
+
+	/// <summary>
+	/// Lấy chương tiếp theo
+	/// </summary>
+	/// <param name="comicId">ID truyện</param>
+	/// <param name="chapter">Số chương hiện tại</param>
+	/// <returns>Chapter tiếp theo nếu có</returns>
+	Task<ComicChapterResponse?> GetNextChapterAsync(long comicId, int chapter);
+
+	/// <summary>
 	/// Tạo chapter mới
 	/// </summary>
 	/// <param name="chapterRequest">Thông tin chapter mới</param>

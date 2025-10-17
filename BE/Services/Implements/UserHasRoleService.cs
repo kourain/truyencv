@@ -51,7 +51,7 @@ public class UserHasRoleService : IUserHasRoleService
         // Kiểm tra user đã có role này chưa
         var existingRoles = await _userHasRoleRepository.GetByUserIdAsync(userId);
         if (existingRoles.Any(r => r.role_name == request.role_name))
-            throw new Exception("User đã có role này");
+            throw new UserRequestException("User đã có role này");
 
         // Chuyển đổi từ DTO sang Entity
         var userHasRole = request.ToEntity();

@@ -1,3 +1,4 @@
+using System.Linq;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
@@ -42,6 +43,18 @@ public class ComicChapterService : IComicChapterService
 		return chapterEntity?.ToRespDTO();
 	}
 
+	public async Task<ComicChapterResponse?> GetPreviousChapterAsync(long comicId, int chapter)
+	{
+		var previous = await _chapterRepository.GetPreviousChapterAsync(comicId, chapter);
+		return previous?.ToRespDTO();
+	}
+
+	public async Task<ComicChapterResponse?> GetNextChapterAsync(long comicId, int chapter)
+	{
+		var next = await _chapterRepository.GetNextChapterAsync(comicId, chapter);
+		return next?.ToRespDTO();
+	}
+
 	public async Task<ComicChapterResponse> CreateChapterAsync(CreateComicChapterRequest chapterRequest)
 	{
 		var comicId = chapterRequest.comic_id.ToSnowflakeId(nameof(chapterRequest.comic_id));
@@ -49,12 +62,12 @@ public class ComicChapterService : IComicChapterService
 		// Kiểm tra comic có tồn tại không
 		var comic = await _comicRepository.GetByIdAsync(comicId);
 		if (comic == null)
-			throw new Exception("Comic không tồn tại");
+			throw new UserRequestException("Comic không tồn tại");
 
 		// Kiểm tra chapter đã tồn tại chưa
 		if (await _chapterRepository.ExistsAsync(c =>
 			c.comic_id == comicId && c.chapter == chapterRequest.chapter))
-			throw new Exception("Chapter đã tồn tại");
+			throw new UserRequestException("Chapter đã tồn tại");
 
 		// Chuyển đổi từ DTO sang Entity
 		var chapter = chapterRequest.ToEntity();

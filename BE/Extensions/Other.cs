@@ -18,12 +18,12 @@ public static partial class Extensions
 	{
 		if (string.IsNullOrWhiteSpace(value))
 		{
-			throw new ArgumentException($"{fieldName} không được để trống", fieldName);
+			throw new UserRequestException($"{fieldName} không được để trống", fieldName);
 		}
 
 		if (!long.TryParse(value, out var parsed))
 		{
-			throw new ArgumentException($"{fieldName} không hợp lệ", fieldName);
+			throw new UserRequestException($"{fieldName} không hợp lệ", fieldName);
 		}
 
 		return parsed;
@@ -38,7 +38,7 @@ public static partial class Extensions
 
 		if (!long.TryParse(value, out var parsed))
 		{
-			throw new ArgumentException($"{fieldName} không hợp lệ", fieldName);
+			throw new UserRequestException($"{fieldName} không hợp lệ", fieldName);
 		}
 
 		return parsed;
