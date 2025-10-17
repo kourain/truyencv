@@ -1,0 +1,63 @@
+using System.Linq;
+using TruyenCV.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+
+namespace TruyenCV.Repositories;
+
+public class ComicReportRepository : Repository<ComicReport>, IComicReportRepository
+{
+    public ComicReportRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    {
+    }
+
+    public async Task<ComicReport?> GetByIdAsync(long id)
+    {
+        return await _redisCache.GetFromRedisAsync<ComicReport>(
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
+            id,
+            DefaultCacheMinutes
+        );
+    }
+
+    public async Task<IEnumerable<ComicReport>> GetByStatusAsync(ReportStatus? status, int offset, int limit)
+    {
+        offset = Math.Max(offset, 0);
+        limit = Math.Clamp(limit, 1, 100);
+        var cacheKey = status.HasValue ? $"status:{status}:{offset}:{limit}" : $"all:{offset}:{limit}";
+
+        return await _redisCache.GetFromRedisAsync<ComicReport>(
+            () =>
+            {
+                var query = _dbSet.AsNoTracking().OrderByDescending(r => r.created_at);
+                if (status.HasValue)
+                {
+                    query = query.Where(r => r.status == status.Value).OrderByDescending(r => r.created_at);
+                }
+
+                return query
+                    .Skip(offset)
+                    .Take(limit)
+                    .ToListAsync();
+            },
+            cacheKey,
+            DefaultCacheMinutes
+        ) ?? [];
+    }
+
+    public async Task<IEnumerable<ComicReport>> GetByUserIdAsync(long userId, int offset, int limit)
+    {
+        offset = Math.Max(offset, 0);
+        limit = Math.Clamp(limit, 1, 100);
+        return await _redisCache.GetFromRedisAsync<ComicReport>(
+            () => _dbSet.AsNoTracking()
+                .Where(r => r.reporter_id == userId)
+                .OrderByDescending(r => r.created_at)
+                .Skip(offset)
+                .Take(limit)
+                .ToListAsync(),
+            $"user:{userId}:{offset}:{limit}",
+            DefaultCacheMinutes
+        ) ?? [];
+    }
+}

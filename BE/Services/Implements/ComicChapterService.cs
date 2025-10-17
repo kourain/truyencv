@@ -1,3 +1,4 @@
+using System.Linq;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
@@ -40,6 +41,18 @@ public class ComicChapterService : IComicChapterService
 	{
 		var chapterEntity = await _chapterRepository.GetByComicIdAndChapterAsync(comicId, chapter);
 		return chapterEntity?.ToRespDTO();
+	}
+
+	public async Task<ComicChapterResponse?> GetPreviousChapterAsync(long comicId, int chapter)
+	{
+		var previous = await _chapterRepository.GetPreviousChapterAsync(comicId, chapter);
+		return previous?.ToRespDTO();
+	}
+
+	public async Task<ComicChapterResponse?> GetNextChapterAsync(long comicId, int chapter)
+	{
+		var next = await _chapterRepository.GetNextChapterAsync(comicId, chapter);
+		return next?.ToRespDTO();
 	}
 
 	public async Task<ComicChapterResponse> CreateChapterAsync(CreateComicChapterRequest chapterRequest)
