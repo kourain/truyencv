@@ -53,7 +53,7 @@ public class UserHasPermissionService : IUserHasPermissionService
         var existing = await _userHasPermissionRepository.GetByUserPermissionAsync(userId, request.permissions);
         if (existing != null)
         {
-            throw new Exception("User đã có permission này");
+            throw new UserRequestException("User đã có permission này");
         }
 
         var entity = request.ToEntity();
@@ -79,7 +79,7 @@ public class UserHasPermissionService : IUserHasPermissionService
             var duplicate = await _userHasPermissionRepository.GetByUserPermissionAsync(userId, request.permissions);
             if (duplicate != null && duplicate.id != id)
             {
-                throw new Exception("User đã có permission này");
+                throw new UserRequestException("User đã có permission này");
             }
         }
 

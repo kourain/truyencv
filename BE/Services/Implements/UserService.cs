@@ -42,7 +42,7 @@ namespace TruyenCV.Services
         {
             // Kiểm tra email đã tồn tại chưa
             if (await _userRepository.ExistsAsync(u => u.email == userRequest.email))
-                throw new Exception("Email đã tồn tại");
+                throw new UserRequestException("Email đã tồn tại");
 
             // Chuyển đổi từ DTO sang Entity
             var user = userRequest.ToEntity();
@@ -129,13 +129,13 @@ namespace TruyenCV.Services
         {
             if (string.IsNullOrWhiteSpace(newPassword))
             {
-                throw new ArgumentException("Mật khẩu mới không hợp lệ", nameof(newPassword));
+                throw new UserRequestException("Mật khẩu mới không hợp lệ", nameof(newPassword));
             }
 
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                throw new Exception("Người dùng không tồn tại");
+                throw new UserRequestException("Người dùng không tồn tại");
             }
 
             user.password = Bcrypt.HashPassword(newPassword);
@@ -161,12 +161,12 @@ namespace TruyenCV.Services
         {
             if (string.IsNullOrWhiteSpace(currentPassword))
             {
-                throw new ArgumentException("Mật khẩu hiện tại không hợp lệ", nameof(currentPassword));
+                throw new UserRequestException("Mật khẩu hiện tại không hợp lệ", nameof(currentPassword));
             }
 
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
             {
-                throw new ArgumentException("Mật khẩu mới phải có tối thiểu 6 ký tự", nameof(newPassword));
+                throw new UserRequestException("Mật khẩu mới phải có tối thiểu 6 ký tự", nameof(newPassword));
             }
 
             var user = await _dbcontext.Users
@@ -175,17 +175,17 @@ namespace TruyenCV.Services
 
             if (user == null)
             {
-                throw new Exception("Người dùng không tồn tại");
+                throw new UserRequestException("Người dùng không tồn tại");
             }
 
             if (!Bcrypt.VerifyPassword(currentPassword, user.password))
             {
-                throw new ArgumentException("Mật khẩu hiện tại không chính xác", nameof(currentPassword));
+                throw new UserRequestException("Mật khẩu hiện tại không chính xác", nameof(currentPassword));
             }
 
             if (Bcrypt.VerifyPassword(newPassword, user.password))
             {
-                throw new ArgumentException("Mật khẩu mới phải khác mật khẩu hiện tại", nameof(newPassword));
+                throw new UserRequestException("Mật khẩu mới phải khác mật khẩu hiện tại", nameof(newPassword));
             }
 
             user.password = Bcrypt.HashPassword(newPassword);

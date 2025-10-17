@@ -167,6 +167,12 @@ Nghiêm cấm tự ý hardcode.
 
 ## Quy Tắc Phát Triển Quan Trọng
 
+### Xử lý ngoại lệ & Logging
+
+- Sử dụng `RequestException` để ném ra các lỗi có mã trạng thái tùy chỉnh, thông điệp lỗi rõ ràng, thông tin này được dùng để trả về phản hồi API nếu request của người dùng gặp lỗi do request không hợp lệ hoặc lỗi nghiệp vụ
+- Sử dụng middleware để xử lý lỗi toàn cục, trả về mã trạng thái và thông điệp lỗi phù hợp
+- Ghi log chi tiết cho các lỗi không mong muốn, bao gồm stack trace và thông điệp lỗi
+
 ### Cấu Trúc Areas & Routing
 
 Controllers nằm trong `Areas/{Area}/Controllers/{Controller}.cs` CHỈ GỒM 1 TỆP DUY NHẤT:

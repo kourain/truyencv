@@ -70,19 +70,19 @@ public class ComicCommentService : IComicCommentService
 		// Kiểm tra comic có tồn tại không
 		var comic = await _comicRepository.GetByIdAsync(comicId);
 		if (comic == null)
-			throw new Exception("Comic không tồn tại");
+			throw new UserRequestException("Comic không tồn tại");
 
 		// Kiểm tra user có tồn tại không
 		var user = await _userRepository.GetByIdAsync(userId);
 		if (user == null)
-			throw new Exception("User không tồn tại");
+			throw new UserRequestException("User không tồn tại");
 
 		// Kiểm tra chapter nếu có
 		if (chapterId.HasValue)
 		{
 			var chapter = await _chapterRepository.GetByIdAsync(chapterId.Value);
 			if (chapter == null)
-				throw new Exception("Chapter không tồn tại");
+				throw new UserRequestException("Chapter không tồn tại");
 		}
 
 		// Kiểm tra comment cha nếu có
@@ -90,7 +90,7 @@ public class ComicCommentService : IComicCommentService
 		{
 			var parentComment = await _commentRepository.GetByIdAsync(replyId.Value);
 			if (parentComment == null)
-				throw new Exception("Comment cha không tồn tại");
+				throw new UserRequestException("Comment cha không tồn tại");
 		}
 
 		// Chuyển đổi từ DTO sang Entity

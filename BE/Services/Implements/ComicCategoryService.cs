@@ -50,7 +50,7 @@ public class ComicCategoryService : IComicCategoryService
 
 		// Kiểm tra tên đã tồn tại chưa
 		if (await _categoryRepository.ExistsAsync(c => c.name == categoryRequest.name))
-			throw new Exception("Tên category đã tồn tại");
+			throw new UserRequestException("Tên category đã tồn tại");
 
 		// Chuyển đổi từ DTO sang Entity
 		var category = categoryRequest.ToEntity();

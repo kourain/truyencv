@@ -49,12 +49,12 @@ public class ComicChapterService : IComicChapterService
 		// Kiểm tra comic có tồn tại không
 		var comic = await _comicRepository.GetByIdAsync(comicId);
 		if (comic == null)
-			throw new Exception("Comic không tồn tại");
+			throw new UserRequestException("Comic không tồn tại");
 
 		// Kiểm tra chapter đã tồn tại chưa
 		if (await _chapterRepository.ExistsAsync(c =>
 			c.comic_id == comicId && c.chapter == chapterRequest.chapter))
-			throw new Exception("Chapter đã tồn tại");
+			throw new UserRequestException("Chapter đã tồn tại");
 
 		// Chuyển đổi từ DTO sang Entity
 		var chapter = chapterRequest.ToEntity();
