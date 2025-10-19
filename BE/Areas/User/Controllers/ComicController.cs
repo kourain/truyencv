@@ -6,17 +6,40 @@ namespace TruyenCV.Areas.User.Controllers;
 
 [ApiController]
 [Area("User")]
-[AllowAnonymous]
+[Authorize(Roles = Roles.User)]
 [Route("User/[controller]")]
 public sealed class ComicController : ControllerBase
 {
     private readonly IComicReadingService _comicReadingService;
-
-    public ComicController(IComicReadingService comicReadingService)
+    private readonly IComicService _comicService;
+    public ComicController(IComicReadingService comicReadingService, IComicService comicService)
     {
         _comicReadingService = comicReadingService;
+        _comicService = comicService;
     }
+    [AllowAnonymous]
+    [HttpGet("/seo/{slug}")]
+    public async Task<IActionResult> GetComicSEOBySlug([FromRoute] string slug)
+    {
+        var result = await _comicService.GetComicSEOBySlugAsync(slug);
+        if (result == null)
+        {
+            return NotFound(new { message = "Không tìm thấy truyện" });
+        }
 
+        return Ok(result);
+    }
+    [HttpGet("/{slug}")]
+    public async Task<IActionResult> GetComicDetailBySlug([FromRoute] string slug)
+    {
+        var result = await _comicService.GetComicDetailBySlugAsync(slug);
+        if (result == null)
+        {
+            return NotFound(new { message = "Không tìm thấy truyện" });
+        }
+
+        return Ok(result);
+    }
     [HttpGet("{slug}/chapters/{chapterNumber:int}")]
     public async Task<IActionResult> GetChapter(string slug, int chapterNumber)
     {

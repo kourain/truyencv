@@ -17,6 +17,8 @@ public static partial class Extensions
 			author = request.author,
 			embedded_from = request.embedded_from,
 			embedded_from_url = request.embedded_from_url,
+			cover_url = request.cover_url,
+			banner_url = request.banner_url,
 			chapter_count = request.chap_count,
 			bookmark_count = 0,
 			rate = request.rate,
@@ -38,6 +40,8 @@ public static partial class Extensions
 			author = comic.author,
 			embedded_from = comic.embedded_from,
 			embedded_from_url = comic.embedded_from_url,
+			cover_url = comic.cover_url,
+			banner_url = comic.banner_url,
 			chap_count = (int)comic.chapter_count,
 			bookmark_count = comic.bookmark_count,
 			rate = comic.rate,
@@ -51,11 +55,13 @@ public static partial class Extensions
 	public static void UpdateFromRequest(this Comic comic, UpdateComicRequest request)
 	{
 		comic.name = request.name;
-		comic.description = request.description;
+			comic.description = request.description;
 		comic.slug = request.slug;
 		comic.author = request.author;
 		comic.embedded_from = request.embedded_from;
 		comic.embedded_from_url = request.embedded_from_url;
+		comic.cover_url = request.cover_url;
+		comic.banner_url = request.banner_url;
 		comic.chapter_count = (int)request.chap_count;
 		comic.rate = request.rate;
 		comic.status = request.status;

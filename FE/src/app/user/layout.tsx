@@ -6,7 +6,10 @@ import Footer from "@components/user/shared/Footer";
 import UserNavbar from "@components/user/shared/Navbar";
 
 export const metadata: Metadata = {
-  title: "Bảng điều khiển User"
+  title: "TruyenCV - Kênh đọc truyện online miễn phí",
+  description: "Nền tảng đọc truyện trực tuyến TruyenCV",
+  keywords: ["truyện", "đọc truyện", "truyện online"],
+  icons: "/og-image.png",
 };
 
 const UserLayout = async ({ children }: { children: ReactNode }) => {

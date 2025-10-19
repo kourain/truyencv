@@ -9,6 +9,8 @@ public class CreateComicRequest
 	public required string author { get; set; }
 	public string? embedded_from { get; set; }
 	public string? embedded_from_url { get; set; }
+	public string? cover_url { get; set; }
+	public string? banner_url { get; set; }
 	public int chap_count { get; set; } = 0;
 	public float rate { get; set; } = 0;
 	public ComicStatus status { get; set; } = ComicStatus.Continuing;
@@ -23,6 +25,8 @@ public class UpdateComicRequest
 	public required string author { get; set; }
 	public string? embedded_from { get; set; }
 	public string? embedded_from_url { get; set; }
+	public string? cover_url { get; set; }
+	public string? banner_url { get; set; }
 	public int chap_count { get; set; }
 	public float rate { get; set; }
 	public ComicStatus status { get; set; }

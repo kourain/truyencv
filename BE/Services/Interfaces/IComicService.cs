@@ -23,6 +23,20 @@ public interface IComicService
 	Task<ComicResponse?> GetComicBySlugAsync(string slug);
 
 	/// <summary>
+	/// Lấy thông tin SEO cho comic theo slug
+	/// </summary>
+	/// <param name="slug">Slug của comic</param>
+	/// <returns>Thông tin SEO hoặc null nếu không tìm thấy</returns>
+	Task<ComicSeoResponse?> GetComicSEOBySlugAsync(string slug);
+
+	/// <summary>
+	/// Lấy chi tiết comic hiển thị cho người dùng theo slug
+	/// </summary>
+	/// <param name="slug">Slug của comic</param>
+	/// <returns>Thông tin comic hiển thị hoặc null nếu không tìm thấy</returns>
+	Task<ComicResponse?> GetComicDetailBySlugAsync(string slug);
+
+	/// <summary>
 	/// Tìm kiếm comic
 	/// </summary>
 	/// <param name="keyword">Từ khóa tìm kiếm</param>
