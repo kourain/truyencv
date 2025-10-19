@@ -8,7 +8,7 @@ import { useAuth } from "@hooks/useAuth";
 import { refreshTokens } from "@services/auth.service";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react"; 
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 const routeRequiredRoles: Record<string, UserRole[]> = {
   admin: [UserRole.Admin],
@@ -21,7 +21,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
   const [isReady, setIsReady] = useState(false);
   const authState = useAuth();
   const requiredRoles = useMemo(() => routeRequiredRoles[routeFor] ?? [UserRole.User], [routeFor]);
-
+  const [isEmptyPage, setIsEmptyPage] = useState(false);
   const hasRequiredRole = useCallback((roles?: string[]) => {
     if (!roles?.length) {
       return false;
@@ -34,7 +34,10 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
     let isMounted = true;
     if (SKIP_USER_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""))) {
       setIsReady(true);
-      return;
+      setIsEmptyPage(true);
+      return () => {
+        isMounted = false;
+      };
     }
     const finish = () => {
       if (isMounted) {
@@ -98,20 +101,21 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
     return () => {
       isMounted = false;
     };
-  }, [authState.isAuthenticated, authState.payload?.exp, authState.roles, authState.updateAuthStateFromAccessToken, pathname, router, hasRequiredRole, USER_AUTH_ROUTE_REGEX]);
+  }, [authState.isAuthenticated, authState.payload?.exp, authState.roles, authState.updateAuthStateFromAccessToken, pathname, router, hasRequiredRole, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_REGEX, routeFor]);
 
   return (
     <>
-      {isReady ? (
-        children
-      ) : (
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-surface-muted bg-surface/80 px-6 py-8 text-sm text-surface-foreground/70">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p>Đang xác thực quyền truy cập...</p>
+      {isEmptyPage === true ? null :
+        isReady ? (
+          children
+        ) : (
+          <div className="flex min-h-[60vh] items-center justify-center">
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-surface-muted bg-surface/80 px-6 py-8 text-sm text-surface-foreground/70">
+              <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p>Đang xác thực quyền truy cập...</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </>
   );
 }
