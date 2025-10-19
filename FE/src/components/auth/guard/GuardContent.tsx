@@ -15,7 +15,7 @@ const routeRequiredRoles: Record<string, UserRole[]> = {
   user: [UserRole.User]
 };
 
-export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp[], routeFor: string }) => {
+export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp[], SKIP_USER_ROUTE_REGEX: RegExp[], routeFor: string }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
@@ -32,7 +32,10 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
 
   useEffect(() => {
     let isMounted = true;
-
+    if (SKIP_USER_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""))) {
+      setIsReady(true);
+      return;
+    }
     const finish = () => {
       if (isMounted) {
         setIsReady(true);
