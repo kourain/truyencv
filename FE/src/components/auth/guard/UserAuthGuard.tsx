@@ -10,9 +10,7 @@ interface UserAuthGuardProps {
 const USER_AUTH_ROUTE_REGEX = [
   /^\/user\/auth\/(login|register|reset-password)/,
   /^\/user\/auth\/verify-email/,
-  /^\/user\/comic\//,
-  /^\/user\/comic\/[^/]+\/chapter\/[^/]+/,
-  /^\/user/,
+  /^\/user\/comic\/.+/, // skip for SEO comic + Web Crawler Bot
 ];
 
 const UserAuthGuard = ({ children }: UserAuthGuardProps) => {

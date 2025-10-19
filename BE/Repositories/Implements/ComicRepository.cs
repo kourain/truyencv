@@ -29,7 +29,10 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	public async Task<Comic?> GetBySlugAsync(string slug)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
-			() => _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.slug == slug),
+			() => _dbSet.AsNoTracking()
+				.Include(c => c.ComicHaveCategories!)
+				.ThenInclude(chc => chc.ComicCategory)
+				.FirstOrDefaultAsync(c => c.slug == slug),
 			$"slug:{slug}",
 			DefaultCacheMinutes
 		);

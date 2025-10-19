@@ -55,11 +55,10 @@ namespace TruyenCV
 
             if (allowedOrigins is null || allowedOrigins.Length == 0)
             {
-                allowedOrigins = [
-                    "http://localhost:3000",
-                    "https://admin-truyencv.maiquyen.name.vn",
-                    "https://truyencv.maiquyen.name.vn"
-                ];
+                allowedOrigins = builder.Configuration.GetSection("AllowedHosts")
+                    .Get<string[]?>() ?? [
+                        "http://localhost:3000"
+                    ];
             }
 
             builder.Services.AddCors(option =>

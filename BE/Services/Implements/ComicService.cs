@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
@@ -31,7 +34,81 @@ public class ComicService : IComicService
     public async Task<ComicResponse?> GetComicBySlugAsync(string slug)
     {
         var comic = await _comicRepository.GetBySlugAsync(slug);
+        if (comic?.deleted_at != null)
+        {
+            return null;
+        }
         return comic?.ToRespDTO();
+    }
+
+    public async Task<ComicSeoResponse?> GetComicSEOBySlugAsync(string slug)
+    {
+        var comic = await _comicRepository.GetBySlugAsync(slug);
+        if (comic == null || comic.deleted_at != null)
+        {
+            return null;
+        }
+
+        var keywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(comic.name))
+        {
+            keywords.Add(comic.name);
+            foreach (var part in comic.name.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                keywords.Add(part);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(comic.author))
+        {
+            keywords.Add(comic.author);
+        }
+
+        if (!string.IsNullOrWhiteSpace(comic.slug))
+        {
+            keywords.Add(comic.slug.Replace('-', ' '));
+        }
+
+        if (comic.ComicHaveCategories is { Count: > 0 })
+        {
+            foreach (var relation in comic.ComicHaveCategories)
+            {
+                if (!string.IsNullOrWhiteSpace(relation?.ComicCategory?.name))
+                {
+                    keywords.Add(relation.ComicCategory.name);
+                }
+            }
+        }
+
+        string description = comic.description;
+        if (!string.IsNullOrWhiteSpace(description) && description.Length > 180)
+        {
+            description = description[..180] + "...";
+        }
+
+        var image = comic.cover_url
+            ?? comic.banner_url
+            ?? comic.embedded_from_url
+            ?? string.Empty;
+
+        return new ComicSeoResponse
+        {
+            title = comic.name,
+            description = description,
+            keywords = keywords.Where(k => !string.IsNullOrWhiteSpace(k)).ToArray(),
+            image = image
+        };
+    }
+
+    public async Task<ComicResponse?> GetComicDetailBySlugAsync(string slug)
+    {
+        var comic = await _comicRepository.GetBySlugAsync(slug);
+        if (comic == null || comic.deleted_at != null)
+        {
+            return null;
+        }
+
+        return comic.ToRespDTO();
     }
 
 	public async Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword, int limit, double minScore)

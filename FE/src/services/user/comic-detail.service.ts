@@ -2,8 +2,24 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getHttpClient } from "@helpers/httpClient";
 
-const resource = (slug: string) => `/user/comics/${slug}`;
+const resource = (slug: string) => `/user/comic/${slug}`;
 
+export const fetchUserComicSEO = async (slug: string): Promise<ComicSEO> => {
+  const client = getHttpClient();
+
+  try {
+    const response = await client.get<ComicSEO>("/user/comic/seo/" + slug);
+    return response.data;
+  } catch (error) {
+    return {
+      title: "Truyện hot trong tuần",
+      description:
+        "Một hành trình tu luyện đầy thử thách giữa thế giới huyền huyễn, nơi nhân vật chính phải vượt qua muôn vàn khó khăn để bảo vệ những người thân yêu.",
+      keywords: ["truyện", "huyền huyễn", "tu luyện"],
+      image: "https://picsum.photos/seed/comic-cover/320/480",
+    };
+  }
+};
 export const fetchUserComicDetail = async (slug: string): Promise<ComicDetailResponse> => {
   const client = getHttpClient();
 

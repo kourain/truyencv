@@ -27,6 +27,11 @@ public class Comic : BaseEntity
 
     [StringLength(500)]
     public string? embedded_from_url { get; set; }
+    [StringLength(500)]
+    public string? cover_url { get; set; }
+
+    [StringLength(500)]
+    public string? banner_url { get; set; }
     [ForeignKey(nameof(EmbeddedByUser))]
     public long embedded_by { get; set; }
     public int chapter_count { get; set; } = 0;
