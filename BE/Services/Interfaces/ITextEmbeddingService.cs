@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace TruyenCV.Services;
 
@@ -15,10 +15,9 @@ public interface ITextEmbeddingService
     /// <summary>
     /// Tạo embedding từ một hoặc nhiều đoạn văn bản.
     /// </summary>
-    /// <param name="embedding">Vector kết quả (luôn có kích thước Options.Dimensions).</param>
     /// <param name="parts">Danh sách chuỗi cần embedding.</param>
-    /// <returns>True nếu embedding chứa thông tin hữu ích, false nếu văn bản rỗng.</returns>
-    bool TryCreateEmbedding([NotNullWhen(true)] out float[] embedding, params string?[] parts);
+    /// <returns>Vector kết quả hoặc null nếu dữ liệu không hợp lệ.</returns>
+    Task<float[]?> CreateEmbeddingAsync(params string?[] parts);
 }
 
 /// <summary>
@@ -29,6 +28,9 @@ public class EmbeddingOptions
     private int _dimensions = EmbeddingDefaults.Dimensions;
     private int _maxResults = EmbeddingDefaults.MaxResults;
     private double _minScore = EmbeddingDefaults.MinScore;
+    private int _timeoutSeconds = 15;
+    private int _retryCount = 2;
+    private int _retryDelayMilliseconds = 1000;
 
     public int Dimensions
     {
@@ -46,5 +48,33 @@ public class EmbeddingOptions
     {
         get => _minScore;
         set => _minScore = Math.Clamp(value, 0.0, 0.99);
+    }
+
+    /// <summary>
+    /// URL của microservice sinh embedding. Ví dụ: http://localhost:44644/embed
+    /// </summary>
+    public string? ServiceUrl { get; set; }
+
+    /// <summary>
+    /// Cho phép vô hiệu hoá gọi microservice khi cần.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    public int TimeoutSeconds
+    {
+        get => _timeoutSeconds;
+        set => _timeoutSeconds = Math.Clamp(value, 5, 120);
+    }
+
+    public int RetryCount
+    {
+        get => _retryCount;
+        set => _retryCount = Math.Clamp(value, 0, 5);
+    }
+
+    public int RetryDelayMilliseconds
+    {
+        get => _retryDelayMilliseconds;
+        set => _retryDelayMilliseconds = Math.Clamp(value, 100, 10000);
     }
 }
