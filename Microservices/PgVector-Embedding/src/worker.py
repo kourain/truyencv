@@ -1,7 +1,7 @@
+from workers import WorkerEntrypoint
 from functools import lru_cache
 from typing import List
 
-import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
@@ -46,3 +46,8 @@ async def embed(request: EmbedRequest) -> EmbedResponse:
 
 
 # Run: uv run app.py
+class Default(WorkerEntrypoint):
+    async def fetch(self, request):
+        import asgi
+
+        return await asgi.fetch(app, request.js_object, self.env)
