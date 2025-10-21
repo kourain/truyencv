@@ -2,10 +2,17 @@ from workers import WorkerEntrypoint
 from functools import lru_cache
 from typing import List
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 
+# Run: uv run app.py
+class Default(WorkerEntrypoint):
+    async def fetch(self, request):
+        import asgi
+
+        return await asgi.fetch(app, request.js_object, self.env)
+    
 app = FastAPI(title="PgVector Embedding Service", version="1.0.0")
 
 
@@ -45,9 +52,3 @@ async def embed(request: EmbedRequest) -> EmbedResponse:
     return EmbedResponse(embedding=vector, dimensions=len(vector))
 
 
-# Run: uv run app.py
-class Default(WorkerEntrypoint):
-    async def fetch(self, request):
-        import asgi
-
-        return await asgi.fetch(app, request.js_object, self.env)
