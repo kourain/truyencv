@@ -1,0 +1,6 @@
+.wrangler
+node_modules
+python_modules
+__pycache__
+.venv
+uv.lock
