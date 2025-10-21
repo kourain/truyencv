@@ -120,11 +120,12 @@ public class ComicService : IComicService
         limit = Math.Clamp(limit, 1, _embeddingService.Options.MaxResults);
         minScore = Math.Clamp(minScore, 0.0, 0.99);
 
-		Vector? queryVector = null;
-		if (_embeddingService.TryCreateEmbedding(out var embeddingValues, normalizedKeyword))
-		{
-			queryVector = new Vector(embeddingValues);
-		}
+        Vector? queryVector = null;
+        var embeddingValues = await _embeddingService.CreateEmbeddingAsync(normalizedKeyword);
+        if (embeddingValues is { Length: > 0 })
+        {
+            queryVector = new Vector(embeddingValues);
+        }
 
 		var comics = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
 		return comics.Select(c => c.ToRespDTO());
@@ -162,10 +163,11 @@ public class ComicService : IComicService
 		// Chuyển đổi từ DTO sang Entity
 		var comic = comicRequest.ToEntity();
 
-		if (_embeddingService.TryCreateEmbedding(out var embeddingValues, comic.name, comic.description))
-		{
-			comic.search_vector = new Vector(embeddingValues);
-		}
+        var embeddingValues = await _embeddingService.CreateEmbeddingAsync(comic.name, comic.description);
+        if (embeddingValues is { Length: > 0 })
+        {
+            comic.search_vector = new Vector(embeddingValues);
+        }
 
         // Thêm comic vào database
         var newComic = await _comicRepository.AddAsync(comic);
@@ -186,14 +188,15 @@ public class ComicService : IComicService
 		// Cập nhật thông tin
 		comic.UpdateFromRequest(comicRequest);
 
-		if (_embeddingService.TryCreateEmbedding(out var embeddingValues, comic.name, comic.description))
-		{
-			comic.search_vector = new Vector(embeddingValues);
-		}
-		else
-		{
-			comic.search_vector = null;
-		}
+        var embeddingValues = await _embeddingService.CreateEmbeddingAsync(comic.name, comic.description);
+        if (embeddingValues is { Length: > 0 })
+        {
+            comic.search_vector = new Vector(embeddingValues);
+        }
+        else
+        {
+            comic.search_vector = null;
+        }
 
         // Cập nhật vào database
         await _comicRepository.UpdateAsync(comic);

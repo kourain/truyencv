@@ -6,10 +6,17 @@ import Footer from "@components/user/shared/Footer";
 import UserNavbar from "@components/user/shared/Navbar";
 
 export const metadata: Metadata = {
-  title: "TruyenCV - Kênh đọc truyện online miễn phí",
+  title: {
+    default: "TruyenCV - Kênh đọc truyện online miễn phí",
+    template: "%s | TruyenCV",
+  },
   description: "Nền tảng đọc truyện trực tuyến TruyenCV",
   keywords: ["truyện", "đọc truyện", "truyện online"],
-  icons: "/og-image.png",
+  openGraph: {
+    siteName: "TruyenCV",
+    locale: "vi_VN",
+    type: "website",
+  },
 };
 
 const UserLayout = async ({ children }: { children: ReactNode }) => {
