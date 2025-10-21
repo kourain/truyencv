@@ -8,7 +8,7 @@ import { useAuth } from "@hooks/useAuth";
 import { refreshTokens } from "@services/auth.service";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 
 const routeRequiredRoles: Record<string, UserRole[]> = {
   admin: [UserRole.Admin],
@@ -22,23 +22,15 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
   const authState = useAuth();
   const requiredRoles = useMemo(() => routeRequiredRoles[routeFor] ?? [UserRole.User], [routeFor]);
   const [isEmptyPage, setIsEmptyPage] = useState(false);
-  const hasRequiredRole = useCallback((roles?: string[]) => {
+  const hasRequiredRole = (roles?: string[]) => {
     if (!roles?.length) {
       return false;
     }
-
     return roles?.some((role) => requiredRoles.includes(role as UserRole));
-  }, [requiredRoles]);
+  };
 
   useEffect(() => {
     let isMounted = true;
-    if (SKIP_USER_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""))) {
-      setIsReady(true);
-      setIsEmptyPage(true);
-      return () => {
-        isMounted = false;
-      };
-    }
     const finish = () => {
       if (isMounted) {
         setIsReady(true);
@@ -46,9 +38,12 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
     };
 
     const ensureUserSession = async () => {
-      const isSkip = USER_AUTH_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""));
-      const hasRole = hasRequiredRole(authState.roles);
-      const isSessionValid = hasRole && authState.isAuthenticated;
+      const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
+
+      if (isSessionValid) {
+        finish();
+        return;
+      }
 
       const attemptRefresh = async () => {
         try {
@@ -63,7 +58,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
         }
       };
 
-      if (isSkip) {
+      if (USER_AUTH_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""))) {
         if (isSessionValid) {
           router.replace(`/${routeFor}` as Route);
           finish();
@@ -80,28 +75,28 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
         return;
       }
 
-      if (isSessionValid) {
-        finish();
-        return;
-      }
-
       const refreshed = await attemptRefresh();
       if (refreshed) {
         finish();
-        return;
+      } else {
+        await clearAuthTokens();
+        router.replace(`/${routeFor}/auth/login` as Route);
+        finish();
       }
-
-      await clearAuthTokens();
-      router.replace(`/${routeFor}/auth/login` as Route);
-      finish();
     };
 
-    ensureUserSession();
+    if (SKIP_USER_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""))) {
+      setIsEmptyPage(true);
+      finish();
+    }
+    else {
+      ensureUserSession();
+    }
 
     return () => {
       isMounted = false;
     };
-  }, [authState.isAuthenticated, authState.payload?.exp, authState.roles, authState.updateAuthStateFromAccessToken, pathname, router, hasRequiredRole, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_REGEX, routeFor]);
+  });
 
   return (
     <>
