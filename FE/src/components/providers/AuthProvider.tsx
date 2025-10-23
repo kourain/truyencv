@@ -1,13 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext,  useContext, useMemo, useState, type ReactNode } from "react";
 
 import { parseJwtToken, type ServerAuthState } from "@server/auth";
 
 export type AuthContextValue = ServerAuthState & {
   overrideAuthState: (nextState: ServerAuthState) => void;
-  updateAuthState: (partialState: Partial<ServerAuthState>) => void;
-  updateAuthStateFromAccessToken: (token: string | null) => Promise<void>;
+  updateAuthStateFromAccessToken: (token: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -18,29 +17,21 @@ interface AuthProviderProps {
 }
 
 const AuthProvider = ({ initialState, children }: AuthProviderProps) => {
-  const [authState, setAuthState] = useState<ServerAuthState>(() => initialState);
+  const [authState, setAuthState] = useState<ServerAuthState>(initialState);
 
-  const overrideAuthState = useCallback((nextState: ServerAuthState) => {
+  const overrideAuthState = (nextState: ServerAuthState) => {
     setAuthState(nextState);
-  }, []);
+  };
 
-  const updateAuthState = useCallback((partialState: Partial<ServerAuthState>) => {
-    setAuthState((prev) => ({ ...prev, ...partialState }));
-  }, []);
-
-  const updateAuthStateFromAccessToken = async (token: string | null) => {
+  const updateAuthStateFromAccessToken = async (token: string) => {
     const newState = await parseJwtToken(token);
     setAuthState(newState);
   };
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      ...authState,
-      overrideAuthState,
-      updateAuthState,
-      updateAuthStateFromAccessToken
-    }),
-    [authState, overrideAuthState, updateAuthState, updateAuthStateFromAccessToken]
-  );
+  const value = {
+    ...authState,
+    overrideAuthState,
+    updateAuthStateFromAccessToken
+  };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
