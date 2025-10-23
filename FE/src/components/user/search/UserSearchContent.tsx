@@ -63,9 +63,9 @@ export const UserSearchContent = () => {
   const pagination = useMemo(() => buildPagination(currentPage, totalPages), [currentPage, totalPages]);
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-surface via-surface-muted to-surface">
+    <div className="relative flex min-h-screen flex-col bg-surface">
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
-        <header className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-xl">
+        <header className="rounded-lg border border-surface-muted/60 bg-surface/80 p-6 shadow-xl">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
             <div className="flex-1">
               <label htmlFor="search" className="text-xs uppercase tracking-[0.4em] text-surface-foreground/60">
@@ -94,14 +94,14 @@ export const UserSearchContent = () => {
         </section>
 
         {totalPages > 1 && (
-          <nav className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-surface-muted/60 bg-surface/80 px-4 py-3 text-sm text-surface-foreground/70">
+          <nav className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-surface-muted/60 bg-surface/80 px-4 py-3 text-sm text-surface-foreground/70">
             <div>
               Trang {currentPage} / {totalPages}
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="rounded-full border border-surface-muted/60 px-3 py-1.5 transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-surface-muted/60 px-3 py-1.5 transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={() => handleChangePage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
               >
@@ -112,7 +112,7 @@ export const UserSearchContent = () => {
                   key={item.key}
                   type="button"
                   disabled={item.disabled}
-                  className={`rounded-full px-3 py-1.5 text-sm transition ${
+                  className={`rounded-md px-3 py-1.5 text-sm transition ${
                     item.active
                       ? "bg-primary text-primary-foreground"
                       : "border border-surface-muted/60 hover:border-primary"
@@ -124,7 +124,7 @@ export const UserSearchContent = () => {
               ))}
               <button
                 type="button"
-                className="rounded-full border border-surface-muted/60 px-3 py-1.5 transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-surface-muted/60 px-3 py-1.5 transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={() => handleChangePage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
               >
@@ -143,9 +143,9 @@ export const UserSearchContent = () => {
 };
 
 const SearchResultCard = ({ comic }: { comic: SearchComicResult }) => (
-  <article className="flex h-full flex-col gap-3 rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
+  <article className="flex h-full flex-col gap-3 rounded-lg border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
     <div className="flex gap-3">
-      <div className="relative h-32 w-24 overflow-hidden rounded-2xl bg-surface-muted/60">
+      <div className="relative h-32 w-24 overflow-hidden rounded-md bg-surface-muted/60">
         {comic.cover_url ? (
           <img src={comic.cover_url} alt={comic.comic_title} className="h-full w-full object-cover" loading="lazy" />
         ) : (
@@ -164,7 +164,7 @@ const SearchResultCard = ({ comic }: { comic: SearchComicResult }) => (
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-surface-foreground/60">
             <Tag className="h-3 w-3" />
             {comic.genres.map((genre) => (
-              <span key={genre} className="rounded-full bg-surface-muted/60 px-2 py-1">
+              <span key={genre} className="rounded-md bg-surface-muted/60 px-2 py-1">
                 {genre}
               </span>
             ))}
@@ -191,9 +191,9 @@ const SearchResultCard = ({ comic }: { comic: SearchComicResult }) => (
 );
 
 const SearchSkeletonCard = () => (
-  <div className="h-full rounded-3xl border border-surface-muted/60 bg-surface-muted/40 p-4">
+  <div className="h-full rounded-lg border border-surface-muted/60 bg-surface-muted/40 p-4">
     <div className="mb-3 flex gap-3">
-      <div className="h-32 w-24 animate-pulse rounded-2xl bg-surface-muted/80" />
+      <div className="h-32 w-24 animate-pulse rounded-md bg-surface-muted/80" />
       <div className="flex flex-1 flex-col gap-2">
         <div className="h-4 w-3/4 animate-pulse rounded-full bg-surface-muted/80" />
         <div className="h-3 w-full animate-pulse rounded-full bg-surface-muted/60" />

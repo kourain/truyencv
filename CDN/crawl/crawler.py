@@ -60,7 +60,7 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
             await page.goto(f"https://metruyencv.biz/truyen/{slug}/chuong-{chap}")
 
             # Step 4: Locate the element with id "chapter-content"
-            container:ElementHandle = await page.querySelector('#chapter-content') 
+            container:ElementHandle | None = await page.querySelector('#chapter-content') 
 
             text = await page.evaluate('(element) => element.innerHTML', container)
             if text.__len__() < 1000:
