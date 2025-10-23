@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const UserLayout = async ({ children }: { children: ReactNode }) => {
   return (
     <UserAuthGuard>
-      <div className="relative flex min-h-screen flex-col bg-gradient-to-br from-surface via-surface-muted to-surface">
+      <div className="relative flex min-h-screen flex-col bg-surface">
         <UserNavbar />
         {children}
         <Footer />

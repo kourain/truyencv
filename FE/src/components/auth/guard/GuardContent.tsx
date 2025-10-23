@@ -51,7 +51,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_
           await authState.updateAuthStateFromAccessToken(tokens.access_token);
           const refreshedPayload = getAccessTokenPayload();
           const refreshedRoles = refreshedPayload ? getRoleFromJWT(refreshedPayload) : [];
-          return tokens.access_token !== undefined && hasRequiredRole(refreshedRoles);
+          return tokens.access_token?.length > 0 && hasRequiredRole(refreshedRoles);
         } catch (error) {
           console.error("[AuthGuard] Không thể làm mới phiên người dùng", error);
           return false;
