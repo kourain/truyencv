@@ -44,8 +44,8 @@ const nextConfig: NextConfig = {
     ];
   },
   allowedDevOrigins: [
-    FE_ADMIN,
-    FE_USER
+    ...FE_ADMIN.split(","),
+    ...FE_USER.split(",")
   ]
 };
 
