@@ -15,93 +15,56 @@ const routeRequiredRoles: Record<string, UserRole[]> = {
   user: [UserRole.User]
 };
 
-export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, SKIP_USER_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp[], SKIP_USER_ROUTE_REGEX: RegExp[], routeFor: string }) => {
-  const router = useRouter();
+export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp[], routeFor: string }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [isReady, setIsReady] = useState(false);
   const authState = useAuth();
-  const requiredRoles = useMemo(() => routeRequiredRoles[routeFor] ?? [UserRole.User], [routeFor]);
-  const [isEmptyPage, setIsEmptyPage] = useState(false);
+  const requiredRoles = useMemo(() => routeRequiredRoles[routeFor], [routeFor]);
   const hasRequiredRole = (roles?: string[]) => {
     if (!roles?.length) {
       return false;
     }
     return roles?.some((role) => requiredRoles.includes(role as UserRole));
   };
-
+  
+  const attemptRefresh = async () : Promise<boolean> => {
+    try {
+      const tokens = await refreshTokens();
+      await authState.updateAuthStateFromAccessToken(tokens.access_token);
+      const refreshedPayload = getAccessTokenPayload();
+      return tokens.access_token?.length > 0 && hasRequiredRole(refreshedPayload?.role);
+    } catch (error) {
+      console.log("[AuthGuard] Không thể làm mới phiên người dùng", error);
+      return false;
+    }
+  };
   useEffect(() => {
-    let isMounted = true;
-    const finish = () => {
-      if (isMounted) {
-        setIsReady(true);
-      }
-    };
-
-    const ensureUserSession = async () => {
-      const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
-
-      if (isSessionValid) {
-        finish();
-        return;
-      }
-
-      const attemptRefresh = async () => {
-        try {
-          const tokens = await refreshTokens();
-          await authState.updateAuthStateFromAccessToken(tokens.access_token);
-          const refreshedPayload = getAccessTokenPayload();
-          const refreshedRoles = refreshedPayload ? getRoleFromJWT(refreshedPayload) : [];
-          return tokens.access_token?.length > 0 && hasRequiredRole(refreshedRoles);
-        } catch (error) {
-          console.error("[AuthGuard] Không thể làm mới phiên người dùng", error);
-          return false;
-        }
-      };
-
-      if (USER_AUTH_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""))) {
-        if (isSessionValid) {
-          router.replace(`/${routeFor}` as Route);
-          finish();
-          return;
-        }
-
+    const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
+    const ensureUserSession = async () : Promise<void> => {
+      if (isSessionValid === false) {
         const refreshed = await attemptRefresh();
         if (refreshed) {
           router.replace(`/${routeFor}` as Route);
         } else {
           await clearAuthTokens();
+          router.replace(`/${routeFor}/auth/login` as Route);
         }
-        finish();
-        return;
-      }
-
-      const refreshed = await attemptRefresh();
-      if (refreshed) {
-        finish();
-      } else {
-        await clearAuthTokens();
-        router.replace(`/${routeFor}/auth/login` as Route);
-        finish();
       }
     };
-
-    if (SKIP_USER_ROUTE_REGEX.some((regex) => regex.test(pathname ?? ""))) {
-      setIsEmptyPage(true);
-      finish();
-    }
-    else {
+    if (USER_AUTH_ROUTE_REGEX.some((regex) => regex.test(pathname))) {
+      if (isSessionValid) {
+        router.replace(`/${routeFor}` as Route);
+      }
+    } else {
       ensureUserSession();
     }
-
-    return () => {
-      isMounted = false;
-    };
-  });
+    setIsReady(true);
+  }, [pathname]);
 
   return (
     <>
-      {isEmptyPage === true ? null :
-        isReady ? (
+      {isReady ? (
           children
         ) : (
           <div className="flex min-h-[60vh] items-center justify-center">
