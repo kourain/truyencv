@@ -43,13 +43,13 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
     const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
     const ensureUserSession = async () : Promise<void> => {
       if (isSessionValid === false) {
-        const refreshed = await attemptRefresh();
-        if (refreshed) {
-          router.replace(`/${routeFor}` as Route);
-        } else {
+        // const refreshed = await attemptRefresh();
+        // if (refreshed) {
+        //   router.replace(`/${routeFor}` as Route);
+        // } else {
           await clearAuthTokens();
           router.replace(`/${routeFor}/auth/login` as Route);
-        }
+        // }
       }
     };
     if (USER_AUTH_ROUTE_REGEX.some((regex) => regex.test(pathname))) {
