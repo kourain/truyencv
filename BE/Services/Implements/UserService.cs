@@ -103,6 +103,7 @@ namespace TruyenCV.Services
             {
                 var now = DateTime.UtcNow;
                 var dbUser = await _dbcontext.Users
+                    .AsSplitQuery()
                     .Where(u => u.id == user.id && u.deleted_at == null && u.is_banned == false)
                     .Include(u => u.Roles.Where(role => role.deleted_at == null))
                     .Include(u => u.Permissions.Where(permission =>

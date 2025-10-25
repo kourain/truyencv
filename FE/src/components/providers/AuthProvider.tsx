@@ -1,11 +1,10 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
 import { parseJwtToken, type ServerAuthState } from "@server/auth";
 
 export type AuthContextValue = ServerAuthState & {
-  overrideAuthState: (nextState: ServerAuthState) => void;
   updateAuthStateFromAccessToken: (token: string) => Promise<void>;
 };
 
@@ -19,18 +18,13 @@ interface AuthProviderProps {
 const AuthProvider = ({ initialState, children }: AuthProviderProps) => {
   const [authState, setAuthState] = useState<ServerAuthState>(() => initialState);
 
-  const overrideAuthState = (nextState: ServerAuthState) => {
-    setAuthState(() => nextState);
-  };
-
-  const updateAuthStateFromAccessToken = async (token: string) => {
+  const updateAuthStateFromAccessToken = useCallback(async (token: string) => {
     const newState = await parseJwtToken(token);
-    setAuthState(() => newState);
-  };
+    setAuthState(newState);
+  }, [authState, setAuthState]);
   const value = useMemo<AuthContextValue>(
     () => ({
       ...authState,
-      overrideAuthState,
       updateAuthStateFromAccessToken
     }),
     [authState]
