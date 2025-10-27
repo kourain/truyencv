@@ -83,5 +83,10 @@ namespace TruyenCV.Services
         /// Xác nhận email cho người dùng
         /// </summary>
         Task<UserProfileResponse?> VerifyEmailAsync(long userId);
+
+        /// <summary>
+        /// Lấy entity người dùng kèm thông tin role và permission đang hiệu lực
+        /// </summary>
+        Task<User?> GetActiveUserWithAccessAsync(long userId);
     }
 }

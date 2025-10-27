@@ -8,10 +8,12 @@ namespace TruyenCV.Models;
 
 [Table("users")]
 [Index(nameof(email), IsUnique = true)]
+[Index(nameof(firebase_uid), IsUnique = true)]
 public class User : BaseEntity
 {
     [Required]
     public required string name { get; set; }
+    public string? firebase_uid { get; set; } = null;
     [Required, StringLength(256)]
     public required string email { get; set; }
     [Required, StringLength(60)]

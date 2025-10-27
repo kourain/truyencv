@@ -101,17 +101,7 @@ namespace TruyenCV.Services
             var user = await _userRepository.GetByEmailAsync(email);
             if (user != null && Bcrypt.VerifyPassword(password, user.password) && user.deleted_at == null)
             {
-                var now = DateTime.UtcNow;
-                var dbUser = await _dbcontext.Users
-                    .AsSplitQuery()
-                    .Where(u => u.id == user.id && u.deleted_at == null && u.is_banned == false)
-                    .Include(u => u.Roles.Where(role => role.deleted_at == null))
-                    .Include(u => u.Permissions.Where(permission =>
-                        permission.deleted_at == null &&
-                        permission.revoked_at == null &&
-                        (permission.revoke_until == null || permission.revoke_until < now)))
-                    .FirstOrDefaultAsync();
-                return dbUser;
+                return await GetActiveUserWithAccessAsync(user.id);
             }
             return null;
         }
@@ -221,6 +211,21 @@ namespace TruyenCV.Services
             }
 
             return user.ToProfileDTO();
+        }
+
+        public async Task<User?> GetActiveUserWithAccessAsync(long userId)
+        {
+            var now = DateTime.UtcNow;
+
+            return await _dbcontext.Users
+                .AsSplitQuery()
+                .Where(u => u.id == userId && u.deleted_at == null && u.is_banned == false)
+                .Include(u => u.Roles.Where(role => role.deleted_at == null))
+                .Include(u => u.Permissions.Where(permission =>
+                    permission.deleted_at == null &&
+                    permission.revoked_at == null &&
+                    (permission.revoke_until == null || permission.revoke_until < now)))
+                .FirstOrDefaultAsync();
         }
     }
 }

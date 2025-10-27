@@ -133,11 +133,11 @@ export const setAuthTokens = (accessToken: string, refreshToken: string, accessT
 };
 
 export const clearAuthTokens = async ({ from_logout = false } = {}) => {
-  try {
-    if (from_logout) await logout();
-  } catch (error) {
-    console.error("Error logging out:", error);
-  }
+	try {
+		if (from_logout === false) await logout();
+	} catch (error) {
+		console.error("Error logging out:", error);
+	}
 	deleteCookie(ACCESS_TOKEN_COOKIE);
 	deleteCookie(REFRESH_TOKEN_COOKIE);
 };

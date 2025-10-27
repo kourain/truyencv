@@ -9,6 +9,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Pgvector.EntityFrameworkCore;
 using TruyenCV.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using System.Text;
 namespace TruyenCV
 {
     public class Program
@@ -109,6 +112,62 @@ namespace TruyenCV
                 };
             });
         }
+        protected static void AddFirebaseAdmin(WebApplicationBuilder builder)
+        {
+            var firebaseSection = builder.Configuration.GetSection("Firebase");
+            if (!firebaseSection.Exists())
+            {
+                return;
+            }
+
+            if (FirebaseApp.DefaultInstance != null)
+            {
+                return;
+            }
+
+            try
+            {
+                var projectId = firebaseSection["ProjectId"];
+                var credentialsBase64 = firebaseSection["CredentialsBase64"];
+                var credentialsPath = firebaseSection["CredentialsPath"];
+
+                GoogleCredential? credential = null;
+
+                if (!string.IsNullOrWhiteSpace(credentialsBase64))
+                {
+                    var json = Encoding.UTF8.GetString(Convert.FromBase64String(credentialsBase64));
+                    credential = GoogleCredential.FromJson(json);
+                }
+                else if (!string.IsNullOrWhiteSpace(credentialsPath) && File.Exists(credentialsPath))
+                {
+                    using var stream = new FileStream(credentialsPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    credential = GoogleCredential.FromStream(stream);
+                }
+
+                if (credential == null)
+                {
+                    Log.Warning("Firebase configuration is missing credentials. Firebase Auth integration will be skipped.");
+                    return;
+                }
+
+                var options = new AppOptions
+                {
+                    Credential = credential
+                };
+
+                if (!string.IsNullOrWhiteSpace(projectId))
+                {
+                    options.ProjectId = projectId;
+                }
+
+                FirebaseApp.Create(options);
+                Log.Information("Firebase Admin SDK initialized successfully.");
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception, "Failed to initialize Firebase Admin SDK");
+            }
+        }
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -138,6 +197,7 @@ namespace TruyenCV
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
             // Cấu hình xác thực JWT
+            AddFirebaseAdmin(builder);
             AddJwtBearerAuthentication(builder);
             if (GetConnectionString(builder) is (string connectionString, bool enable) && enable)
                 builder.Services.AddDbContext<Models.AppDataContext>(optionsBuilder =>
@@ -208,15 +268,13 @@ namespace TruyenCV
             app.UseCors();
             // app.UseHttpsRedirection();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
-            // Add Middleware
-            app.AddMiddlewares();
             app.MapControllers();
             app.MapControllerRoute(
                 name: "areas",
                 pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
             );
+            // Add Middleware
+            app.AddMiddlewares();
             app.Run();
         }
     }
