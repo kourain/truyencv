@@ -1,7 +1,7 @@
 "use client";
 import { ReactNode } from "react";
 
-import AdminAuthGuard from "@components/user/auth/guard/AdminAuthGuard";
+import AdminAuthGuard from "@components/auth/guard/AdminAuthGuard";
 import AdminSidebar from "@components/admin/shared/Sidebar";
 import Footer from "@components/user/shared/Footer";
 import { useAuth } from "@hooks/useAuth";

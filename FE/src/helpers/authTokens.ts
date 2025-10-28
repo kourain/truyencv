@@ -72,7 +72,7 @@ const base64UrlDecode = (value: string) => {
 	}
 };
 
-const parseJwtToken = (token: string): JWT | null => {
+export const decodeJwtToken = (token: string): JWT | null => {
 	try {
 		const [, payload] = token.split(".");
 
@@ -157,9 +157,21 @@ export const hasValidTokens = () => Boolean(getAccessToken() && getRefreshToken(
 
 export const getAccessTokenPayload = () => {
 	const token = getAccessToken();
-	return token ? parseJwtToken(token) : null;
+	return token ? decodeJwtToken(token) : null;
 };
 
+export const AuthStateFromJWT = (jwt: JWT | null) : ServerAuthState => {
+	return {
+		isAuthenticated: jwt !== null,
+		userId: jwt?.sub ?? null,
+		name: jwt?.name ?? null,
+		avatar: jwt?.avatar ?? null,
+		email: jwt?.email ?? null,
+		roles: getRoleFromJWT(jwt ?? {} as JWT),
+		permissions: normalizeClaim(jwt?.permissions),
+		payload: jwt
+	} as ServerAuthState;
+}
 export const getAccessTokenRoles = () => getRolesFromPayload(getAccessTokenPayload());
 
 export const tokenHasRole = (role: string) =>

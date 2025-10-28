@@ -1,4 +1,4 @@
-import { UserResetPasswordContent } from "@components/user/auth/reset/user";
+import { UserResetPasswordContent } from "@components/auth/reset/user";
 import { Suspense } from "react";
 
 const UserResetPasswordPage = () => (

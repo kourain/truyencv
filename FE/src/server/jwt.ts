@@ -8,26 +8,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 type ClaimValue = string | string[] | undefined;
 
-export interface AccessTokenPayload extends JwtPayload {
-  sub?: string;
-  jti?: string;
-  Permissions?: string[] | string;
-  role?: string[] | string;
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string[] | string;
-  name?: string | null;
-  avatar?: string | null;
-  email?: string | null;
-}
-
-export interface VerifiedAccessToken {
-  userId: string | null;
-  name: string | null;
-  avatar: string | null;
-  email: string | null;
-  roles: string[];
-  permissions: string[];
-  payload: AccessTokenPayload;
-}
 
 const normalizeClaim = (value: ClaimValue): string[] => {
   if (!value) {
@@ -56,11 +36,11 @@ export const verifyAccessToken = async (token: string): Promise<VerifiedAccessTo
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AccessTokenPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as JWT;
     const roles = normalizeClaim(
       decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ?? decoded.role
     );
-    const permissions = normalizeClaim(decoded.Permissions);
+    const permissions = normalizeClaim(decoded.permissions);
 
     return {
       userId: decoded.sub ?? null,

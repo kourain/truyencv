@@ -16,6 +16,7 @@ import {
   isFirebaseConfigured
 } from "@helpers/firebaseClient";
 import { loginWithFirebase } from "@services/auth.service";
+import { AuthStateFromJWT, decodeJwtToken } from "@helpers/authTokens";
 
 const DEFAULT_FIREBASE_ERROR = "Không thể đăng nhập bằng Firebase. Vui lòng thử lại sau.";
 
@@ -106,7 +107,8 @@ const FirebaseLoginButton = ({
         variant: "success"
       });
 
-      await auth.updateAuthStateFromAccessToken(response.access_token);
+      const nextAuthState = AuthStateFromJWT(decodeJwtToken(response.access_token));
+      auth.updateAuthState(nextAuthState);
       router.replace(fallback);
     } catch (error) {
       let message = genericErrorMessage ?? DEFAULT_FIREBASE_ERROR;

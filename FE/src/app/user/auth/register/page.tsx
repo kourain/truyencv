@@ -1,4 +1,4 @@
-import { UserRegisterContent } from "@components/user/auth/register/user";
+import { UserRegisterContent } from "@components/auth/register/user";
 import { Suspense } from "react";
 
 const UserRegisterPage = () => (

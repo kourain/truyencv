@@ -8,8 +8,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 
 const routeRequiredRoles: Record<string, UserRole[]> = {
-  admin: [UserRole.Admin],
-  user: [UserRole.User]
+  "admin": [UserRole.Admin],
+  "user": [UserRole.User]
 };
 
 export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp[], routeFor: string }) => {
@@ -28,6 +28,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
     const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
     const ensureUserSession = async (): Promise<void> => {
       if (isSessionValid === false) {
+        console.log(authState)
         console.log("GuardContent: Invalid session, redirecting to login...");
         await clearAuthTokens();
         router.replace(`/${routeFor}/auth/login` as Route);

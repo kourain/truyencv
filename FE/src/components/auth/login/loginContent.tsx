@@ -4,7 +4,7 @@ import FirebaseLoginButton from "./Firebase";
 import Link from "next/link";
 import { AlertCircle, Check, Lock, LucideIcon, Mail, Shield, User } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
-import { clearAuthTokens } from "@helpers/authTokens";
+import { AuthStateFromJWT, clearAuthTokens, decodeJwtToken, getRoleFromJWT } from "@helpers/authTokens";
 import { login } from "@services/auth.service";
 import { useRouter, useSearchParams } from "next/dist/client/components/navigation";
 import { useAuth } from "@hooks/useAuth";
@@ -69,6 +69,7 @@ const LOGIN_VARIANT_CONFIG: Record<LoginVariant, VariantConfig> = {
 const MISSING_FIELDS_MESSAGE = "Vui lòng nhập đầy đủ email và mật khẩu";
 const GENERIC_LOGIN_ERROR = "Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.";
 const GENERIC_FIREBASE_ERROR = "Không thể đăng nhập bằng Firebase. Vui lòng thử lại sau.";
+
 export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
   const config = LOGIN_VARIANT_CONFIG[variant];
   const [isSuccessed, setIsSuccessed] = useState(false);
@@ -129,7 +130,10 @@ export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
         description: config.successToast.description,
         variant: "success"
       });
-      await auth.updateAuthStateFromAccessToken(response.access_token);
+      const nextAuthState = AuthStateFromJWT(decodeJwtToken(response.access_token));
+      auth.updateAuthState(nextAuthState);
+      console.log("LoginContent: Login successful, redirecting...");
+      console.log("LoginContent: Updated auth state", nextAuthState);
       router.replace(fallback);
     },
     onError: async (mutationError: unknown) => {

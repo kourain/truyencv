@@ -5,20 +5,7 @@ import "server-only";
 import { cookies } from "next/headers";
 
 import { authCookieNames } from "@helpers/authTokens";
-
-import { AccessTokenPayload, verifyAccessToken } from "@server/jwt";
-
-export interface ServerAuthState {
-  isAuthenticated: boolean;
-  token: string | null;
-  userId: string | null;
-  name: string | null;
-  avatar: string | null;
-  email: string | null;
-  roles: string[];
-  permissions: string[];
-  payload: AccessTokenPayload | null;
-}
+import { verifyAccessToken } from "./jwt";
 
 export const parseJwtToken = async (token: string | null): Promise<ServerAuthState> => {
   if (!token) {

@@ -221,14 +221,6 @@ const buildSearchRoute = (keyword: string, page: number): Route => {
   return (`/user/search${query ? `?${query}` : ""}`) as unknown as Route;
 };
 
-type PaginationButton = {
-  key: string;
-  label: string;
-  page?: number;
-  active?: boolean;
-  disabled?: boolean;
-};
-
 const buildPagination = (current: number, total: number): PaginationButton[] => {
   const buttons: PaginationButton[] = [];
 

@@ -1,4 +1,4 @@
-import { AdminLoginContent } from "@components/user/auth/login/admin";
+import { AdminLoginContent } from "@components/auth/login/admin";
 import { Suspense } from "react";
 
 const AdminLoginPage = () => (

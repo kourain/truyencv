@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 
-import UserAuthGuard from "@components/user/auth/guard/UserAuthGuard";
+import UserAuthGuard from "@components/auth/guard/UserAuthGuard";
 import Footer from "@components/user/shared/Footer";
 import UserNavbar from "@components/user/shared/Navbar";
 

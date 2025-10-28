@@ -2,10 +2,9 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
-import { parseJwtToken, type ServerAuthState } from "@server/auth";
 
 export type AuthContextValue = ServerAuthState & {
-  updateAuthStateFromAccessToken: (token: string) => Promise<void>;
+  updateAuthState: (newState: ServerAuthState) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -18,16 +17,15 @@ interface AuthProviderProps {
 const AuthProvider = ({ initialState, children }: AuthProviderProps) => {
   const [authState, setAuthState] = useState<ServerAuthState>(() => initialState);
 
-  const updateAuthStateFromAccessToken = useCallback(async (token: string) => {
-    const newState = await parseJwtToken(token);
+  const updateAuthState = useCallback((newState: ServerAuthState) => {
     setAuthState(newState);
-  }, [authState, setAuthState]);
+  }, [setAuthState]);
   const value = useMemo<AuthContextValue>(
     () => ({
       ...authState,
-      updateAuthStateFromAccessToken
+      updateAuthState
     }),
-    [authState]
+    [authState, updateAuthState]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
