@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { appEnv } from "@const/env";
+import { appEnv, isBrowser } from "@const/env";
 import { clearAuthTokens, getAccessToken, getRefreshToken, setAuthTokens } from "./authTokens";
 
 const defaultConfig: AxiosRequestConfig = {
@@ -53,59 +53,85 @@ httpClient.interceptors.request.use((config) => {
   return nextConfig;
 });
 
+const getHeaderValue = (headers: AxiosResponse["headers"], headerName: string) => {
+  if (!headers) {
+    return undefined;
+  }
+
+  const targetKey = Object.keys(headers).find((key) => key.toLowerCase() === headerName.toLowerCase());
+  return targetKey ? headers[targetKey] : undefined;
+};
+
+const extractAccessToken = (headers: AxiosResponse["headers"]) => {
+  const authHeader = getHeaderValue(headers, "authorization");
+  if (typeof authHeader === "string") {
+    const [, token] = authHeader.split(/Bearer\s+/i);
+    return token?.trim() ?? null;
+  }
+
+  const accessHeader = getHeaderValue(headers, "access_token");
+  return typeof accessHeader === "string" ? accessHeader.trim() : null;
+};
+
+const extractRefreshToken = (headers: AxiosResponse["headers"], fallback?: string | null) => {
+  const headerValue =
+    getHeaderValue(headers, "x-refresh-token") ??
+    getHeaderValue(headers, "refresh-token") ??
+    getHeaderValue(headers, "refresh_token");
+
+  if (typeof headerValue === "string" && headerValue.trim()) {
+    return headerValue.trim();
+  }
+
+  return fallback ?? null;
+};
+
 httpClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    if (isBrowser) {
+      const refreshToken = getRefreshToken();
+      const newAccessToken = extractAccessToken(response.headers);
+      const responseData = response?.data as Partial<AuthTokensResponse> | undefined;
+      const bodyAccessToken = responseData?.access_token;
+      const bodyRefreshToken = responseData?.refresh_token;
+
+      const updatedAccessToken = newAccessToken ?? bodyAccessToken ?? null;
+      const updatedRefreshToken = extractRefreshToken(response.headers, bodyRefreshToken ?? refreshToken ?? null);
+
+      if (updatedAccessToken && updatedRefreshToken) {
+        const accessExpiryMinutes = responseData?.access_token_minutes;
+        const refreshExpiryDays = responseData?.refresh_token_days;
+        const hasExpiryMeta =
+          typeof accessExpiryMinutes === "number" &&
+          typeof refreshExpiryDays === "number";
+
+        if (hasExpiryMeta) {
+          setAuthTokens(
+            updatedAccessToken,
+            updatedRefreshToken,
+            accessExpiryMinutes,
+            refreshExpiryDays
+          );
+        } else {
+          setAuthTokens(updatedAccessToken, updatedRefreshToken);
+        }
+      }
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     if (error.response) {
-      const { status, data, config } = error.response;
-      const originalRequest = config ?? error.config;
-      if(status ===0 ){
+      const { status, data } = error.response;
+      if (status === 0) {
         console.error("[API ERROR] Network Error - Unable to reach the server");
-        return Promise.reject(error);
-      }
-      if (originalRequest?.url?.includes("/auth/refresh-token")) {
-        await clearAuthTokens();
         return Promise.reject(error);
       }
 
       if (status === 401) {
-        const retriableRequest = originalRequest as AxiosRequestConfig & { _retry?: boolean };
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) {
-          await clearAuthTokens();
-          redirectToLogin();
-          console.error("[API ERROR] Missing refresh token for re-authentication");
-          return Promise.reject(error);
-        }
-
-        retriableRequest._retry = true;
-
-        try {
-          const refreshResponse = await httpClient.post<JWT_REFRESH_RESPONSE>(
-            "/auth/refresh-token",
-            { refresh_token: refreshToken }
-          );
-          console.log("[API] Tokens refreshed successfully");
-          const { access_token, refresh_token, access_token_minutes, refresh_token_days } = refreshResponse.data;
-          setAuthTokens(access_token, refresh_token, access_token_minutes, refresh_token_days);
-
-          if (retriableRequest.headers) {
-            retriableRequest.headers.Authorization = `Bearer ${access_token}`;
-          }
-
-          return httpClient(retriableRequest);
-        } catch (refreshError) {
-          if (refreshError instanceof AxiosError) {
-            if (refreshError.response?.status === 403) {
-              console.error("[API ERROR] Refresh token expired or invalid, logging out");
-              await clearAuthTokens();
-              redirectToLogin();
-            } else {
-              console.error("[API ERROR] Failed to refresh tokens:", refreshError.response?.data || refreshError.message);
-            }
-          }
-          return Promise.reject(refreshError);
-        }
+        await clearAuthTokens();
+        redirectToLogin();
+        console.error("[API ERROR] refresh token expired - redirecting to login");
+        return Promise.reject(error);
       }
 
       console.error(`[API ERROR] ${status}:`, data);

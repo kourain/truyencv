@@ -122,7 +122,14 @@ const getPermissionsFromPayload = (payload: JWT | null) => {
 	return normalizeClaim(payload.permissions);
 };
 
-export const setAuthTokens = (accessToken: string, refreshToken: string, accessTokenExpiryMinutes: number, refreshTokenExpiryDays: number) => {
+export function setAuthTokens(accessToken: string, refreshToken: string): void;
+export function setAuthTokens(accessToken: string, refreshToken: string, accessTokenExpiryMinutes: number, refreshTokenExpiryDays: number): void;
+export function setAuthTokens(accessToken: string, refreshToken: string, accessTokenExpiryMinutes?: number, refreshTokenExpiryDays?: number): void {
+	if (accessTokenExpiryMinutes === undefined || refreshTokenExpiryDays === undefined) {
+		document.cookie = `${ACCESS_TOKEN_COOKIE}=${encodeURIComponent(accessToken)};`;
+		document.cookie = `${REFRESH_TOKEN_COOKIE}=${encodeURIComponent(refreshToken)};`;
+		return;
+	}
 	if (accessToken) {
 		setCookie(ACCESS_TOKEN_COOKIE, accessToken, accessTokenExpiryMinutes * 60);
 	}
@@ -133,11 +140,11 @@ export const setAuthTokens = (accessToken: string, refreshToken: string, accessT
 };
 
 export const clearAuthTokens = async ({ from_logout = false } = {}) => {
-  try {
-    if (from_logout) await logout();
-  } catch (error) {
-    console.error("Error logging out:", error);
-  }
+	try {
+		if (from_logout === false) await logout();
+	} catch (error) {
+		console.error("Error logging out:", error);
+	}
 	deleteCookie(ACCESS_TOKEN_COOKIE);
 	deleteCookie(REFRESH_TOKEN_COOKIE);
 };

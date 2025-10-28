@@ -19,6 +19,8 @@ interface RegisterResponse extends AuthTokensResponse {
 	message?: string;
 	access_token_minutes: number;
 	refresh_token_days: number;
+	roles: string[];
+	permissions: string[];
 }
 interface UpdateUserRequest {
 	id: string;
@@ -39,6 +41,8 @@ interface LoginResponse extends AuthTokensResponse {
 	user: UserResponse;
 	access_token_minutes: number;
 	refresh_token_days: number;
+	roles: string[];
+	permissions: string[];
 }
 
 interface BaseResponse {
@@ -51,6 +55,13 @@ interface LoginRequest {
 
 interface RefreshTokenRequest {
 	refresh_token: string;
+}
+
+interface FirebaseLoginRequest {
+	id_token: string;
+	display_name?: string;
+	avatar_url?: string;
+	phone?: string;
 }
 
 interface UserResponse {

@@ -1,14 +1,11 @@
 import { UserRole } from "@const/enum/role";
 import {
   clearAuthTokens,
-  getAccessTokenPayload,
-  getRoleFromJWT
 } from "@helpers/authTokens";
 import { useAuth } from "@hooks/useAuth";
-import { refreshTokens } from "@services/auth.service";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 
 const routeRequiredRoles: Record<string, UserRole[]> = {
   admin: [UserRole.Admin],
@@ -41,15 +38,10 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
   };
   useEffect(() => {
     const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
-    const ensureUserSession = async () : Promise<void> => {
+    const ensureUserSession = async (): Promise<void> => {
       if (isSessionValid === false) {
-        // const refreshed = await attemptRefresh();
-        // if (refreshed) {
-        //   router.replace(`/${routeFor}` as Route);
-        // } else {
-          await clearAuthTokens();
-          router.replace(`/${routeFor}/auth/login` as Route);
-        // }
+        await clearAuthTokens();
+        router.replace(`/${routeFor}/auth/login` as Route);
       }
     };
     if (USER_AUTH_ROUTE_REGEX.some((regex) => regex.test(pathname))) {
@@ -64,16 +56,18 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
 
   return (
     <>
-      {isReady ? (
-          children
-        ) : (
-          <div className="flex min-h-[60vh] items-center justify-center">
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-surface-muted bg-surface/80 px-6 py-8 text-sm text-surface-foreground/70">
-              <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <p>Đang xác thực quyền truy cập...</p>
-            </div>
+      <Suspense fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-surface-muted bg-surface/80 px-6 py-8 text-sm text-surface-foreground/70">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p>Đang xác thực quyền truy cập...</p>
           </div>
-        )}
+        </div>
+      }>
+        {isReady &&
+          children
+        }
+      </Suspense>
     </>
   );
 }

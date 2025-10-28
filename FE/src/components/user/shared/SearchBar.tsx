@@ -1,37 +1,56 @@
 "use client";
-import { SearchIcon } from "lucide-react"
+import clsx from "clsx";
+import { SearchIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-export const SearchBar = () => {
-    const router = useRouter();
+type SearchBarProps = {
+  className?: string;
+};
 
-    const handleSearch = (keyword: string) => {
-        const href = `/user/search?keyword=${encodeURIComponent(keyword)}`;
-        router.push(href);
-    };
-    const [searchValue, setSearchValue] = useState("");
-    return (
-        <div className="mt-2 flex items-center gap-3">
-            <div className="relative flex-1">
-                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-foreground/50" />
-                <input
-                    id="search"
-                    type="search"
-                    value={searchValue}
-                    onChange={(event) => setSearchValue(event.target.value)}
-                    onKeyDown={(event) => event.key === "Enter" && handleSearch(searchValue)}
-                    placeholder="Tìm kiếm truyện, tác giả hoặc thể loại..."
-                    className="w-full rounded-full border border-surface-muted/80 bg-surface px-10 py-2 text-sm text-surface-foreground shadow-inner outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-            </div>
-            <button
-                onClick={() => handleSearch(searchValue)}
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:shadow-glow"
-            >
-                <SearchIcon className="h-4 w-4" />
-            </button>
-        </div>
-    )
-}
+export const SearchBar = ({ className }: SearchBarProps) => {
+  const router = useRouter();
+  const [searchValue, setSearchValue] = useState("");
+
+  const trimmedValue = useMemo(() => searchValue.trim(), [searchValue]);
+  const canSearch = trimmedValue.length > 0;
+
+  const handleSearch = (keyword: string) => {
+    const value = keyword.trim();
+    if (!value) {
+      return;
+    }
+
+    const href = `/user/search?keyword=${encodeURIComponent(value)}`;
+    router.push(href);
+  };
+
+  return (
+    <div className={clsx("flex items-center gap-3", className)}>
+      <div className="flex flex-1 items-center gap-2 rounded-lg border border-surface-muted/70 bg-surface/90 px-3 py-2 shadow-sm transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+        <SearchIcon className="h-4 w-4 flex-none text-surface-foreground/50" />
+        <input
+          id="search"
+          type="search"
+          value={searchValue}
+          onChange={(event) => setSearchValue(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              handleSearch(searchValue);
+            }
+          }}
+          placeholder="Tìm kiếm truyện, tác giả hoặc thể loại..."
+          className="w-full bg-transparent text-sm text-surface-foreground placeholder:text-surface-foreground/50 focus:outline-none"
+        />
+      </div>
+      <button
+        onClick={() => handleSearch(searchValue)}
+        type="submit"
+        disabled={!canSearch}
+        className="inline-flex items-center gap-2 rounded-lg border border-primary/60 bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <SearchIcon className="h-4 w-4" />
+      </button>
+    </div>
+  );
+};
