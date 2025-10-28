@@ -28,6 +28,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
     const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
     const ensureUserSession = async (): Promise<void> => {
       if (isSessionValid === false) {
+        console.log("GuardContent: Invalid session, redirecting to login...");
         await clearAuthTokens();
         router.replace(`/${routeFor}/auth/login` as Route);
       }

@@ -17,6 +17,7 @@ const UserNavbar = () => {
   const [showMobileSearch, setShowMobileSearch] = useState(true);
   const searchVisibilityRef = useRef(true);
   const handleLogout = useCallback(async () => {
+    console.log("UserNavbar: Logging out...");
     await clearAuthTokens();
     window.location.href = "/user/auth/login";
   }, []);

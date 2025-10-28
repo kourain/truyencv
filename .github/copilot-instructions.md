@@ -300,3 +300,11 @@ Luôn sử dụng `namespace TruyenCV;`
 - thư mục components/*.tsx là thư mục chứa các component dùng chung, không chứa các tệp tin SSR, chỉ chứa các component tái sử dụng CSR
 - Mock Data: đặt nó vào bên trong services, nơi thường dùng để gọi API tới BackEnd
 - Tất cả type/interface đều được đặt trong thư mục types
+
+## BackEnd JWT Token Settings
+- AccessTokenExpiryMinutes: Thời gian hết hạn của Access Token tính theo phút
+- RefreshTokenExpiryDays: Thời gian hết hạn của Refresh Token tính theo ngày
+- lấy userId từ Access Token để xác thực người dùng trong các request đến APIController thông qua extension method từ BE/Extensions/Jwt.cs:
+```cs
+   var userId = User.GetUserId();
+```

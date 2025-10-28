@@ -6,6 +6,8 @@ public class CreateComicChapterRequest
 	public required string comic_id { get; set; }
 	public required int chapter { get; set; }
 	public required string content { get; set; }
+	public int? key_require { get; set; }
+	public DateTime? key_require_until { get; set; }
 }
 
 public class UpdateComicChapterRequest
@@ -14,4 +16,6 @@ public class UpdateComicChapterRequest
 	public required string comic_id { get; set; }
 	public required int chapter { get; set; }
 	public required string content { get; set; }
+	public int? key_require { get; set; }
+	public DateTime? key_require_until { get; set; }
 }

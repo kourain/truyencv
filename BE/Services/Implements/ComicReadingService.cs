@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using TruyenCV;
 using TruyenCV.DTOs.Response;
@@ -9,18 +10,21 @@ public class ComicReadingService : IComicReadingService
     private readonly IComicService _comicService;
     private readonly IComicChapterService _comicChapterService;
     private readonly IComicRecommendService _comicRecommendService;
+    private readonly IUserComicUnlockHistoryService _unlockHistoryService;
 
     public ComicReadingService(
         IComicService comicService,
         IComicChapterService comicChapterService,
-        IComicRecommendService comicRecommendService)
+        IComicRecommendService comicRecommendService,
+        IUserComicUnlockHistoryService unlockHistoryService)
     {
         _comicService = comicService;
         _comicChapterService = comicChapterService;
         _comicRecommendService = comicRecommendService;
+        _unlockHistoryService = unlockHistoryService;
     }
 
-    public async Task<ComicChapterReadResponse?> GetChapterAsync(string slug, int chapterNumber)
+    public async Task<ComicChapterReadResponse?> GetChapterAsync(string slug, int chapterNumber, long userId)
     {
         if (string.IsNullOrWhiteSpace(slug))
         {
@@ -43,6 +47,17 @@ public class ComicReadingService : IComicReadingService
         if (chapter == null)
         {
             return null;
+        }
+
+        var chapterId = chapter.id.ToSnowflakeId(nameof(chapter.id));
+        var requireKey = chapter.key_require > 0 && (!chapter.key_require_until.HasValue || DateTime.UtcNow <= chapter.key_require_until.Value);
+        if (requireKey)
+        {
+            var unlocked = await _unlockHistoryService.HasUnlockedChapterAsync(userId, chapterId);
+            if (!unlocked)
+            {
+                throw new UserRequestException("Bạn cần mở khóa chương này trước khi đọc");
+            }
         }
 
         var previous = await _comicChapterService.GetPreviousChapterAsync(comicId, chapterNumber);

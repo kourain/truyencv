@@ -14,6 +14,8 @@ public static partial class Extensions
 			comic_id = request.comic_id.ToSnowflakeId(nameof(request.comic_id)),
 			chapter = request.chapter,
 			content = request.content,
+			key_require = request.key_require ?? 1,
+			key_require_until = request.key_require_until,
 			created_at = DateTime.UtcNow,
 			updated_at = DateTime.UtcNow
 		};
@@ -28,6 +30,8 @@ public static partial class Extensions
 			comic_id = chapter.comic_id.ToString(),
 			chapter = chapter.chapter,
 			content = chapter.content,
+			key_require = chapter.key_require,
+			key_require_until = chapter.key_require_until,
 			created_at = chapter.created_at,
 			updated_at = chapter.updated_at
 		};
@@ -39,6 +43,14 @@ public static partial class Extensions
 		chapter.comic_id = request.comic_id.ToSnowflakeId(nameof(request.comic_id));
 		chapter.chapter = request.chapter;
 		chapter.content = request.content;
+		if (request.key_require.HasValue)
+		{
+			chapter.key_require = request.key_require.Value;
+		}
+		if (request.key_require_until != chapter.key_require_until)
+		{
+			chapter.key_require_until = request.key_require_until;
+		}
 		chapter.updated_at = DateTime.UtcNow;
 	}
 }

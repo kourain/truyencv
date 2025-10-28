@@ -43,7 +43,13 @@ public sealed class ComicController : ControllerBase
     [HttpGet("{slug}/chapters/{chapterNumber:int}")]
     public async Task<IActionResult> GetChapter(string slug, int chapterNumber)
     {
-        var result = await _comicReadingService.GetChapterAsync(slug, chapterNumber);
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new { message = "Không thể xác định người dùng" });
+        }
+
+        var result = await _comicReadingService.GetChapterAsync(slug, chapterNumber, userId.Value);
         if (result == null)
         {
             return NotFound(new { message = "Không tìm thấy chương" });

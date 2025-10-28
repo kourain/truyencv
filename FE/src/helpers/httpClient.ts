@@ -128,9 +128,9 @@ httpClient.interceptors.response.use(
       }
 
       if (status === 401) {
+        console.error("[API ERROR] refresh token expired - redirecting to login");
         await clearAuthTokens();
         redirectToLogin();
-        console.error("[API ERROR] refresh token expired - redirecting to login");
         return Promise.reject(error);
       }
 

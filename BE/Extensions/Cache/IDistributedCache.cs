@@ -4,7 +4,7 @@ using TruyenCV.Models;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
-public static partial class RedisExtensions
+public static partial class IDistributedCacheExtensions
 {
     private const double DefaultCacheMinutes = 5;
 
