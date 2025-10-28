@@ -24,7 +24,18 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
     }
     return roles?.some((role) => requiredRoles.includes(role as UserRole));
   };
-
+  
+  const attemptRefresh = async () : Promise<boolean> => {
+    try {
+      const tokens = await refreshTokens();
+      await authState.updateAuthStateFromAccessToken(tokens.access_token);
+      const refreshedPayload = getAccessTokenPayload();
+      return tokens.access_token?.length > 0 && hasRequiredRole(refreshedPayload?.role);
+    } catch (error) {
+      console.log("[AuthGuard] Không thể làm mới phiên người dùng", error);
+      return false;
+    }
+  };
   useEffect(() => {
     const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
     const ensureUserSession = async (): Promise<void> => {
