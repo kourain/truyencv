@@ -69,7 +69,6 @@ const LOGIN_VARIANT_CONFIG: Record<LoginVariant, VariantConfig> = {
 const MISSING_FIELDS_MESSAGE = "Vui lòng nhập đầy đủ email và mật khẩu";
 const GENERIC_LOGIN_ERROR = "Không thể đăng nhập. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.";
 const GENERIC_FIREBASE_ERROR = "Không thể đăng nhập bằng Firebase. Vui lòng thử lại sau.";
-
 export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
   const config = LOGIN_VARIANT_CONFIG[variant];
   const [isSuccessed, setIsSuccessed] = useState(false);
@@ -277,15 +276,28 @@ export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
                 </span>
               </div>
 
-              <FirebaseLoginButton
-                fallback={fallback}
-                successToast={config.firebaseSuccessToast}
-                notConfiguredDescription={config.firebaseNotConfiguredDescription}
-                genericErrorMessage={GENERIC_FIREBASE_ERROR}
-                setError={setError}
-                onPendingChange={setIsFirebasePending}
-                disabled={loginMutation.isPending}
-              />
+              <div className="flex flex-col gap-2">
+                <FirebaseLoginButton
+                  provider="google"
+                  fallback={fallback}
+                  successToast={config.firebaseSuccessToast}
+                  notConfiguredDescription={config.firebaseNotConfiguredDescription}
+                  genericErrorMessage={GENERIC_FIREBASE_ERROR}
+                  setError={setError}
+                  onPendingChange={setIsFirebasePending}
+                  disabled={loginMutation.isPending}
+                />
+                <FirebaseLoginButton
+                  provider="facebook"
+                  fallback={fallback}
+                  successToast={config.firebaseSuccessToast}
+                  notConfiguredDescription={config.firebaseNotConfiguredDescription}
+                  genericErrorMessage={GENERIC_FIREBASE_ERROR}
+                  setError={setError}
+                  onPendingChange={setIsFirebasePending}
+                  disabled={loginMutation.isPending}
+                />
+              </div>
 
               {variant === "user" ? (
                 <>

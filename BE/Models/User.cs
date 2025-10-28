@@ -28,7 +28,7 @@ public class User : BaseEntity
     public long key { get; set; } = 0;
     public bool is_banned { get; set; } = false;
     public DateTime? banned_at { get; set; }
-    [Required, StringLength(50)]
+    [Required, StringLength(15360)] // 15 KB for avatar image in base64
     public string avatar { get; set; } = "default_avatar.png";
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
     public virtual ICollection<RefreshToken>? RefreshTokens { get; set; }

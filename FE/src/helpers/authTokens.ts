@@ -122,7 +122,14 @@ const getPermissionsFromPayload = (payload: JWT | null) => {
 	return normalizeClaim(payload.permissions);
 };
 
-export const setAuthTokens = (accessToken: string, refreshToken: string, accessTokenExpiryMinutes: number, refreshTokenExpiryDays: number) => {
+export function setAuthTokens(accessToken: string, refreshToken: string): void;
+export function setAuthTokens(accessToken: string, refreshToken: string, accessTokenExpiryMinutes: number, refreshTokenExpiryDays: number): void;
+export function setAuthTokens(accessToken: string, refreshToken: string, accessTokenExpiryMinutes?: number, refreshTokenExpiryDays?: number): void {
+	if (accessTokenExpiryMinutes === undefined || refreshTokenExpiryDays === undefined) {
+		document.cookie = `${ACCESS_TOKEN_COOKIE}=${encodeURIComponent(accessToken)};`;
+		document.cookie = `${REFRESH_TOKEN_COOKIE}=${encodeURIComponent(refreshToken)};`;
+		return;
+	}
 	if (accessToken) {
 		setCookie(ACCESS_TOKEN_COOKIE, accessToken, accessTokenExpiryMinutes * 60);
 	}

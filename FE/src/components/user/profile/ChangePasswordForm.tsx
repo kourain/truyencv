@@ -80,7 +80,7 @@ const ChangePasswordForm = ({ username, onSuccess }: ChangePasswordFormProps) =>
     <section className="rounded-3xl border border-slate-700/70 bg-slate-900/70 p-6 shadow-xl">
       <header className="mb-6">
         <h3 className="text-lg font-semibold text-slate-100">Đổi mật khẩu</h3>
-        <p className="text-xs text-slate-400">Đặt lại mật khẩu thường xuyên để đảm bảo tài khoản {username} luôn an toàn.</p>
+        <p className="text-xs text-slate-400">Đặt lại mật khẩu thường xuyên để đảm bảo tài khoản <code>{username}</code> luôn an toàn.</p>
       </header>
 
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>

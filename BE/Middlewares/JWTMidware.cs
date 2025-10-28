@@ -14,8 +14,9 @@ namespace TruyenCV.Middleware
         {
             _next = next;
         }
-        public async Task InvokeAsync(HttpContext context, AuthService _authService)
+        public async Task InvokeAsync(HttpContext context,IServiceProvider provider)
         {
+            var _authService = provider.GetRequiredService<IAuthService>();
             if (!context.Request.Path.StartsWithSegments("/auth"))
             {
                 var access_token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
@@ -33,6 +34,7 @@ namespace TruyenCV.Middleware
 
                     var (accessToken, refreshToken) = result.Value;
                     context.Request.Headers["Authorization"] = "Bearer " + accessToken;
+                    context.Response.Headers["Authorization"] = "Bearer " + accessToken;
                     context.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
                     {
                         HttpOnly = true,

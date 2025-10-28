@@ -1,6 +1,6 @@
 import { appEnv } from "@const/env";
 import { FirebaseApp, getApps, initializeApp } from "firebase/app";
-import { Auth, GoogleAuthProvider, getAuth } from "firebase/auth";
+import { Auth, FacebookAuthProvider, GoogleAuthProvider, getAuth } from "firebase/auth";
 
 let cachedApp: FirebaseApp | null = null;
 
@@ -49,5 +49,12 @@ export const getFirebaseAuthInstance = (): Auth => {
 export const createGoogleProvider = () => {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
+  return provider;
+};
+
+export const createFacebookProvider = () => {
+  const provider = new FacebookAuthProvider();
+  provider.addScope("email");
+  provider.setCustomParameters({ display: "popup" });
   return provider;
 };
