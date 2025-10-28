@@ -25,6 +25,16 @@ export const login = async (payload: LoginRequest, config?: AxiosRequestConfig) 
 	return response.data;
 };
 
+export const loginWithFirebase = async (payload: FirebaseLoginRequest, config?: AxiosRequestConfig) => {
+	const client = getHttpClient();
+	const response = await client.post<LoginResponse>("/auth/firebase-login", payload, config);
+	const { access_token, refresh_token, access_token_minutes, refresh_token_days } = response.data;
+
+	setAuthTokens(access_token, refresh_token, access_token_minutes, refresh_token_days);
+
+	return response.data;
+};
+
 export const refreshTokens = async (payload?: RefreshTokenPayload, config?: AxiosRequestConfig) => {
 	const client = getHttpClient();
 	const refresh_token = payload?.refresh_token ?? getRefreshToken();

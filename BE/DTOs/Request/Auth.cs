@@ -19,3 +19,11 @@ public class RegisterRequest
 	public required string password { get; set; }
 	public required string phone { get; set; }
 }
+
+public class FirebaseLoginRequest
+{
+	public required string id_token { get; set; }
+	public string? display_name { get; set; }
+	public string? avatar_url { get; set; }
+	public string? phone { get; set; }
+}

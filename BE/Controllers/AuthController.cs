@@ -1,6 +1,7 @@
 using TruyenCV.DTOs.Request;
 using TruyenCV.Services;
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -19,12 +20,14 @@ namespace TruyenCV.Controllers
         private readonly IUserService _userService;
         private readonly IUserHasRoleService _userHasRoleService;
         private readonly IPasswordResetService _passwordResetService;
+        private readonly IFirebaseAuthService _firebaseAuthService;
         private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             IAuthService authService,
             IUserService userService,
             IUserHasRoleService userHasRoleService,
+            IFirebaseAuthService firebaseAuthService,
             IPasswordResetService passwordResetService,
             ILogger<AuthController> logger)
         {
@@ -32,6 +35,7 @@ namespace TruyenCV.Controllers
             _userService = userService;
             _userHasRoleService = userHasRoleService;
             _passwordResetService = passwordResetService;
+            _firebaseAuthService = firebaseAuthService;
             _logger = logger;
         }
 
@@ -101,8 +105,12 @@ namespace TruyenCV.Controllers
                     access_token = accessToken,
                     refresh_token = refreshToken,
                     user = newUser,
-                    roles = userEntity.Roles,
-                    permissions = userEntity.Permissions,
+                    roles = (userEntity.Roles ?? Enumerable.Empty<Models.UserHasRole>())
+                        .Where(role => role.deleted_at == null)
+                        .Select(role => role.role_name),
+                    permissions = (userEntity.Permissions ?? Enumerable.Empty<Models.UserHasPermission>())
+                        .Where(permission => permission.deleted_at == null)
+                        .Select(permission => permission.permissions.ToString()),
                     access_token_minutes = JwtHelper.AccessTokenExpiryMinutes,
                     refresh_token_days = JwtHelper.RefreshTokenExpiryDays
                 });
@@ -139,10 +147,53 @@ namespace TruyenCV.Controllers
                 refresh_token = refreshToken,
                 access_token_minutes = JwtHelper.AccessTokenExpiryMinutes,
                 refresh_token_days = JwtHelper.RefreshTokenExpiryDays,
-                user = user,
-                roles = user.Roles,
-                permissions = user.Permissions
+                user,
+                roles = (user.Roles ?? Enumerable.Empty<Models.UserHasRole>())
+                    .Where(role => role.deleted_at == null)
+                    .Select(role => role.role_name),
+                permissions = (user.Permissions ?? Enumerable.Empty<Models.UserHasPermission>())
+                    .Where(permission => permission.deleted_at == null)
+                    .Select(permission => permission.permissions.ToString())
             });
+        }
+
+        /// <summary>
+        /// Đăng nhập bằng Firebase ID token
+        /// </summary>
+        [HttpPost("firebase-login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> FirebaseLogin([FromBody] FirebaseLoginRequest request)
+        {
+            try
+            {
+                var user = await _firebaseAuthService.SignInWithFirebaseAsync(request);
+                var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(user);
+
+                return Ok(new
+                {
+                    access_token = accessToken,
+                    refresh_token = refreshToken,
+                    access_token_minutes = JwtHelper.AccessTokenExpiryMinutes,
+                    refresh_token_days = JwtHelper.RefreshTokenExpiryDays,
+                    user,
+                    roles = (user.Roles ?? Enumerable.Empty<Models.UserHasRole>())
+                        .Where(role => role.deleted_at == null)
+                        .Select(role => role.role_name),
+                    permissions = (user.Permissions ?? Enumerable.Empty<Models.UserHasPermission>())
+                        .Where(permission => permission.deleted_at == null)
+                        .Select(permission => permission.permissions.ToString())
+                });
+            }
+            catch (UserRequestException exception)
+            {
+                var statusCode = exception.StatusCode == 0 ? StatusCodes.Status400BadRequest : exception.StatusCode;
+                return StatusCode(statusCode, new { message = exception.Message.Trim() });
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Không thể đăng nhập bằng Firebase");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Không thể đăng nhập bằng Firebase." });
+            }
         }
 
         /// <summary>
@@ -178,7 +229,7 @@ namespace TruyenCV.Controllers
             var result = await _authService.RevokeRefreshTokenAsync(request.refresh_token);
             if (!result)
             {
-                return BadRequest(new { message = "Refresh token không hợp lệ hoặc đã bị vô hiệu hóa" });
+                return Unauthorized(new { message = "Refresh token không hợp lệ hoặc đã bị vô hiệu hóa" });
             }
 
             return Ok(new { message = "Đăng xuất thành công" });

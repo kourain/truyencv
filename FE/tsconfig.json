@@ -47,17 +47,17 @@
         "./src/services/*"
       ],
       "@types/*": [
-        "./src/types/*.d.ts"
-      ],
+        "./src/types/*"
+      ]
     },
     "noEmit": true
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "next.config.ts"
+    "next-env.d.ts",
+    "next.config.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
