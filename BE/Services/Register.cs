@@ -31,7 +31,7 @@ public static class ServicesRegisterExtensions
 		Services.AddScoped<TruyenCV.Services.ISubscriptionService, TruyenCV.Services.SubscriptionService>();
 		Services.AddScoped<TruyenCV.Services.IUserHasSubscriptionService, TruyenCV.Services.UserHasSubscriptionService>();
 		Services.AddScoped<TruyenCV.Services.IPaymentHistoryService, TruyenCV.Services.PaymentHistoryService>();
-		Services.AddScoped<TruyenCV.Services.IUserCoinHistoryService, TruyenCV.Services.UserCoinHistoryService>();
+		Services.AddScoped<TruyenCV.Services.IUserUseCoinHistoryService, TruyenCV.Services.UserUseCoinHistoryService>();
 		Services.AddScoped<TruyenCV.Services.IUserUseKeyHistoryService, TruyenCV.Services.UserUseKeyHistoryService>();
 		Services.AddScoped<TruyenCV.Services.IUserComicUnlockHistoryService, TruyenCV.Services.UserComicUnlockHistoryService>();
 		Services.AddScoped<TruyenCV.Services.IComicRecommendService, TruyenCV.Services.ComicRecommendService>();

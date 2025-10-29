@@ -2,7 +2,7 @@ using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
 
-public interface IUserCoinHistoryRepository : IRepository<UserCoinHistory>
+public interface IUserUseCoinHistoryRepository : IRepository<UserUseCoinHistory>
 {
-    Task<IEnumerable<UserCoinHistory>> GetByUserIdAsync(long userId);
+    Task<IEnumerable<UserUseCoinHistory>> GetByUserIdAsync(long userId);
 }

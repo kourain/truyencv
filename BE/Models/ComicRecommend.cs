@@ -13,6 +13,7 @@ public class ComicRecommend : BaseEntity
     public required long comic_id { get; set; }
 
     [Required]
+    [Range(0, long.MaxValue, ErrorMessage = "rcm_count không thể nhỏ hơn 0.")]
     public long rcm_count { get; set; } = 0;
 
     [Range(1, 12)]

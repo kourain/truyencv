@@ -34,7 +34,7 @@ export const ZstdDemo = (compressedData: Uint8Array, dictionaryData: Uint8Array)
                 setOutput(new TextDecoder().decode(result))
             })
             .catch((err) => setOutput('Error: ' + err))
-    }, [])
+    }, [compressedData, dictionaryData])
 
     return output;
 }

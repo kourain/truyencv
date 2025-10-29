@@ -5,25 +5,25 @@ using TruyenCV.Repositories;
 
 namespace TruyenCV.Services;
 
-public class UserCoinHistoryService : IUserCoinHistoryService
+public class UserUseCoinHistoryService : IUserUseCoinHistoryService
 {
-    private readonly IUserCoinHistoryRepository _userCoinHistoryRepository;
+    private readonly IUserUseCoinHistoryRepository _UserUseCoinHistoryRepository;
 
-    public UserCoinHistoryService(IUserCoinHistoryRepository userCoinHistoryRepository)
+    public UserUseCoinHistoryService(IUserUseCoinHistoryRepository UserUseCoinHistoryRepository)
     {
-        _userCoinHistoryRepository = userCoinHistoryRepository;
+        _UserUseCoinHistoryRepository = UserUseCoinHistoryRepository;
     }
 
-    public async Task<IEnumerable<UserCoinHistoryResponse>> GetByUserIdAsync(long userId)
+    public async Task<IEnumerable<UserUseCoinHistoryResponse>> GetByUserIdAsync(long userId)
     {
-        var histories = await _userCoinHistoryRepository.GetByUserIdAsync(userId);
+        var histories = await _UserUseCoinHistoryRepository.GetByUserIdAsync(userId);
         return histories.Where(history => history.deleted_at == null).Select(history => history.ToRespDTO());
     }
 
-    public async Task<UserCoinHistoryResponse> CreateAsync(CreateUserCoinHistoryRequest request)
+    public async Task<UserUseCoinHistoryResponse> CreateAsync(CreateUserUseCoinHistoryRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _userCoinHistoryRepository.AddAsync(entity);
+        var created = await _UserUseCoinHistoryRepository.AddAsync(entity);
         return created.ToRespDTO();
     }
 }

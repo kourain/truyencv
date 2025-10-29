@@ -5,9 +5,9 @@ using Newtonsoft.Json;
 
 namespace TruyenCV.Models;
 
-[Table("user_coin_history")]
-[Index(nameof(user_id), Name = "IX_UserCoinHistory_User")]
-public class UserCoinHistory : BaseEntity
+[Table("user_use_coin_history")]
+[Index(nameof(user_id), Name = "IX_UserUseCoinHistory_User")]
+public class UserUseCoinHistory : BaseEntity
 {
     [Required]
     public required long user_id { get; set; }

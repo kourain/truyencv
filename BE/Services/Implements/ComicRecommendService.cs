@@ -13,7 +13,7 @@ public class ComicRecommendService : IComicRecommendService
     private readonly IComicRecommendRepository _recommendRepository;
     private readonly IComicRepository _comicRepository;
     private readonly IUserRepository _userRepository;
-    private readonly IUserCoinHistoryRepository _userCoinHistoryRepository;
+    private readonly IUserUseCoinHistoryRepository _UserUseCoinHistoryRepository;
     private readonly IDistributedCache _redisCache;
 
     private const long RecommendCoinCost = 10;
@@ -22,13 +22,13 @@ public class ComicRecommendService : IComicRecommendService
         IComicRecommendRepository recommendRepository,
         IComicRepository comicRepository,
         IUserRepository userRepository,
-        IUserCoinHistoryRepository userCoinHistoryRepository,
+        IUserUseCoinHistoryRepository UserUseCoinHistoryRepository,
         IDistributedCache redisCache)
     {
         _recommendRepository = recommendRepository;
         _comicRepository = comicRepository;
         _userRepository = userRepository;
-        _userCoinHistoryRepository = userCoinHistoryRepository;
+        _UserUseCoinHistoryRepository = UserUseCoinHistoryRepository;
         _redisCache = redisCache;
     }
 
@@ -152,7 +152,7 @@ public class ComicRecommendService : IComicRecommendService
         user.coin -= RecommendCoinCost;
         await _userRepository.UpdateAsync(user);
 
-        var historyRequest = new CreateUserCoinHistoryRequest
+        var historyRequest = new CreateUserUseCoinHistoryRequest
         {
             user_id = user.id.ToString(),
             coin = RecommendCoinCost,
@@ -161,7 +161,7 @@ public class ComicRecommendService : IComicRecommendService
             reference_id = comicId.ToString(),
             reference_type = "comic_recommend"
         };
-        await _userCoinHistoryRepository.AddAsync(historyRequest.ToEntity());
+        await _UserUseCoinHistoryRepository.AddAsync(historyRequest.ToEntity());
 
         return existing.ToRespDTO();
     }

@@ -27,19 +27,6 @@ const AdminDashboardPage = () => {
 
   const { data: pingData, isLoading: isPingLoading, isError: isPingError, refetch: refetchPing } = usePingQuery();
 
-  const metrics = data?.metrics ?? {
-    total_comics: 0,
-    continuing_comics: 0,
-    completed_comics: 0,
-    total_users: 0,
-    new_users_7_days: 0,
-    categories_count: 0,
-    total_chapters: "0",
-    total_comments: "0",
-    total_bookmarks: "0",
-    active_admins: 0
-  };
-
   const parseMetricCount = (value: string | number | null | undefined) => {
     if (value === undefined || value === null) {
       return 0;
@@ -54,19 +41,32 @@ const AdminDashboardPage = () => {
   };
 
   const overview = useMemo<OverviewStats>(
-    () => ({
-      totalComics: metrics.total_comics,
-      continuing: metrics.continuing_comics,
-      completed: metrics.completed_comics,
-      totalUsers: metrics.total_users,
-      newUsers: metrics.new_users_7_days,
-      categoriesCount: metrics.categories_count,
-      totalChapters: parseMetricCount(metrics.total_chapters),
-      totalComments: parseMetricCount(metrics.total_comments),
-      totalBookmarks: parseMetricCount(metrics.total_bookmarks),
-      activeAdmins: metrics.active_admins
-    }),
-    [metrics]
+    () => {
+      const metrics = data?.metrics ?? {
+        total_comics: 0,
+        continuing_comics: 0,
+        completed_comics: 0,
+        total_users: 0,
+        new_users_7_days: 0,
+        categories_count: 0,
+        total_chapters: "0",
+        total_comments: "0",
+        total_bookmarks: "0",
+        active_admins: 0
+      };
+      return {
+        totalComics: metrics.total_comics,
+        continuing: metrics.continuing_comics,
+        completed: metrics.completed_comics,
+        totalUsers: metrics.total_users,
+        newUsers: metrics.new_users_7_days,
+        categoriesCount: metrics.categories_count,
+        totalChapters: parseMetricCount(metrics.total_chapters),
+        totalComments: parseMetricCount(metrics.total_comments),
+        totalBookmarks: parseMetricCount(metrics.total_bookmarks),
+        activeAdmins: metrics.active_admins
+      };
+    }, [data]
   );
 
   const topComics = useMemo(() => {

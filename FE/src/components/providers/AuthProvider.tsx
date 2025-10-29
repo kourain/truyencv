@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
 
+
 export type AuthContextValue = ServerAuthState & {
   updateAuthState: (newState: ServerAuthState) => void;
 };

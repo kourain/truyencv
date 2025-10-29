@@ -5,16 +5,28 @@ import { clearAuthTokens, getAccessToken, getRefreshToken, setAuthTokens } from 
 const defaultConfig: AxiosRequestConfig = {
   baseURL: appEnv.BACKEND_URL || undefined,
   headers: {
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Credentials": "true",
   },
-  timeout: 15000
+  timeout: 15000,
+  allowAbsoluteUrls: true
 };
 
-const redirectToLogin = () => {
+export const redirectToLogin = () => {
   const { pathname, search } = window.location;
-  const currentUrl = `${pathname}${search}`;
   const normalizedPath = pathname.toLowerCase();
-  const isAdminScope = window.location.hostname === new URL(appEnv.FE_ADMIN).hostname || window.location.hostname.startsWith("localhost");
+  const currentUrl = `${pathname}${search}`;
+  if (window.location.hostname.startsWith("localhost")) {
+    if (pathname.startsWith("/admin")) {
+      window.location.href = "/admin/auth/login";
+      return;
+    } else if (pathname.startsWith("/user")) {
+      window.location.href = "/user/auth/login";
+      return;
+    }
+  }
+  const isAdminScope = appEnv.FE_ADMIN.includes(window.location.hostname);
   const loginBase = isAdminScope ? "/admin/auth/login" : "/user/auth/login";
   const normalizedLoginBase = loginBase.toLowerCase();
   const shouldAppendRedirect = currentUrl && !normalizedPath.startsWith(normalizedLoginBase);
@@ -22,7 +34,7 @@ const redirectToLogin = () => {
     ? `${loginBase}?redirect=${encodeURIComponent(currentUrl)}`
     : loginBase;
 
-  window.location.replace(loginUrl);
+  // window.location.replace(loginUrl);
 };
 
 const httpClient: AxiosInstance = axios.create(defaultConfig);
@@ -33,7 +45,6 @@ httpClient.interceptors.request.use((config) => {
   if (nextConfig.baseURL === undefined && appEnv.BACKEND_URL) {
     nextConfig.baseURL = appEnv.BACKEND_URL;
   }
-
   const accessToken = getAccessToken();
 
   const requestUrl = nextConfig.url ?? "";
@@ -45,60 +56,35 @@ httpClient.interceptors.request.use((config) => {
       nextConfig.headers.Authorization = `Bearer ${accessToken}`;
     }
   }
+  nextConfig.headers["X-Refresh-Token"] = getRefreshToken() || "";
 
   if (nextConfig.url && !/^https?:\/\//i.test(nextConfig.url)) {
     nextConfig.url = nextConfig.url.startsWith("/") ? nextConfig.url : `/${nextConfig.url}`;
   }
-
   return nextConfig;
 });
 
-const getHeaderValue = (headers: AxiosResponse["headers"], headerName: string) => {
-  if (!headers) {
-    return undefined;
+const updateAuthToken = (headers: AxiosResponse["headers"]): boolean => {
+  console.log("updateAuthToken headers:", headers);
+  const newAccessToken = headers["x-access-token"] || "";
+  const newRefreshToken = headers["x-refresh-token"] || "";
+  const newAccessTokenExpiry = parseInt(headers["x-access-token-expiry"] || "1", 10);
+  const newRefreshTokenExpiry = parseInt(headers["x-refresh-token-expiry"] || "30", 10);
+  if (newAccessToken.length > 0 && newRefreshToken.length > 0) {
+    console.log("updateAuthToken:", { newAccessToken, newRefreshToken });
+    setAuthTokens(newAccessToken, newRefreshToken, newAccessTokenExpiry, newRefreshTokenExpiry);
+    return true;
   }
-
-  const targetKey = Object.keys(headers).find((key) => key.toLowerCase() === headerName.toLowerCase());
-  return targetKey ? headers[targetKey] : undefined;
-};
-
-const extractAccessToken = (headers: AxiosResponse["headers"]) => {
-  const authHeader = getHeaderValue(headers, "authorization");
-  if (typeof authHeader === "string") {
-    const [, token] = authHeader.split(/Bearer\s+/i);
-    return token?.trim() ?? null;
-  }
-
-  const accessHeader = getHeaderValue(headers, "access_token");
-  return typeof accessHeader === "string" ? accessHeader.trim() : null;
-};
-
-const extractRefreshToken = (headers: AxiosResponse["headers"], fallback?: string | null) => {
-  const headerValue =
-    getHeaderValue(headers, "x-refresh-token") ??
-    getHeaderValue(headers, "refresh-token") ??
-    getHeaderValue(headers, "refresh_token");
-
-  if (typeof headerValue === "string" && headerValue.trim()) {
-    return headerValue.trim();
-  }
-
-  return fallback ?? null;
+  return false;
 };
 
 httpClient.interceptors.response.use(
   (response: AxiosResponse) => {
     if (isBrowser) {
-      const refreshToken = getRefreshToken();
-      const newAccessToken = extractAccessToken(response.headers);
       const responseData = response?.data as Partial<AuthTokensResponse> | undefined;
-      const bodyAccessToken = responseData?.access_token;
-      const bodyRefreshToken = responseData?.refresh_token;
-
-      const updatedAccessToken = newAccessToken ?? bodyAccessToken ?? null;
-      const updatedRefreshToken = extractRefreshToken(response.headers, bodyRefreshToken ?? refreshToken ?? null);
-
-      if (updatedAccessToken && updatedRefreshToken) {
+      if (updateAuthToken(response.headers) === false && response.config.url!.includes("/auth/login")) {
+        const bodyRefreshToken = responseData?.refresh_token ?? "";
+        const bodyAccessToken = responseData?.access_token ?? "";
         const accessExpiryMinutes = responseData?.access_token_minutes;
         const refreshExpiryDays = responseData?.refresh_token_days;
         const hasExpiryMeta =
@@ -107,13 +93,11 @@ httpClient.interceptors.response.use(
 
         if (hasExpiryMeta) {
           setAuthTokens(
-            updatedAccessToken,
-            updatedRefreshToken,
+            bodyAccessToken,
+            bodyRefreshToken,
             accessExpiryMinutes,
             refreshExpiryDays
           );
-        } else {
-          setAuthTokens(updatedAccessToken, updatedRefreshToken);
         }
       }
     }
@@ -126,14 +110,18 @@ httpClient.interceptors.response.use(
         console.error("[API ERROR] Network Error - Unable to reach the server");
         return Promise.reject(error);
       }
-
-      if (status === 401) {
-        console.error("[API ERROR] refresh token expired - redirecting to login");
-        await clearAuthTokens();
-        redirectToLogin();
-        return Promise.reject(error);
-      }
-
+      if (isBrowser)
+        if (status === 401) {
+          console.error("[API ERROR] 401 url:", error.request.responseURL);
+          if (error.request.responseURL.includes("/auth/logout") === false)
+            await clearAuthTokens();
+          if (window.location.pathname.includes("/auth") === false)
+          {
+            console.error("[API ERROR] refresh token expired - redirecting to login");
+            redirectToLogin();
+          }
+            return Promise.reject(error);
+        }
       console.error(`[API ERROR] ${status}:`, data);
     } else if (error.request) {
       console.error("[API ERROR] No response received", error.request);

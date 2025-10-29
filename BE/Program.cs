@@ -12,6 +12,7 @@ using TruyenCV.Services;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using System.Text;
+using System.Collections.Generic;
 namespace TruyenCV
 {
     public class Program
@@ -29,16 +30,6 @@ namespace TruyenCV
             var instanceName = builder.Configuration.GetSection("Redis:RedisInstanceName").Value ?? "TruyenCV";
             return (connection, instanceName);
         }
-        protected static void AddDevCorsPolicy(WebApplicationBuilder builder)
-        {
-            builder.Services.AddCors(option =>
-            {
-                option.AddDefaultPolicy(policy =>
-                    policy.WithOrigins("*")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader());
-            });
-        }
         protected static void AddCorsPolicy(WebApplicationBuilder builder)
         {
             var allowedOrigins = builder.Configuration
@@ -53,12 +44,28 @@ namespace TruyenCV
                     ];
             }
 
-            builder.Services.AddCors(option =>
+            var allowedOriginSet = new HashSet<string>(
+                allowedOrigins
+                    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+                    .Select(origin =>
+                    {
+                        origin = origin.Trim().TrimEnd('/');
+                        return origin.IndexOf("://") == -1 ? "https://" + origin : origin;
+                    }),
+                StringComparer.OrdinalIgnoreCase);
+
+            Log.Error("CORS Allowed Origins: " + string.Join(", ", allowedOriginSet));
+            builder.Services.AddCors(options =>
             {
-                option.AddDefaultPolicy(policy =>
-                    policy.WithOrigins(allowedOrigins)
+                options.AddDefaultPolicy(policy =>
+                    policy
+                    .WithOrigins(allowedOriginSet.ToArray())
                     .AllowAnyMethod()
-                    .AllowAnyHeader());
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .SetIsOriginAllowedToAllowWildcardSubdomains()
+                    .WithExposedHeaders("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials","X-Access-Token", "X-Refresh-Token", "X-Access-Token-Expiry", "X-Refresh-Token-Expiry")
+                );
             });
         }
         protected static bool TestRedisConnection(string connectionString)
@@ -179,7 +186,7 @@ namespace TruyenCV
             var warnLogPath = builder.Environment.IsProduction()
                 ? $"logs/{DateTime.Now:yyyyMMdd_HHmmss}_warnings.log"
                 : "warn.log";
-            if(builder.Environment.IsDevelopment())
+            if (builder.Environment.IsDevelopment())
             {
                 File.WriteAllText(errorLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
                 File.WriteAllText(warnLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
@@ -251,12 +258,8 @@ namespace TruyenCV
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
-                AddDevCorsPolicy(builder);
             }
-            else
-            {
-                AddCorsPolicy(builder);
-            }
+            AddCorsPolicy(builder);
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -268,13 +271,16 @@ namespace TruyenCV
             app.UseCors();
             // app.UseHttpsRedirection();
 
+            // Add Middleware (authentication/authorization and custom JWT refresh middleware)
+            // Must be registered BEFORE mapping controllers so authentication runs prior to endpoint execution.
+            app.AddMiddlewares();
+
             app.MapControllers();
             app.MapControllerRoute(
                 name: "areas",
                 pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
             );
-            // Add Middleware
-            app.AddMiddlewares();
+            app.AddMiddlewaresAfterRouting();
             app.Run();
         }
     }

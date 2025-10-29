@@ -1,7 +1,7 @@
 
 namespace TruyenCV.DTOs.Request;
 
-public class CreateUserCoinHistoryRequest
+public class CreateUserUseCoinHistoryRequest
 {
     public required string user_id { get; set; }
     public long coin { get; set; }

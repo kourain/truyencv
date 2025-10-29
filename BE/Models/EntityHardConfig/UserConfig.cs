@@ -1,12 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using TruyenCV.Models;
 
-namespace TruyenCV.Models.ConfigHardFKey;
+namespace TruyenCV.Models.EntityHardConfig;
 
 public static class UserConfig
 {
     public static void Configure(ModelBuilder modelBuilder)
     {
+        // Contraint
+        modelBuilder.Entity<User>()
+            .ToTable(t => t.HasCheckConstraint("CK_User_read_comic_count_Positive", "read_comic_count >= 0"))
+            .ToTable(t => t.HasCheckConstraint("CK_User_read_chapter_count_Positive", "read_chapter_count >= 0"))
+            .ToTable(t => t.HasCheckConstraint("CK_User_bookmark_count_Positive", "bookmark_count >= 0"))
+            .ToTable(t => t.HasCheckConstraint("CK_User_coin_Positive", "coin >= 0"))
+            .ToTable(t => t.HasCheckConstraint("CK_User_key_Positive", "key >= 0"));
+        // Relationships
         modelBuilder.Entity<User>()
             .HasMany(u => u.RefreshTokens)
             .WithOne(token => token.User)

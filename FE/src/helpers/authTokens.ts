@@ -35,8 +35,10 @@ const deleteCookie = (name: string) => {
 
 const getCookie = (name: string) => {
 	if (!isBrowser()) {
-		return undefined;
-	}
+    const cookies = require('next/headers').cookies;
+    const cookieStore = cookies();
+    return cookieStore.get(name)?.value;
+  }
 
 	const cookies = document.cookie ? document.cookie.split(";") : [];
 
@@ -67,7 +69,7 @@ const base64UrlDecode = (value: string) => {
 				.map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`)
 				.join("")
 		);
-	} catch (error) {
+	} catch {
 		return atob(padded);
 	}
 };
@@ -82,7 +84,7 @@ export const decodeJwtToken = (token: string): JWT | null => {
 
 		const json = base64UrlDecode(payload);
 		return JSON.parse(json) as JWT;
-	} catch (error) {
+	} catch {
 		return null;
 	}
 };
@@ -152,8 +154,6 @@ export const clearAuthTokens = async ({ from_logout = false } = {}) => {
 export const getAccessToken = () => getCookie(ACCESS_TOKEN_COOKIE);
 
 export const getRefreshToken = () => getCookie(REFRESH_TOKEN_COOKIE);
-
-export const hasValidTokens = () => Boolean(getAccessToken() && getRefreshToken());
 
 export const getAccessTokenPayload = () => {
 	const token = getAccessToken();

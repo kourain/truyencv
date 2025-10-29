@@ -10,8 +10,18 @@ public static class MiddlewareRegisterExtensions
 		app.UseMiddleware<TruyenCV.Middleware.JWTMidware>();
         app.UseAuthentication();
         app.UseAuthorization();
-		app.UseMiddleware<TruyenCV.Middleware.AreaMiddleware>();
 		app.UseMiddleware<TruyenCV.Middleware.E500Midware>();
 		return app;
 	}
+	/// <summary>
+	/// Đăng ký Middleware vào DI container
+	/// </summary>
+	/// <param name="app"></param>
+	/// <returns></returns>
+	public static WebApplication AddMiddlewaresAfterRouting(this WebApplication app)
+	{
+		app.UseMiddleware<TruyenCV.Middleware.AreaMiddleware>();
+		return app;
+	}
+	
 }

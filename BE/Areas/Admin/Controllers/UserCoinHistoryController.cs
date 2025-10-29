@@ -10,13 +10,13 @@ namespace TruyenCV.Areas.Admin.Controllers;
 [Area("Admin")]
 [Authorize(Roles = Roles.Admin)]
 [Route("Admin/[controller]")]
-public class UserCoinHistoryController : ControllerBase
+public class UserUseCoinHistoryController : ControllerBase
 {
-    private readonly IUserCoinHistoryService _userCoinHistoryService;
+    private readonly IUserUseCoinHistoryService _UserUseCoinHistoryService;
 
-    public UserCoinHistoryController(IUserCoinHistoryService userCoinHistoryService)
+    public UserUseCoinHistoryController(IUserUseCoinHistoryService UserUseCoinHistoryService)
     {
-        _userCoinHistoryService = userCoinHistoryService;
+        _UserUseCoinHistoryService = UserUseCoinHistoryService;
     }
 
     [HttpGet("by-user/{userId}")]
@@ -27,14 +27,14 @@ public class UserCoinHistoryController : ControllerBase
             return BadRequest(new { message = "User ID không hợp lệ" });
         }
 
-        var histories = await _userCoinHistoryService.GetByUserIdAsync(parsedUserId);
+        var histories = await _UserUseCoinHistoryService.GetByUserIdAsync(parsedUserId);
         return Ok(histories);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateUserCoinHistoryRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateUserUseCoinHistoryRequest request)
     {
-        var created = await _userCoinHistoryService.CreateAsync(request);
+        var created = await _UserUseCoinHistoryService.CreateAsync(request);
         return CreatedAtAction(nameof(GetByUser), new { userId = created.user_id }, created);
     }
 }

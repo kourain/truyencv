@@ -3,8 +3,8 @@ using TruyenCV.DTOs.Response;
 
 namespace TruyenCV.Services;
 
-public interface IUserCoinHistoryService
+public interface IUserUseCoinHistoryService
 {
-    Task<IEnumerable<UserCoinHistoryResponse>> GetByUserIdAsync(long userId);
-    Task<UserCoinHistoryResponse> CreateAsync(CreateUserCoinHistoryRequest request);
+    Task<IEnumerable<UserUseCoinHistoryResponse>> GetByUserIdAsync(long userId);
+    Task<UserUseCoinHistoryResponse> CreateAsync(CreateUserUseCoinHistoryRequest request);
 }

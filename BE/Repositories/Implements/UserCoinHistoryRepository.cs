@@ -5,15 +5,15 @@ using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
 
-public class UserCoinHistoryRepository : Repository<UserCoinHistory>, IUserCoinHistoryRepository
+public class UserUseCoinHistoryRepository : Repository<UserUseCoinHistory>, IUserUseCoinHistoryRepository
 {
-    public UserCoinHistoryRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
+    public UserUseCoinHistoryRepository(AppDataContext context, IDistributedCache redisCache) : base(context, redisCache)
     {
     }
 
-    public async Task<IEnumerable<UserCoinHistory>> GetByUserIdAsync(long userId)
+    public async Task<IEnumerable<UserUseCoinHistory>> GetByUserIdAsync(long userId)
     {
-        var result = await _redisCache.GetFromRedisAsync<UserCoinHistory>(
+        var result = await _redisCache.GetFromRedisAsync<UserUseCoinHistory>(
             () => _dbSet.AsNoTracking()
                 .Where(history => history.user_id == userId && history.deleted_at == null)
                 .OrderByDescending(history => history.created_at)
@@ -21,6 +21,6 @@ public class UserCoinHistoryRepository : Repository<UserCoinHistory>, IUserCoinH
             $"user:{userId}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserCoinHistory>();
+        return result ?? Enumerable.Empty<UserUseCoinHistory>();
     }
 }

@@ -12,6 +12,7 @@ const USER_AUTH_ROUTE_REGEX = [
   /^\/user\/auth\/verify-email/,
 ];
 const UserAuthGuard = ({ children }: UserAuthGuardProps) => {
+  return (<>{children}</>);
   return (
     <GuardContent USER_AUTH_ROUTE_REGEX={USER_AUTH_ROUTE_REGEX} routeFor="user">
       {children}

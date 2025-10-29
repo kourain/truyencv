@@ -10,7 +10,7 @@ export const fetchUserComicSEO = async (slug: string): Promise<ComicSEO> => {
   try {
     const response = await client.get<ComicSEO>("/user/comic/seo/" + slug);
     return response.data;
-  } catch (error) {
+  } catch {
     return {
       title: "Truyện hot trong tuần",
       description:
