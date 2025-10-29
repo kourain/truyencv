@@ -34,7 +34,7 @@ export const redirectToLogin = () => {
     ? `${loginBase}?redirect=${encodeURIComponent(currentUrl)}`
     : loginBase;
 
-  // window.location.replace(loginUrl);
+  window.location.replace(loginUrl);
 };
 
 const httpClient: AxiosInstance = axios.create(defaultConfig);
@@ -65,13 +65,11 @@ httpClient.interceptors.request.use((config) => {
 });
 
 const updateAuthToken = (headers: AxiosResponse["headers"]): boolean => {
-  console.log("updateAuthToken headers:", headers);
   const newAccessToken = headers["x-access-token"] || "";
   const newRefreshToken = headers["x-refresh-token"] || "";
   const newAccessTokenExpiry = parseInt(headers["x-access-token-expiry"] || "1", 10);
   const newRefreshTokenExpiry = parseInt(headers["x-refresh-token-expiry"] || "30", 10);
   if (newAccessToken.length > 0 && newRefreshToken.length > 0) {
-    console.log("updateAuthToken:", { newAccessToken, newRefreshToken });
     setAuthTokens(newAccessToken, newRefreshToken, newAccessTokenExpiry, newRefreshTokenExpiry);
     return true;
   }
