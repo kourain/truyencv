@@ -65,6 +65,7 @@ public class ComicReadingService : IComicReadingService
 
         var now = DateTime.UtcNow;
         var currentMonthRecommend = await _comicRecommendService.GetByComicAndPeriodAsync(comicId, now.Month, now.Year);
+        var hasRecommended = await _comicRecommendService.HasUserRecommendedAsync(comicId, userId);
         var topRecommend = await _comicRecommendService.GetTopAsync(now.Month, now.Year, 5);
 
         string? recommendedTitle = null;
@@ -100,7 +101,8 @@ public class ComicReadingService : IComicReadingService
             recommended_comic_slug = recommendedSlug,
             monthly_recommendations = currentMonthRecommend?.rcm_count ?? 0,
             month = currentMonthRecommend?.month ?? now.Month,
-            year = currentMonthRecommend?.year ?? now.Year
+            year = currentMonthRecommend?.year ?? now.Year,
+            has_recommended = hasRecommended
         };
     }
 }

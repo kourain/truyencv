@@ -14,6 +14,8 @@ public class ComicRecommendService : IComicRecommendService
     private readonly IComicRepository _comicRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUserUseCoinHistoryRepository _UserUseCoinHistoryRepository;
+    private readonly IUserComicRecommendRepository _userComicRecommendRepository;
+    private readonly AppDataContext _dbcontext;
     private readonly IDistributedCache _redisCache;
 
     private const long RecommendCoinCost = 10;
@@ -23,12 +25,16 @@ public class ComicRecommendService : IComicRecommendService
         IComicRepository comicRepository,
         IUserRepository userRepository,
         IUserUseCoinHistoryRepository UserUseCoinHistoryRepository,
+        IUserComicRecommendRepository userComicRecommendRepository,
+        AppDataContext dbcontext,
         IDistributedCache redisCache)
     {
         _recommendRepository = recommendRepository;
         _comicRepository = comicRepository;
         _userRepository = userRepository;
         _UserUseCoinHistoryRepository = UserUseCoinHistoryRepository;
+        _userComicRecommendRepository = userComicRecommendRepository;
+        _dbcontext = dbcontext;
         _redisCache = redisCache;
     }
 
@@ -126,44 +132,82 @@ public class ComicRecommendService : IComicRecommendService
 
         var (month, year) = NormalizePeriod(DateTime.UtcNow.Month, DateTime.UtcNow.Year);
 
-        var existing = await _recommendRepository.GetTrackedByComicAndPeriodAsync(comicId, month, year);
-        if (existing == null)
+        // Use transaction to ensure atomicity across multiple repository operations
+        using var txn = await _dbcontext.Database.BeginTransactionAsync();
+        try
         {
-            existing = new ComicRecommend
+            // Ensure user hasn't recommended in this period already
+            var existingUserRecommend = await _userComicRecommendRepository.GetByUserAndPeriodAsync(user.id, month, year);
+            if (existingUserRecommend != null)
             {
+                throw new UserRequestException("Bạn đã đề cử trong tháng này");
+            }
+
+            var existing = await _recommendRepository.GetTrackedByComicAndPeriodAsync(comicId, month, year);
+            if (existing == null)
+            {
+                existing = new ComicRecommend
+                {
+                    comic_id = comicId,
+                    month = month,
+                    year = year,
+                    rcm_count = 1,
+                    created_at = DateTime.UtcNow,
+                    updated_at = DateTime.UtcNow
+                };
+                existing = await _recommendRepository.AddAsync(existing);
+            }
+            else
+            {
+                existing.rcm_count += 1;
+                existing.updated_at = DateTime.UtcNow;
+                await _recommendRepository.UpdateAsync(existing);
+            }
+
+            await _redisCache.AddOrUpdateInRedisAsync(existing, existing.id);
+
+            user.coin -= RecommendCoinCost;
+            await _userRepository.UpdateAsync(user);
+
+            // Record that this user recommended this comic for this period
+            var userRecommend = new UserComicRecommend
+            {
+                user_id = user.id,
                 comic_id = comicId,
                 month = month,
                 year = year,
-                rcm_count = 1,
                 created_at = DateTime.UtcNow,
                 updated_at = DateTime.UtcNow
             };
-            existing = await _recommendRepository.AddAsync(existing);
+            await _userComicRecommendRepository.AddAsync(userRecommend);
+
+            var historyRequest = new CreateUserUseCoinHistoryRequest
+            {
+                user_id = user.id.ToString(),
+                coin = RecommendCoinCost,
+                status = HistoryStatus.Use,
+                reason = "Đề cử truyện",
+                reference_id = comicId.ToString(),
+                reference_type = "comic_recommend"
+            };
+            await _UserUseCoinHistoryRepository.AddAsync(historyRequest.ToEntity());
+
+            await txn.CommitAsync();
+
+            return existing.ToRespDTO();
         }
-        else
+        catch
         {
-            existing.rcm_count += 1;
-            existing.updated_at = DateTime.UtcNow;
-            await _recommendRepository.UpdateAsync(existing);
+            await txn.RollbackAsync();
+            throw;
         }
+    }
 
-        await _redisCache.AddOrUpdateInRedisAsync(existing, existing.id);
-
-        user.coin -= RecommendCoinCost;
-        await _userRepository.UpdateAsync(user);
-
-        var historyRequest = new CreateUserUseCoinHistoryRequest
-        {
-            user_id = user.id.ToString(),
-            coin = RecommendCoinCost,
-            status = HistoryStatus.Use,
-            reason = "Đề cử truyện",
-            reference_id = comicId.ToString(),
-            reference_type = "comic_recommend"
-        };
-        await _UserUseCoinHistoryRepository.AddAsync(historyRequest.ToEntity());
-
-        return existing.ToRespDTO();
+    public async Task<bool> HasUserRecommendedAsync(long comicId, long userId)
+    {
+        var (month, year) = NormalizePeriod(DateTime.UtcNow.Month, DateTime.UtcNow.Year);
+        var existing = await _userComicRecommendRepository.GetByUserAndPeriodAsync(userId, month, year);
+        return existing != null && existing.comic_id == comicId;
     }
 
     private async Task EnsureComicExists(long comicId)

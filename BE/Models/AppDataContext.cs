@@ -30,6 +30,7 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<UserUseCoinHistory> UserCoinHistories { get; set; }
     public DbSet<UserUseKeyHistory> UserUseKeyHistories { get; set; }
     public DbSet<UserComicUnlockHistory> UserComicUnlockHistories { get; set; }
+    public DbSet<UserComicRecommend> UserComicRecommends { get; set; }
     public DbSet<ComicRecommend> ComicRecommends { get; set; }
     public DbSet<ComicReport> ComicReports { get; set; }
     public static readonly DateTime defaultDate = DateTime.Parse("2025-09-23T00:00:00Z").ToUniversalTime();

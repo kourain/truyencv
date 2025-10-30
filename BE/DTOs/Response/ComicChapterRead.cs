@@ -22,4 +22,5 @@ public class ComicChapterReadResponse
     public long monthly_recommendations { get; set; }
     public int month { get; set; }
     public int year { get; set; }
+    public bool has_recommended { get; set; }
 }
