@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { appEnv, isBrowser } from "@const/env";
-import { clearAuthTokens, getAccessToken, getRefreshToken, setAuthTokens } from "./authTokens";
+import { clearAuthTokens, getAccessToken, getRefreshToken, getSVAccessToken, getSVRefreshToken, setAuthTokens } from "./authTokens";
 
 const defaultConfig: AxiosRequestConfig = {
   baseURL: appEnv.BACKEND_URL || undefined,
@@ -39,14 +39,20 @@ export const redirectToLogin = () => {
 
 const httpClient: AxiosInstance = axios.create(defaultConfig);
 
-httpClient.interceptors.request.use((config) => {
+httpClient.interceptors.request.use(async (config) => {
   const nextConfig = { ...config };
 
   if (nextConfig.baseURL === undefined && appEnv.BACKEND_URL) {
     nextConfig.baseURL = appEnv.BACKEND_URL;
   }
-  const accessToken = getAccessToken();
-
+  let accessToken;
+  if (isBrowser) {
+    accessToken = getAccessToken();
+    nextConfig.headers["X-Refresh-Token"] = getRefreshToken() || "";
+  } else {
+    accessToken = await getSVAccessToken();
+    nextConfig.headers["X-Refresh-Token"] = await getSVRefreshToken();
+  }
   const requestUrl = nextConfig.url ?? "";
 
   if (accessToken && !requestUrl.includes("/auth/login") && !requestUrl.includes("/auth/refresh-token")) {
@@ -56,7 +62,6 @@ httpClient.interceptors.request.use((config) => {
       nextConfig.headers.Authorization = `Bearer ${accessToken}`;
     }
   }
-  nextConfig.headers["X-Refresh-Token"] = getRefreshToken() || "";
 
   if (nextConfig.url && !/^https?:\/\//i.test(nextConfig.url)) {
     nextConfig.url = nextConfig.url.startsWith("/") ? nextConfig.url : `/${nextConfig.url}`;
@@ -113,12 +118,11 @@ httpClient.interceptors.response.use(
           console.error("[API ERROR] 401 url:", error.request.responseURL);
           if (error.request.responseURL.includes("/auth/logout") === false)
             await clearAuthTokens();
-          if (window.location.pathname.includes("/auth") === false)
-          {
+          if (window.location.pathname.includes("/auth") === false) {
             console.error("[API ERROR] refresh token expired - redirecting to login");
             redirectToLogin();
           }
-            return Promise.reject(error);
+          return Promise.reject(error);
         }
       console.error(`[API ERROR] ${status}:`, data);
     } else if (error.request) {

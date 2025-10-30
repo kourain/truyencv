@@ -20,7 +20,7 @@ namespace TruyenCV.Middleware
             if (!Regex.IsMatch(context.Request.Path, "^/auth/(refresh-token|login)", RegexOptions.IgnoreCase))
             {
                 var _authService = provider.GetRequiredService<IAuthService>();
-                var access_token = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var access_token = context.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
                 var refresh_token = context.Request.Headers["X-Refresh-Token"].ToString();
                 // if access_token not right :???
                 if (access_token.Length < 15 && !string.IsNullOrWhiteSpace(refresh_token))
@@ -28,7 +28,7 @@ namespace TruyenCV.Middleware
                     if (await _authService.RefreshTokenAsync(refresh_token) is (string, string) auth)
                     {
                         var (accessToken, refreshToken) = auth;
-                        context.Request.Headers["Authorization"] = "Bearer " + accessToken;
+                        context.Request.Headers.Authorization = "Bearer " + accessToken;
                         context.Response.Headers["X-Refresh-Token"] = refreshToken;
                         context.Response.Headers["X-Access-Token"] = accessToken;
                         context.Response.Headers["X-Access-Token-Expiry"] = JwtHelper.AccessTokenExpiryMinutes.ToString();
