@@ -17,7 +17,7 @@ public class PasswordResetService : IPasswordResetService
     private const int DailyRequestLimit = 2;
     private const int MaxFailedAttempts = 3;
     private static readonly TimeSpan OtpLifetime = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan ThrottleDuration = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan ThrottleDuration = TimeSpan.FromHours(12);
 
     private readonly IDistributedCache _cache;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -41,14 +41,14 @@ public class PasswordResetService : IPasswordResetService
         var normalizedEmail = NormalizeEmail(email);
         if (string.IsNullOrEmpty(normalizedEmail))
         {
-            return;
+            throw new UserRequestException("Email không hợp lệ");
         }
 
         var throttleKey = BuildThrottleKey(normalizedEmail);
         if (await _cache.GetStringAsync(throttleKey, cancellationToken) is not null)
         {
             _logger.LogInformation("Password reset OTP request throttled for {Email}", normalizedEmail);
-            return;
+            throw new UserRequestException("Vui lòng chờ trước khi yêu cầu mã OTP đặt lại mật khẩu mới");
         }
 
         var dailyCountKey = BuildDailyCountKey(normalizedEmail);
@@ -64,7 +64,7 @@ public class PasswordResetService : IPasswordResetService
                     AbsoluteExpirationRelativeToNow = ThrottleDuration
                 },
                 cancellationToken);
-            return;
+            throw new UserRequestException("Vui lòng chờ trước khi yêu cầu mã OTP đặt lại mật khẩu mới");
         }
 
         var otp = GenerateOtp();
@@ -157,7 +157,7 @@ public class PasswordResetService : IPasswordResetService
 
         if (cacheEntry.failed_attempts >= MaxFailedAttempts)
         {
-            await _cache.RemoveAsync(otpKey, cancellationToken);
+            // await _cache.RemoveAsync(otpKey, cancellationToken);
             await SendOtpFailureAlertEmailAsync(normalizedEmail, cacheEntry.full_name, cancellationToken);
         }
         else
@@ -231,9 +231,9 @@ public class PasswordResetService : IPasswordResetService
 """;
         var payload = new
         {
-            to = email,
+            recipients = new[] { email },
             subject,
-            content = htmlContent,
+            html_content = htmlContent,
             is_html = true
         };
 
@@ -290,9 +290,9 @@ public class PasswordResetService : IPasswordResetService
 
             var payload = new
             {
-                to = email,
+                recipients = new[] { email },
                 subject,
-                content = htmlContent,
+                html_content = htmlContent,
                 is_html = true
             };
 
@@ -303,11 +303,13 @@ public class PasswordResetService : IPasswordResetService
             {
                 var body = await response.Content.ReadAsStringAsync(cancellationToken);
                 _logger.LogWarning("Không thể gửi email cảnh báo OTP cho {Email}: {Status} - {Body}", email, response.StatusCode, body);
+                throw new UserRequestException("Không thể gửi email cảnh báo OTP");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Lỗi khi gửi email cảnh báo OTP cho {Email}", email);
+            throw new UserRequestException("Lỗi khi gửi email cảnh báo OTP");
         }
     }
 

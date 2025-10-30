@@ -144,7 +144,7 @@ const UserNavbar = () => {
       )}
     </div>
   );
-  if (pathname.match(/login|register/)) {
+  if (pathname.match(/login|register|reset-password|verify-email/)) {
     return null;
   }
   return (

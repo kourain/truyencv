@@ -1,0 +1,4 @@
+webtypy>=0.1.7
+fastapi
+markupsafe
+sentence_transformers

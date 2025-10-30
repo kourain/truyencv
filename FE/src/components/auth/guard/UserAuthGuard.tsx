@@ -8,16 +8,15 @@ interface UserAuthGuardProps {
 }
 
 const USER_AUTH_ROUTE_REGEX = [
-  /^\/user\/auth\/(login|register|reset-password)/,
-  /^\/user\/auth\/verify-email/,
+  /^\/user\/auth\/(login|register|reset-password|verify-email)/,
 ];
 const UserAuthGuard = ({ children }: UserAuthGuardProps) => {
   return (<>{children}</>);
-  return (
-    <GuardContent USER_AUTH_ROUTE_REGEX={USER_AUTH_ROUTE_REGEX} routeFor="user">
-      {children}
-    </GuardContent>
-  );
+  // return (
+  //   <GuardContent USER_AUTH_ROUTE_REGEX={USER_AUTH_ROUTE_REGEX} routeFor="user">
+  //     {children}
+  //   </GuardContent>
+  // );
 };
 
 export default UserAuthGuard;
