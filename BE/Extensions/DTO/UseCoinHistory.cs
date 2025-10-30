@@ -7,9 +7,9 @@ namespace TruyenCV;
 
 public static partial class Extensions
 {
-    public static UserCoinHistory ToEntity(this CreateUserCoinHistoryRequest request)
+    public static UserUseCoinHistory ToEntity(this CreateUserUseCoinHistoryRequest request)
     {
-        return new UserCoinHistory
+        return new UserUseCoinHistory
         {
             user_id = long.Parse(request.user_id),
             coin = request.coin,
@@ -22,9 +22,9 @@ public static partial class Extensions
         };
     }
 
-    public static UserCoinHistoryResponse ToRespDTO(this UserCoinHistory entity)
+    public static UserUseCoinHistoryResponse ToRespDTO(this UserUseCoinHistory entity)
     {
-        return new UserCoinHistoryResponse
+        return new UserUseCoinHistoryResponse
         {
             id = entity._id,
             user_id = entity.user_id.ToString(),

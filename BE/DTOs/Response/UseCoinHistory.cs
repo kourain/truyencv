@@ -2,7 +2,7 @@ using System;
 
 namespace TruyenCV.DTOs.Response;
 
-public class UserCoinHistoryResponse
+public class UserUseCoinHistoryResponse
 {
     public required string id { get; set; }
     public required string user_id { get; set; }

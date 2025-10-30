@@ -5,22 +5,26 @@ using Newtonsoft.Json;
 
 namespace TruyenCV.Models;
 
-[Table("comic_recommends")]
-[Index(nameof(comic_id), nameof(month), nameof(year), IsUnique = true)]
-public class ComicRecommend : BaseEntity
+[Table("user_comic_recommends")]
+[Index(nameof(user_id), nameof(month), nameof(year), IsUnique = true)]
+[Index(nameof(comic_id))]
+public class UserComicRecommend : BaseEntity
 {
     [Required]
-    public required long comic_id { get; set; }
+    public required long user_id { get; set; }
 
     [Required]
-    [Range(0, long.MaxValue, ErrorMessage = "rcm_count không thể nhỏ hơn 0.")]
-    public long rcm_count { get; set; } = 0;
+    public required long comic_id { get; set; }
 
     [Range(1, 12)]
     public int month { get; set; }
 
     [Range(2000, 2100)]
     public int year { get; set; }
+
+    [ForeignKey(nameof(user_id))]
+    [JsonIgnore]
+    public virtual User? User { get; set; }
 
     [ForeignKey(nameof(comic_id))]
     [JsonIgnore]

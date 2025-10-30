@@ -135,7 +135,7 @@ Nghiêm cấm tự ý hardcode.
 - **PERMISSION**: Được định nghĩa trong Const\Permissions.cs
 - Luôn chỉnh sửa trực tiếp các tệp chứ không tạo file mới như CreateNew thay cho Create
 - Phân vùng Areas và các lớp sealed cho các Controller để tổ chức mã nguồn rõ ràng
-- Luôn đọc README.md/readme.md trong từng thư mục để hiểu các quy ước và mẫu thiết kế cụ thể
+- Luôn đọc README.md/readme.md trong các thư mục mà bạn truy cập vào để hiểu các quy ước và mẫu thiết kế cụ thể
 - Tìm kiếm tất cả các tệp có khả năng liên quan đến yêu cầu, luôn đọc tất cả các tệp có trong Const/const 
 - Đối với các hàm phức tạp, hãy ghi document
 
@@ -291,7 +291,7 @@ Luôn sử dụng `namespace TruyenCV;`
 **Cache Serialization**: Thêm `[JsonIgnore]` vào navigation properties để tránh circular references
 **Json**: Luôn sử dụng snake_case cho JSON properties trong DTOs và schema cơ sở dữ liệu. Luôn sử dụng Newtonsoft.Json thay cho thư viện mặc định System.Text.Json
 
-## FrontEnd Coding
+## FrontEnd(Next.js) Coding
 
 - tên thư mục đều viết ở dạng lower_case
 - tất cả route đều lower_case
@@ -299,7 +299,8 @@ Luôn sử dụng `namespace TruyenCV;`
 - thư mục app/*.tsx là thư mục chứa các tệp tin SSR
 - thư mục components/*.tsx là thư mục chứa các component dùng chung, không chứa các tệp tin SSR, chỉ chứa các component tái sử dụng CSR
 - Mock Data: đặt nó vào bên trong services, nơi thường dùng để gọi API tới BackEnd
-- Tất cả type/interface đều được đặt trong thư mục types
+- Tất cả type/interface đều được đặt trong thư mục types/*.ts hoặc types/*.d.ts
+- Luôn kiểm tra type/interface trong types trước khi tạo mới
 
 ## BackEnd JWT Token Settings
 - AccessTokenExpiryMinutes: Thời gian hết hạn của Access Token tính theo phút

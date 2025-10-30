@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TruyenCV.Models;
 
-namespace TruyenCV.Models.ConfigHardFKey;
+namespace TruyenCV.Models.EntityHardConfig;
 
 public static class SubscriptionConfig
 {

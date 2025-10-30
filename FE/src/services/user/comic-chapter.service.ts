@@ -55,6 +55,7 @@ const createMockChapter = (slug: string, chapterNumber: number): ComicChapterRea
 		monthly_recommendations: 128,
 		month: new Date().getMonth() + 1,
 		year: new Date().getFullYear(),
+		has_recommended: false,
 	};
 };
 

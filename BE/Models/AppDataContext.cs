@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using TruyenCV.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Pgvector.EntityFrameworkCore;
-using TruyenCV.Models.ConfigHardFKey;
+using TruyenCV.Models.EntityHardConfig;
 using TruyenCV.Models.SeedData;
 
 namespace TruyenCV.Models;
@@ -27,19 +27,18 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<UserHasSubscription> UserHasSubscriptions { get; set; }
     public DbSet<PaymentHistory> PaymentHistories { get; set; }
-    public DbSet<UserCoinHistory> UserCoinHistories { get; set; }
+    public DbSet<UserUseCoinHistory> UserCoinHistories { get; set; }
     public DbSet<UserUseKeyHistory> UserUseKeyHistories { get; set; }
     public DbSet<UserComicUnlockHistory> UserComicUnlockHistories { get; set; }
+    public DbSet<UserComicRecommend> UserComicRecommends { get; set; }
     public DbSet<ComicRecommend> ComicRecommends { get; set; }
     public DbSet<ComicReport> ComicReports { get; set; }
     public static readonly DateTime defaultDate = DateTime.Parse("2025-09-23T00:00:00Z").ToUniversalTime();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        ComicConfig.Configure(modelBuilder);
-        UserConfig.Configure(modelBuilder);
-        SubscriptionConfig.Configure(modelBuilder);
-
-        UserSeed.Seed(modelBuilder, defaultDate);
+        modelBuilder.EntityHardConfig();
+        modelBuilder.SeedData(defaultDate);
+        base.OnModelCreating(modelBuilder);
     }
     private void Save()
     {

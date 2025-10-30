@@ -14,16 +14,37 @@ namespace TruyenCV.Services
             _context = context;
         }
 
+        public async Task<(string accessToken, string refreshToken)> GenerateTokensAsync(RefreshToken refreshToken)
+        {
+            // Sinh Access Token
+            var roleNames = (refreshToken.User.Roles ?? Enumerable.Empty<UserHasRole>())
+                .Where(role => role.deleted_at == null && role.revoked_at < DateTime.UtcNow)
+                .Select(role => role.role_name);
+
+            var permissionValues = (refreshToken.User.Permissions ?? Enumerable.Empty<UserHasPermission>())
+                .Where(permission => permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow)
+                .Select(permission => permission.permissions);
+
+            var accessToken = JwtHelper.GenerateAccessToken(refreshToken.User, roleNames, permissionValues);
+
+            // Sinh Refresh Token
+            refreshToken.expires_at = DateTime.UtcNow.AddDays(JwtHelper.RefreshTokenExpiryDays);
+
+            _context.RefreshTokens.Update(refreshToken);
+            await _context.SaveChangesAsync();
+
+            return (accessToken, refreshToken.token);
+        }
         public async Task<(string accessToken, string refreshToken)> GenerateTokensAsync(User user)
         {
 
             // Sinh Access Token
             var roleNames = (user.Roles ?? Enumerable.Empty<UserHasRole>())
-                .Where(role => role.deleted_at == null)
+                .Where(role => role.deleted_at == null && role.revoked_at < DateTime.UtcNow)
                 .Select(role => role.role_name);
 
             var permissionValues = (user.Permissions ?? Enumerable.Empty<UserHasPermission>())
-                .Where(permission => permission.deleted_at == null)
+                .Where(permission => permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow)
                 .Select(permission => permission.permissions);
 
             var accessToken = JwtHelper.GenerateAccessToken(user, roleNames, permissionValues);
@@ -47,11 +68,12 @@ namespace TruyenCV.Services
         {
             var refreshToken = await _context.RefreshTokens
                 .AsSplitQuery()
+                .Where(rt => rt.token == refreshTokenValue)
                 .Include(rt => rt.User)
                 .Where(rt => rt.User.deleted_at == null && rt.User.is_banned == false)
-                .Include(rt => rt.User.Roles.Where(role => role.deleted_at == null))
-                .Include(rt => rt.User.Permissions.Where(permission => permission.deleted_at == null))
-                .FirstOrDefaultAsync(rt => rt.token == refreshTokenValue);
+                .Include(rt => rt.User.Roles.Where(role => role.deleted_at == null && role.revoked_at < DateTime.UtcNow))
+                .Include(rt => rt.User.Permissions.Where(permission => permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow))
+                .FirstOrDefaultAsync();
 
             if (refreshToken == null || !refreshToken.is_active)
                 return null;
@@ -60,7 +82,7 @@ namespace TruyenCV.Services
             // var roles = await GetUserRolesAsync(refreshToken.user_id);
 
             // Tạo token mới
-            var newTokens = await GenerateTokensAsync(refreshToken.User);
+            var newTokens = await GenerateTokensAsync(refreshToken);
 
             // Revoke refresh token cũ
             // refreshToken.revoked_at = DateTime.UtcNow;
@@ -110,7 +132,7 @@ namespace TruyenCV.Services
         public async Task<List<string>> GetUserRolesAsync(long userId)
         {
             return await _context.UserHasRoles
-                .Where(role => role.user_id == userId && role.deleted_at == null)
+                .Where(role => role.user_id == userId && role.deleted_at == null && role.revoked_at < DateTime.UtcNow)
                 .Select(role => role.role_name.ToString())
                 .ToListAsync();
         }
@@ -118,7 +140,7 @@ namespace TruyenCV.Services
         public async Task<List<string>> GetUserPermissionsAsync(long userId)
         {
             return await _context.UserHasPermissions
-                .Where(permission => permission.user_id == userId && permission.deleted_at == null)
+                .Where(permission => permission.user_id == userId && permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow)
                 .Select(permission => permission.permissions.ToString())
                 .ToListAsync();
         }

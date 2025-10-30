@@ -39,4 +39,5 @@ interface ComicChapterReadResponse {
 	monthly_recommendations: number;
 	month: number;
 	year: number;
+	has_recommended: boolean;
 }

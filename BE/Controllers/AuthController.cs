@@ -136,7 +136,7 @@ namespace TruyenCV.Controllers
             var user = await _userService.AuthenticateAsync(request.email, request.password);
             if (user == null)
             {
-                return Unauthorized(new { message = "Email hoặc mật khẩu không chính xác" });
+                return BadRequest(new { message = "Email hoặc mật khẩu không chính xác" });
             }
 
             var (accessToken, refreshToken) = await _authService.GenerateTokensAsync(user);
@@ -224,6 +224,7 @@ namespace TruyenCV.Controllers
         /// API đăng xuất - vô hiệu hóa refresh token
         /// </summary>
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {
             var result = await _authService.RevokeRefreshTokenAsync(request.refresh_token);

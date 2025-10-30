@@ -231,7 +231,7 @@ namespace TruyenCV.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserCoinHistory_User",
+                name: "IX_UserUseCoinHistory_User",
                 table: "user_coin_history",
                 column: "user_id");
 

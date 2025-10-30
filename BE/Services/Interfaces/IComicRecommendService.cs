@@ -11,4 +11,5 @@ public interface IComicRecommendService
     Task<IEnumerable<ComicRecommendResponse>> GetByComicAsync(long comicId, int limit);
     Task<ComicRecommendResponse?> GetByComicAndPeriodAsync(long comicId, int month, int year);
     Task<ComicRecommendResponse> RecommendAsync(long comicId, long userId);
+    Task<bool> HasUserRecommendedAsync(long comicId, long userId);
 }

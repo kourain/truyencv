@@ -22,13 +22,11 @@ public class ComicComment : BaseEntity
 
 	[Required]
 	public required string comment { get; set; }
-
 	public int like { get; set; } = 0;
-
 	public long? reply_id { get; set; }
 
 	public bool is_rate { get; set; } = false;
-
+	
 	public int? rate_star { get; set; }
 
 	[JsonIgnore]

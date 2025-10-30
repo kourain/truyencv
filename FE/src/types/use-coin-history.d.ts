@@ -1,6 +1,6 @@
 import { HistoryStatus } from "./history-status";
 
-export interface CreateUserCoinHistoryRequest {
+export interface CreateUserUseCoinHistoryRequest {
 	user_id: string;
 	coin: number;
 	status: HistoryStatus;
@@ -9,7 +9,7 @@ export interface CreateUserCoinHistoryRequest {
 	reference_type?: string | null;
 }
 
-export interface UserCoinHistoryResponse {
+export interface UserUseCoinHistoryResponse {
 	id: string;
 	user_id: string;
 	coin: number;

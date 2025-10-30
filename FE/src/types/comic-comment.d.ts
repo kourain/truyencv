@@ -34,3 +34,18 @@ interface ComicCommentResponse {
 	created_at: string;
 	updated_at: string;
 }
+
+interface RecommendStatusResponse {
+  comic_id: string | number;
+  has_recommended: boolean;
+};
+
+interface ComicRecommendResponse {
+	id: string;
+	comic_id: string;
+	rcm_count: number;
+	month: number;
+	year: number;
+	created_at: string;
+	updated_at: string;
+};

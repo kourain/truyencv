@@ -488,7 +488,7 @@ namespace TruyenCV.Migrations
                         });
                 });
 
-            modelBuilder.Entity("TruyenCV.Models.UserCoinHistory", b =>
+            modelBuilder.Entity("TruyenCV.Models.UserUseCoinHistory", b =>
                 {
                     b.Property<long>("id")
                         .ValueGeneratedOnAdd()
@@ -527,7 +527,7 @@ namespace TruyenCV.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex(new[] { "user_id" }, "IX_UserCoinHistory_User");
+                    b.HasIndex(new[] { "user_id" }, "IX_UserUseCoinHistory_User");
 
                     b.ToTable("user_coin_history");
                 });
@@ -896,7 +896,7 @@ namespace TruyenCV.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TruyenCV.Models.UserCoinHistory", b =>
+            modelBuilder.Entity("TruyenCV.Models.UserUseCoinHistory", b =>
                 {
                     b.HasOne("TruyenCV.Models.User", "User")
                         .WithMany("CoinHistories")

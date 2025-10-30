@@ -1,17 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Info } from "lucide-react";
+import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
 import AdvertisementBanner from "@components/user/comic/AdvertisementBanner";
 import AuthorOtherWorks from "@components/user/comic/AuthorOtherWorks";
 import { useUserComicChapterQuery } from "@services/user/comic-chapter.service";
 import { useUserComicDetailQuery } from "@services/user/comic-detail.service";
+import { useToast } from "@components/providers/ToastProvider";
 import DiscussionsPanel from "../tabs/DiscussionsPanel";
+import { ApiError } from "@helpers/httpClient";
+import { recommendComic } from "@services/user/comic-recommend.service";
+
+const tooltipContent = "Mỗi lượt đề cử tiêu tốn 10 coin và bạn chỉ có thể đề cử một lần mỗi tháng.";
+
+const useRecommendComicMutation = (
+  options?: UseMutationOptions<ComicRecommendResponse, ApiError, string | number>,
+) => {
+  return useMutation<ComicRecommendResponse, ApiError, string | number>({
+    mutationFn: (comicId: string | number) => recommendComic(comicId),
+    ...options,
+  });
+};
 
 const ComicChapterPage = () => {
   const params = useParams<{ slug: string; id: string }>();
+  const { pushToast } = useToast();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const slug = useMemo(() => params?.slug ?? "", [params]);
   const chapterNumber = useMemo(() => {
@@ -25,6 +44,70 @@ const ComicChapterPage = () => {
     data: chapterData,
     isLoading: isChapterLoading,
   } = useUserComicChapterQuery(slug, chapterNumber ?? 0);
+
+  const comicId = detailData?.comic?.id ?? chapterData?.comic_id;
+  const recommendMutation = useRecommendComicMutation();
+
+  const hasRecommended = chapterData?.has_recommended ?? false;
+  const isMutationPending = recommendMutation.isPending;
+  const isRecommendDisabled = hasRecommended || isChapterLoading || isMutationPending || !comicId;
+
+  const recommendLabel = isChapterLoading
+    ? "Đang tải..."
+    : isMutationPending
+      ? "Đang đề cử..."
+      : hasRecommended
+        ? "Đã đề cử"
+        : "Đề cử (+1)";
+
+  const closeConfirmDialog = () => setIsConfirmOpen(false);
+  const openConfirmDialog = () => {
+    if (isRecommendDisabled) {
+      return;
+    }
+
+    setIsConfirmOpen(true);
+  };
+
+  const confirmRecommend = () => {
+    if (!comicId || recommendMutation.isPending) {
+      return;
+    }
+
+    recommendMutation.mutate(comicId, {
+      onSuccess: (data) => {
+        queryClient.setQueryData<ComicChapterReadResponse | undefined>(
+          ["user-comic-chapter", slug, chapterNumber ?? 0],
+          (previous) => {
+            if (!previous) {
+              return previous;
+            }
+
+            return {
+              ...previous,
+              has_recommended: true,
+              monthly_recommendations: data.rcm_count,
+            };
+          },
+        );
+        pushToast({
+          title: "Đề cử thành công",
+          description: "Bạn đã đề cử truyện thành công. Cảm ơn vì đã ủng hộ tác giả!",
+          variant: "success",
+        });
+        closeConfirmDialog();
+      },
+      onError: (error) => {
+        const message = error.response?.data?.message ?? "Không thể đề cử vào lúc này. Vui lòng thử lại sau.";
+        pushToast({
+          title: "Đề cử thất bại",
+          description: message,
+          variant: "error",
+        });
+        closeConfirmDialog();
+      },
+    });
+  };
 
   if (!slug || !chapterNumber) {
     return null;
@@ -48,81 +131,136 @@ const ComicChapterPage = () => {
   const advertisementSecondary = detailData?.advertisements.secondary;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-10">
-      <AdvertisementBanner
-        advertisement={advertisementPrimary}
-        variant="primary"
-        isLoading={isLoading}
-      />
+    <>
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-10">
+        <AdvertisementBanner
+          advertisement={advertisementPrimary}
+          variant="primary"
+          isLoading={isLoading}
+        />
 
-      <section className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-6 shadow-sm">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-semibold text-primary-foreground">{comicTitle}</h1>
-          <p className="text-sm text-surface-foreground/70">Tác giả: {authorName || "Đang cập nhật"}</p>
-        </div>
+        <section className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-6 shadow-sm">
+          <div className="mb-6 text-center">
+            <h1 className="text-2xl font-semibold text-primary-foreground">{comicTitle}</h1>
+            <p className="text-sm text-surface-foreground/70">Tác giả: {authorName || "Đang cập nhật"}</p>
+          </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-          <NavButton disabled={!previousHref} href={previousHref} label="Chương trước" />
-          <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-white">
-            Chương {chapterNumber}: {chapterData?.chapter_title ?? "Đang cập nhật"}
-          </span>
-          <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
-          <NavButton href={`/user/comic/${slug}`} label="Mục lục" />
-          <button className="rounded-full border border-primary px-4 py-1 text-primary transition hover:bg-primary/10">
-            Đánh dấu bookmark
-          </button>
-        </div>
-      </section>
-
-      <article className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-8 text-base leading-7 text-surface-foreground/90 whitespace-pre-wrap">
-        {isLoading ? "Đang tải nội dung chương..." : content}
-      </article>
-
-      {recommendedTitle && (
-        <section className="rounded-3xl border border-primary/20 bg-primary/5 px-6 py-4 text-center">
-          <p className="text-sm font-medium uppercase text-primary">Truyện hay mời đọc</p>
-          {recommendedSlug ? (
-            <Link
-              href={`/user/comic/${recommendedSlug}`}
-              className="mt-1 inline-block text-lg font-semibold text-primary hover:underline"
-            >
-              {recommendedTitle}
-            </Link>
-          ) : (
-            <span className="mt-1 inline-block text-lg font-semibold text-primary">{recommendedTitle}</span>
-          )}
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+            <NavButton disabled={!previousHref} href={previousHref} label="Chương trước" />
+            <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-white">
+              Chương {chapterNumber}: {chapterData?.chapter_title ?? "Đang cập nhật"}
+            </span>
+            <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
+            <NavButton href={`/user/comic/${slug}`} label="Mục lục" />
+            <button className="rounded-full border border-primary px-4 py-1 text-primary transition hover:bg-primary/10">
+              Đánh dấu bookmark
+            </button>
+          </div>
         </section>
+
+        <article className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-8 text-base leading-7 text-surface-foreground/90 whitespace-pre-wrap">
+          {isLoading ? "Đang tải nội dung chương..." : content}
+        </article>
+
+        {recommendedTitle && (
+          <section className="rounded-3xl border border-primary/20 bg-primary/5 px-6 py-4 text-center">
+            <p className="text-sm font-medium uppercase text-primary">Truyện hay mời đọc</p>
+            {recommendedSlug ? (
+              <Link
+                href={`/user/comic/${recommendedSlug}`}
+                className="mt-1 inline-block text-lg font-semibold text-primary hover:underline"
+              >
+                {recommendedTitle}
+              </Link>
+            ) : (
+              <span className="mt-1 inline-block text-lg font-semibold text-primary">{recommendedTitle}</span>
+            )}
+          </section>
+        )}
+
+        <AuthorOtherWorks
+          items={detailData?.related_by_author}
+          authorName={detailData?.comic.author_name}
+          isLoading={isLoading}
+        />
+
+        <AdvertisementBanner
+          advertisement={advertisementSecondary}
+          variant="secondary"
+          isLoading={isLoading}
+        />
+
+        <section className="flex flex-wrap items-center justify-center gap-3">
+          <NavButton disabled={!previousHref} href={previousHref} label="Chương trước" />
+          <button className="rounded-full border border-primary px-5 py-2 text-sm font-medium text-primary transition hover:bg-primary/10">
+            Thêm đánh giá
+          </button>
+          <button className="rounded-full border border-primary px-5 py-2 text-sm font-medium text-primary transition hover:bg-primary/10">
+            Tặng quà (coin)
+          </button>
+          <NavButton href={`/user/comic/${slug}?report=${chapterData?.chapter_id ?? ""}`} label="Báo cáo" />
+          <div className="group relative flex items-center">
+            <button
+              type="button"
+              onClick={openConfirmDialog}
+              disabled={isRecommendDisabled}
+              title={tooltipContent}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+                hasRecommended
+                  ? "bg-surface-muted/60 cursor-not-allowed text-surface-foreground/50"
+                  : "bg-primary text-white hover:bg-primary/90"
+              }`}
+            >
+              {recommendLabel}
+            </button>
+            <Info className="ml-2 h-4 w-4 text-surface-foreground/60" aria-hidden="true" />
+            <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-xl border border-surface-muted bg-surface px-3 py-2 text-xs leading-relaxed text-surface-foreground shadow-lg transition duration-150 ease-out group-hover:block group-focus-within:block">
+              {tooltipContent}
+            </div>
+          </div>
+          <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
+        </section>
+
+        <DiscussionsPanel discussions={detailData?.discussions} isLoading={isLoading} />
+      </main>
+
+      {isConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[1500] flex items-center justify-center bg-black/60 px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="recommend-confirm-title"
+          aria-describedby="recommend-confirm-description"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-surface-muted bg-surface p-6 text-center shadow-2xl">
+            <h2 id="recommend-confirm-title" className="text-lg font-semibold text-primary-foreground">
+              Xác nhận đề cử
+            </h2>
+            <p id="recommend-confirm-description" className="mt-3 text-sm leading-relaxed text-surface-foreground/80">
+              {tooltipContent}
+            </p>
+            <p className="mt-1 text-xs text-surface-foreground/60">Chi phí: 10 coin.</p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={closeConfirmDialog}
+                className="rounded-full border border-surface-muted/70 px-4 py-2 text-sm font-medium text-surface-foreground transition hover:bg-surface-muted/40"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={confirmRecommend}
+                disabled={recommendMutation.isPending}
+                className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-primary/60"
+              >
+                {recommendMutation.isPending ? "Đang xử lý..." : "Xác nhận"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-
-      <AuthorOtherWorks
-        items={detailData?.related_by_author}
-        authorName={detailData?.comic.author_name}
-        isLoading={isLoading}
-      />
-
-      <AdvertisementBanner
-        advertisement={advertisementSecondary}
-        variant="secondary"
-        isLoading={isLoading}
-      />
-
-      <section className="flex flex-wrap items-center justify-center gap-3">
-        <NavButton disabled={!previousHref} href={previousHref} label="Chương trước" />
-        <button className="rounded-full border border-primary px-5 py-2 text-sm font-medium text-primary transition hover:bg-primary/10">
-          Thêm đánh giá
-        </button>
-        <button className="rounded-full border border-primary px-5 py-2 text-sm font-medium text-primary transition hover:bg-primary/10">
-          Tặng quà (coin)
-        </button>
-        <NavButton href={`/user/comic/${slug}?report=${chapterData?.chapter_id ?? ""}`} label="Báo cáo" />
-        <button className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-white transition hover:bg-primary/90">
-          Đề cử (+1)
-        </button>
-        <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
-      </section>
-
-      <DiscussionsPanel discussions={detailData?.discussions} isLoading={isLoading} />
-    </main>
+    </>
   );
 };
 

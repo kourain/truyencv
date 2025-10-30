@@ -23,9 +23,10 @@ public static class RepositoriesRegisterExtensions
 		Services.AddScoped<TruyenCV.Repositories.ISubscriptionRepository, TruyenCV.Repositories.SubscriptionRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IUserHasSubscriptionRepository, TruyenCV.Repositories.UserHasSubscriptionRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IPaymentHistoryRepository, TruyenCV.Repositories.PaymentHistoryRepository>();
-		Services.AddScoped<TruyenCV.Repositories.IUserCoinHistoryRepository, TruyenCV.Repositories.UserCoinHistoryRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserUseCoinHistoryRepository, TruyenCV.Repositories.UserUseCoinHistoryRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IUserUseKeyHistoryRepository, TruyenCV.Repositories.UserUseKeyHistoryRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IUserComicUnlockHistoryRepository, TruyenCV.Repositories.UserComicUnlockHistoryRepository>();
+		Services.AddScoped<TruyenCV.Repositories.IUserComicRecommendRepository, TruyenCV.Repositories.UserComicRecommendRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IComicRecommendRepository, TruyenCV.Repositories.ComicRecommendRepository>();
 		Services.AddScoped<TruyenCV.Repositories.IComicReportRepository, TruyenCV.Repositories.ComicReportRepository>();
 		return Services;

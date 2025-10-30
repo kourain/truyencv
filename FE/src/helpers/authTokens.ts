@@ -33,24 +33,26 @@ const deleteCookie = (name: string) => {
 	document.cookie = `${name}=; path=/; max-age=0; SameSite=Strict${extraSecure}`;
 };
 
-const getCookie = (name: string) => {
-	if (!isBrowser()) {
-		return undefined;
-	}
-
-	const cookies = document.cookie ? document.cookie.split(";") : [];
-
-	for (const rawCookie of cookies) {
-		const [cookieName, ...rest] = rawCookie.trim().split("=");
-
-		if (cookieName === name) {
-			return decodeURIComponent(rest.join("="));
+const getCookie = (name: string): string => {
+	if (isBrowser()) {
+		const cookies = document.cookie ? document.cookie.split(";") : [];
+		for (const rawCookie of cookies) {
+			const [cookieName, ...rest] = rawCookie.trim().split("=");
+			if (cookieName === name) {
+				return decodeURIComponent(rest.join("="));
+			}
 		}
 	}
-
-	return undefined;
+	return "";
 };
 
+const getSVCookie = async (name: string): Promise<string> => {
+	if (!isBrowser()) {
+		const cookies = await (await import("next/headers")).cookies();
+		return cookies.get(name)?.value ?? "";
+	}
+	return "";
+};
 const base64UrlDecode = (value: string) => {
 	const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
 	const padding = normalized.length % 4 ? 4 - (normalized.length % 4) : 0;
@@ -67,7 +69,7 @@ const base64UrlDecode = (value: string) => {
 				.map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`)
 				.join("")
 		);
-	} catch (error) {
+	} catch {
 		return atob(padded);
 	}
 };
@@ -82,7 +84,7 @@ export const decodeJwtToken = (token: string): JWT | null => {
 
 		const json = base64UrlDecode(payload);
 		return JSON.parse(json) as JWT;
-	} catch (error) {
+	} catch {
 		return null;
 	}
 };
@@ -153,14 +155,15 @@ export const getAccessToken = () => getCookie(ACCESS_TOKEN_COOKIE);
 
 export const getRefreshToken = () => getCookie(REFRESH_TOKEN_COOKIE);
 
-export const hasValidTokens = () => Boolean(getAccessToken() && getRefreshToken());
+export const getSVAccessToken = async () => await getSVCookie(ACCESS_TOKEN_COOKIE);
 
+export const getSVRefreshToken = async () => await getSVCookie(REFRESH_TOKEN_COOKIE);
 export const getAccessTokenPayload = () => {
 	const token = getAccessToken();
 	return token ? decodeJwtToken(token) : null;
 };
 
-export const AuthStateFromJWT = (jwt: JWT | null) : ServerAuthState => {
+export const AuthStateFromJWT = (jwt: JWT | null): ServerAuthState => {
 	return {
 		isAuthenticated: jwt !== null,
 		userId: jwt?.sub ?? null,

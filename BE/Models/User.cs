@@ -21,10 +21,15 @@ public class User : BaseEntity
     [Required, StringLength(15)]
     public string phone { get; set; }
     public DateTime? email_verified_at { get; set; }
+    [Range(0, long.MaxValue, ErrorMessage = "read_comic_count không thể nhỏ hơn 0.")]
     public long read_comic_count { get; set; } = 0;
+    [Range(0, long.MaxValue, ErrorMessage = "read_chapter_count không thể nhỏ hơn 0.")]
     public long read_chapter_count { get; set; } = 0;
+    [Range(0, long.MaxValue, ErrorMessage = "bookmark_count không thể nhỏ hơn 0.")]
     public long bookmark_count { get; set; } = 0;
+    [Range(0, long.MaxValue, ErrorMessage = "coin không thể nhỏ hơn 0.")]
     public long coin { get; set; } = 0;
+    [Range(0, long.MaxValue, ErrorMessage = "key không thể nhỏ hơn 0.")]
     public long key { get; set; } = 0;
     public bool is_banned { get; set; } = false;
     public DateTime? banned_at { get; set; }
@@ -51,7 +56,7 @@ public class User : BaseEntity
     public virtual ICollection<PaymentHistory>? PaymentHistories { get; set; }
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserCoinHistory>? CoinHistories { get; set; }
+    public virtual ICollection<UserUseCoinHistory>? CoinHistories { get; set; }
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
     public virtual ICollection<UserUseKeyHistory>? KeyHistories { get; set; }
