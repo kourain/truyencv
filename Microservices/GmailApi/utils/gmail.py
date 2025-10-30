@@ -1,4 +1,4 @@
-import os,base64,time,threading
+import os,base64,time,threading,sys
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -12,10 +12,12 @@ from utils.classes import Mail,Status
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 DELAY = 1 # 1s
 class Gmail:
-    def __init__(self):
+    def __init__(self,token_file:str='token.json'):
+        print("Initializing Gmail API...",file=sys.stderr)
+        print("Using token file:", token_file,file=sys.stderr)
         self.Id:int = 1
         self.email_status:dict[int, Status] = {}
-        self.service: Resource = self.get_gmail_service('token.json')
+        self.service: Resource = self.get_gmail_service(token_file)
         self.queue:Queue[Mail] = Queue()
         self.lock = threading.Lock()
     def get_gmail_service(self, token_file:str) -> Resource:
@@ -27,7 +29,7 @@ class Gmail:
                 creds = Credentials.from_authorized_user_file(token_file, SCOPES)
             except ValueError as e:
                 # Token file bị lỗi, xóa và yêu cầu xác thực lại
-                print(f"Token file corrupted: {e}")
+                print(f"Token file corrupted: {e}", file=sys.stderr)
                 os.remove(token_file)
                 creds = None
         # Nếu không có credentials hợp lệ, yêu cầu authorization
@@ -36,7 +38,7 @@ class Gmail:
                 try:
                     creds.refresh(Request())
                 except Exception as e:
-                    print(f"Failed to refresh token: {e}")
+                    print(f"Failed to refresh token: {e}", file=sys.stderr)
                     # Xóa token và yêu cầu xác thực lại
                     # if os.path.exists(token_file):
                         # os.remove(token_file)
@@ -79,7 +81,23 @@ class Gmail:
                         )
                         message.attach(part)
         return {'raw': base64.urlsafe_b64encode(message.as_bytes()).decode()}
-
+    def send_email(self, mail:Mail):
+        """Gửi một email"""
+        for recipient in mail.recipients:
+            try:
+                message = self.create_message(
+                    mail.sender,
+                    recipient,
+                    mail.subject,
+                    mail.message_text,
+                    mail.html_content,
+                    mail.attachments
+                )
+                sent_message = self.service.users().messages().send(userId='me', body=message).execute()
+                return sent_message
+            except Exception as error:
+                print(f'An error occurred: {error}')
+                return None
     def send_email_batch(self):
         """Gửi email hàng loạt"""
         while True:
@@ -119,6 +137,7 @@ class Gmail:
                                 'status': 'error',
                                 'message': f'Unexpected error: {str(error)}'
                             }
+                    print(self.email_status[sender_email.Id].logs[recipient])
                     self.email_status[sender_email.Id].in_progress = False
                     print(sender_email.Id)
             time.sleep(1)

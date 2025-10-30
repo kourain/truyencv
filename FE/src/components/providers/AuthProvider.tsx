@@ -2,8 +2,6 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
-
-
 export type AuthContextValue = ServerAuthState & {
   updateAuthState: (newState: ServerAuthState) => void;
 };
@@ -17,7 +15,7 @@ interface AuthProviderProps {
 
 const AuthProvider = ({ initialState, children }: AuthProviderProps) => {
   const [authState, setAuthState] = useState<ServerAuthState>(() => initialState);
-
+  
   const updateAuthState = useCallback((newState: ServerAuthState) => {
     setAuthState(newState);
   }, [setAuthState]);
