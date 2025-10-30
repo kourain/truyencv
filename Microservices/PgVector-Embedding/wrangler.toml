@@ -3,5 +3,10 @@ main = "src/worker.py"
 compatibility_flags = ["python_workers", "python_dedicated_snapshot"]
 compatibility_date = "2025-10-21"
 
-[vars]
-MESSAGE = "My env var"
+[observability.logs]
+enabled = true
+
+[[rules]]
+globs = ["vendor/**"]
+type = "Data"
+fallthrough = true
