@@ -4,11 +4,12 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "pg_vector-embedding_google_gemma",
+	"name": "pgvector-embedding-google-gemma",
 	"vectorize": [
 		{
 			"binding": "VECTORIZE",
-			"index_name": "embeddings-index"
+			"index_name": "embeddings-index",
+			"remote": true
 		}
 	],
 	"ai": {

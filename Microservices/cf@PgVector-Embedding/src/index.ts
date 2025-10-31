@@ -13,14 +13,14 @@ export default {
 
 		// You only need to generate vector embeddings once (or as
 		// data changes), not on every request
-		if (path === "/insert" && request.method === "POST") {
+		if (path === "/embed" && request.method === "POST") {
 			// In a real-world application, you could read content from R2 or
 			// a SQL database (like D1) and pass it to Workers AI
 			const stories = await request.json();
 			const modelResp: EmbeddingResponse = await env.AI.run(
 				"@cf/google/embeddinggemma-300m",
 				{
-					text: stories["content"],
+					text: stories["texts"] as string[],
 				},
 			);
 
@@ -36,11 +36,11 @@ export default {
 			});
 
 			let inserted = await env.VECTORIZE.upsert(vectors);
-			return Response.json(inserted);
+			return Response.json({ inserted, vectors });
 		}
 		if (path === "/query" && request.method === "POST") {
 			const queryData = await request.json();
-			let userQuery = queryData["query"];
+			let userQuery = queryData["texts"][0];
 			const queryVector: EmbeddingResponse = await env.AI.run(
 				"@cf/google/embeddinggemma-300m",
 				{

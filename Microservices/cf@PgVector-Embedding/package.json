@@ -1,6 +1,6 @@
 {
-	"name": "pg_vector-embedding_google_gemma",
-	"version": "0.0.0",
+	"name": "pgvector-embedding-google-gemma",
+	"version": "0.1.0",
 	"private": true,
 	"scripts": {
 		"deploy": "wrangler deploy",
