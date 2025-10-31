@@ -14,16 +14,16 @@ namespace TruyenCV.Services;
 /// </summary>
 public class ComicService : IComicService
 {
-	private readonly IComicRepository _comicRepository;
-	private readonly IDistributedCache _redisCache;
+    private readonly IComicRepository _comicRepository;
+    private readonly IDistributedCache _redisCache;
     private readonly ITextEmbeddingService _embeddingService;
 
-	public ComicService(IComicRepository comicRepository, IDistributedCache redisCache, ITextEmbeddingService embeddingService)
-	{
-		_comicRepository = comicRepository;
-		_redisCache = redisCache;
+    public ComicService(IComicRepository comicRepository, IDistributedCache redisCache, ITextEmbeddingService embeddingService)
+    {
+        _comicRepository = comicRepository;
+        _redisCache = redisCache;
         _embeddingService = embeddingService;
-	}
+    }
 
     public async Task<ComicResponse?> GetComicByIdAsync(long id)
     {
@@ -111,11 +111,11 @@ public class ComicService : IComicService
         return comic.ToRespDTO();
     }
 
-	public async Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword, int limit, double minScore)
-	{
-		var normalizedKeyword = keyword?.Trim();
-		if (string.IsNullOrWhiteSpace(normalizedKeyword))
-			return [];
+    public async Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword, int limit, double minScore)
+    {
+        var normalizedKeyword = keyword?.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedKeyword))
+            return [];
 
         limit = Math.Clamp(limit, 1, _embeddingService.Options.MaxResults);
         minScore = Math.Clamp(minScore, 0.0, 0.99);
@@ -124,12 +124,12 @@ public class ComicService : IComicService
         var embeddingValues = await _embeddingService.CreateEmbeddingAsync(normalizedKeyword);
         if (embeddingValues is { Length: > 0 })
         {
-            queryVector = new Vector(embeddingValues);
+            queryVector = new Vector(embeddingValues[0]);
         }
 
-		var comics = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
-		return comics.Select(c => c.ToRespDTO());
-	}
+        var comics = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
+        return comics.Select(c => c.ToRespDTO());
+    }
 
     public async Task<IEnumerable<ComicResponse>> GetComicsByAuthorAsync(string author)
     {
@@ -158,15 +158,15 @@ public class ComicService : IComicService
             comicRequest.slug = comicRequest.slug.Trim().ToLower();
         // Kiểm tra slug đã tồn tại chưa
         if (await _comicRepository.ExistsAsync(c => c.slug == comicRequest.slug))
-			comicRequest.slug = $"{comicRequest.slug}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+            comicRequest.slug = $"{comicRequest.slug}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
 
-		// Chuyển đổi từ DTO sang Entity
-		var comic = comicRequest.ToEntity();
+        // Chuyển đổi từ DTO sang Entity
+        var comic = comicRequest.ToEntity();
 
-        var embeddingValues = await _embeddingService.CreateEmbeddingAsync(comic.name, comic.description);
+        var embeddingValues = await _embeddingService.CreateEmbeddingAsync($"{comic.name}, {comic.description}");
         if (embeddingValues is { Length: > 0 })
         {
-            comic.search_vector = new Vector(embeddingValues);
+            comic.search_vector = new Vector(embeddingValues[0]);
         }
 
         // Thêm comic vào database
@@ -185,18 +185,16 @@ public class ComicService : IComicService
         if (comic == null)
             return null;
 
-		// Cập nhật thông tin
-		comic.UpdateFromRequest(comicRequest);
-
-        var embeddingValues = await _embeddingService.CreateEmbeddingAsync(comic.name, comic.description);
-        if (embeddingValues is { Length: > 0 })
+        // Cập nhật thông tin
+        if (comicRequest.name != comic.name || comicRequest.description != comic.description)
         {
-            comic.search_vector = new Vector(embeddingValues);
+            var embeddingValues = await _embeddingService.CreateEmbeddingAsync($"{comic.name}, {comic.description}");
+            if (embeddingValues is { Length: > 0 })
+            {
+                comic.search_vector = new Vector(embeddingValues[0]);
+            }
         }
-        else
-        {
-            comic.search_vector = null;
-        }
+        comic.UpdateFromRequest(comicRequest);
 
         // Cập nhật vào database
         await _comicRepository.UpdateAsync(comic);

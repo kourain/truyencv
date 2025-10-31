@@ -17,7 +17,7 @@ public interface ITextEmbeddingService
     /// </summary>
     /// <param name="parts">Danh sách chuỗi cần embedding.</param>
     /// <returns>Vector kết quả hoặc null nếu dữ liệu không hợp lệ.</returns>
-    Task<float[]?> CreateEmbeddingAsync(params string?[] parts);
+    Task<float[][]?> CreateEmbeddingAsync(params string?[] parts);
 }
 
 /// <summary>

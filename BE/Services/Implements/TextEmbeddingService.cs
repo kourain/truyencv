@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 namespace TruyenCV.Services;
 
@@ -32,49 +33,22 @@ public class TextEmbeddingService : ITextEmbeddingService
 
     public EmbeddingOptions Options => _options;
 
-    public async Task<float[]?> CreateEmbeddingAsync(params string?[] parts)
+    public async Task<float[][]?> CreateEmbeddingAsync(params string?[] segments)
     {
-        var segments = CollectSegments(parts);
-        if (segments.Count == 0)
+        if (segments == null || segments.Length == 0)
         {
             return null;
         }
 
-        var remote = await TryRequestEmbeddingAsync(segments);
+        var remote = await TryRequestEmbeddingAsync(segments!);
         if (remote != null)
         {
-            return NormalizeInPlace(AlignToConfiguredDimension(remote));
+            return remote;
         }
-
-        return CreateFallbackEmbedding(segments);
+        return null;
     }
 
-    private static List<string> CollectSegments(string?[]? parts)
-    {
-        var segments = new List<string>();
-        if (parts == null)
-        {
-            return segments;
-        }
-
-        foreach (var part in parts)
-        {
-            if (string.IsNullOrWhiteSpace(part))
-            {
-                continue;
-            }
-
-            var normalized = part.Trim();
-            if (normalized.Length > 0)
-            {
-                segments.Add(normalized);
-            }
-        }
-
-        return segments;
-    }
-
-    private async Task<float[]?> TryRequestEmbeddingAsync(IReadOnlyList<string> segments)
+    private async Task<float[][]?> TryRequestEmbeddingAsync(IReadOnlyList<string> segments)
     {
         if (!_options.Enabled)
         {
@@ -107,20 +81,22 @@ public class TextEmbeddingService : ITextEmbeddingService
             try
             {
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
-                var body = await response.Content.ReadAsStringAsync();
+                var body = await response.Content.ReadFromJsonAsync<JObject>();
                 if (response.IsSuccessStatusCode)
                 {
-                    var parsed = ParseEmbedding(body);
-                    if (parsed != null)
+                    var results = new float[segments.Count][];
+                    for (var i = 0; i < segments.Count; i++)
                     {
-                        return AlignToConfiguredDimension(parsed);
+                        var embedding = body?["vectors"][i]?["values"]?.ToObject<float[]>();
+                        if (embedding != null)
+                        {
+                            results[i] = embedding;
+                        }
                     }
-
-                    _logger.LogWarning("Response embedding không hợp lệ: {Body}", Truncate(body));
-                    return null;
+                    return results;
                 }
 
-                _logger.LogWarning("Microservice embedding trả về mã {StatusCode}: {Body}", (int)response.StatusCode, Truncate(body));
+                _logger.LogWarning("Microservice embedding trả về mã {StatusCode}: {Body}", (int)response.StatusCode, Truncate(body.ToString() ?? string.Empty));
             }
             catch (TaskCanceledException ex)
             {
@@ -141,19 +117,15 @@ public class TextEmbeddingService : ITextEmbeddingService
         return null;
     }
 
-    private float[] CreateFallbackEmbedding(IReadOnlyList<string> segments)
+    private float[] CreateFallbackEmbedding(string segments)
     {
         var dimension = Math.Clamp(_options.Dimensions, 8, 2048);
         var embedding = new float[dimension];
         var tokens = new List<(string Token, float Weight)>();
 
-        for (var i = 0; i < segments.Count; i++)
+        foreach (var token in Tokenize(segments))
         {
-            var weight = i == 0 ? 3f : 1f;
-            foreach (var token in Tokenize(segments[i]))
-            {
-                tokens.Add((token, weight));
-            }
+            tokens.Add((token, 1));
         }
 
         if (tokens.Count == 0)
@@ -168,47 +140,6 @@ public class TextEmbeddingService : ITextEmbeddingService
         }
 
         return NormalizeInPlace(embedding);
-    }
-
-    private float[] AlignToConfiguredDimension(float[] source)
-    {
-        var targetLength = Math.Clamp(_options.Dimensions, 8, 2048);
-        if (source.Length == targetLength)
-        {
-            return (float[])source.Clone();
-        }
-
-        var result = new float[targetLength];
-        var copyLength = Math.Min(source.Length, targetLength);
-        Array.Copy(source, result, copyLength);
-        return result;
-    }
-
-    private static float[]? ParseEmbedding(string payload)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(payload);
-            if (document.RootElement.ValueKind == JsonValueKind.Object &&
-                document.RootElement.TryGetProperty("embedding", out var embeddingElement) &&
-                embeddingElement.ValueKind == JsonValueKind.Array)
-            {
-                var vector = new float[embeddingElement.GetArrayLength()];
-                var index = 0;
-                foreach (var item in embeddingElement.EnumerateArray())
-                {
-                    vector[index++] = item.ValueKind == JsonValueKind.Number ? (float)item.GetDouble() : 0f;
-                }
-
-                return vector;
-            }
-        }
-        catch
-        {
-            return null;
-        }
-
-        return null;
     }
 
     private static float[] NormalizeInPlace(float[] vector)
