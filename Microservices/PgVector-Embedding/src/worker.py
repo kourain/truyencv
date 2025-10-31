@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import List
 
 import os
-# os.system("pip install sentence-transformers")
+# os.system("uv add ")
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer

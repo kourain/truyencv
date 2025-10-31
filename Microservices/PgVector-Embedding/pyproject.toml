@@ -3,13 +3,27 @@ name = "fastapi-worker"
 version = "0.1.0"
 description = "Python fastapi example"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = "==3.12.11"
 dependencies = [
     "webtypy>=0.1.7",
     "markupsafe",
+    "fastapi",
+    "torch",
+    "sentence-transformers"
 ]
 
 [dependency-groups]
 dev = [
     "workers-py"
 ]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true  # Chỉ dùng cho torch
+
+[workers]
+python_runtime = "cpython"  # Hoặc bỏ dòng này đi
