@@ -104,7 +104,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("slug")
                         .IsUnique();
 
-                    b.ToTable("comics", t =>
+                    b.ToTable("comics", null, t =>
                         {
                             t.HasCheckConstraint("CK_Comic_bookmark_count_Positive", "bookmark_count >= 0");
 
@@ -142,7 +142,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("name")
                         .IsUnique();
 
-                    b.ToTable("comic_categories");
+                    b.ToTable("comic_categories", (string)null);
 
                     b.HasData(
                         new
@@ -1073,7 +1073,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("comic_id", "chapter")
                         .IsUnique();
 
-                    b.ToTable("comic_chapters");
+                    b.ToTable("comic_chapters", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.ComicComment", b =>
@@ -1128,7 +1128,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("comic_comments", t =>
+                    b.ToTable("comic_comments", null, t =>
                         {
                             t.HasCheckConstraint("CK_comic_comments_rate_star_range", "(rate_star IS NULL) OR (rate_star BETWEEN 1 AND 5)");
                         });
@@ -1148,7 +1148,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("comic_id");
 
-                    b.ToTable("comic_have_categories");
+                    b.ToTable("comic_have_categories", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.ComicRecommend", b =>
@@ -1185,7 +1185,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("comic_id", "month", "year")
                         .IsUnique();
 
-                    b.ToTable("comic_recommends");
+                    b.ToTable("comic_recommends", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.ComicReport", b =>
@@ -1235,7 +1235,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("comic_id", "chapter_id", "comment_id");
 
-                    b.ToTable("comic_reports");
+                    b.ToTable("comic_reports", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.PaymentHistory", b =>
@@ -1281,7 +1281,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_PaymentHistory_User");
 
-                    b.ToTable("payment_history");
+                    b.ToTable("payment_history", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.RefreshToken", b =>
@@ -1321,7 +1321,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("refresh_tokens");
+                    b.ToTable("refresh_tokens", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.Subscription", b =>
@@ -1369,7 +1369,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("code")
                         .IsUnique();
 
-                    b.ToTable("subscriptions");
+                    b.ToTable("subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.User", b =>
@@ -1448,7 +1448,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("firebase_uid")
                         .IsUnique();
 
-                    b.ToTable("users", t =>
+                    b.ToTable("users", null, t =>
                         {
                             t.HasCheckConstraint("CK_User_bookmark_count_Positive", "bookmark_count >= 0");
 
@@ -1532,7 +1532,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserComicBookmark");
 
-                    b.ToTable("user_comic_bookmarks");
+                    b.ToTable("user_comic_bookmarks", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserComicReadHistory", b =>
@@ -1570,7 +1570,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserComicReadHistory");
 
-                    b.ToTable("user_comic_read_history");
+                    b.ToTable("user_comic_read_history", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserComicUnlockHistory", b =>
@@ -1610,7 +1610,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserComicUnlockHistory");
 
-                    b.ToTable("user_comic_unlock_history");
+                    b.ToTable("user_comic_unlock_history", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserHasPermission", b =>
@@ -1651,7 +1651,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserHasPermission");
 
-                    b.ToTable("user_has_permissions");
+                    b.ToTable("user_has_permissions", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserHasRole", b =>
@@ -1690,7 +1690,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserHasRole");
 
-                    b.ToTable("user_has_roles");
+                    b.ToTable("user_has_roles", (string)null);
 
                     b.HasData(
                         new
@@ -1764,7 +1764,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("user_id", "subscription_id")
                         .IsUnique();
 
-                    b.ToTable("user_has_subscriptions");
+                    b.ToTable("user_has_subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserUseCoinHistory", b =>
@@ -1808,7 +1808,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserUseCoinHistory_User");
 
-                    b.ToTable("user_use_coin_history");
+                    b.ToTable("user_use_coin_history", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserUseKeyHistory", b =>
@@ -1850,7 +1850,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserUseKeyHistory_User");
 
-                    b.ToTable("user_use_key_history");
+                    b.ToTable("user_use_key_history", (string)null);
                 });
 
             modelBuilder.Entity("TruyenCV.Models.Comic", b =>

@@ -1,0 +1,7 @@
+name = "vixtts-cf-worker"
+main = "src/index.ts"
+compatibility_date = "2025-10-31"
+
+[vars]
+# Do NOT put your HF_API_KEY here. Use `wrangler secret put HF_API_KEY` to store the secret.
+MODEL_NAME = "thinhlpg/vixtts-demo"
