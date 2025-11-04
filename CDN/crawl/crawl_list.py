@@ -23,7 +23,8 @@ crawl_list = [
     "dau-tu-thien-menh-toc-nhan-thuc-luc-cua-ta-la-toan-toc-tong-cong",
     "chu-thien-tu-thien-ha-thu-nhat-bat-dau-nhap-dao",
 ]
-crawl_list.reverse()
+crawl_list = list(json.loads(open("metruyencv.biz.crawl_list.json",'r',encoding='utf-8').read()))
+# crawl_list.reverse()
 set_crawl_list = set(crawl_list)
 
 category_dict = {
@@ -155,7 +156,7 @@ async def scrape():
         await page.setCookie(*cookie)
         await page.goto("https://metruyencv.biz/danh-sach/truyen-moi")
         for i in range(400):
-            await asyncio.sleep(3.5)
+            await asyncio.sleep(3)
             containner:ElementHandle = await page.querySelector("div.grid.grid-cols-1.md\\:grid-cols-2.gap-6.px-4.lg\\:px-0")
             stories = await containner.querySelectorAll("div.flex.space-x-3.pb-6.border-b.border-auto")
             for story in stories:
@@ -166,19 +167,20 @@ async def scrape():
                         set_crawl_list.add((await slug_elem.getProperty("href")).toString().split("/")[-1])
                         print(f"Found story: {(await slug_elem.getProperty('href')).toString().split('/')[-1]}", flush=True,file=sys.stderr)
             buttons = await page.querySelectorAll("button.disabled\\:border-gray-500.text-primary.disabled\\:text-gray-500")
-            next_button = None
-            print(buttons)
-            for button in buttons:
-                bind = (await button.evaluate("el => el.getAttribute('data-x-bind')"))
-                print((await (await button.getProperty("_x_attributeCleanups")).getProperty("data-x-bind")).toString())
-                if bind.toString().find("NextPage") != -1:
-                    next_button = button
-                    break
+            next_button = buttons[2] if len(buttons) == 4 else None
+            # print(buttons)
+            # for button in buttons:
+            #     bind = await (await button.getProperty("_x_attributeCleanups")).getProperty("data-x-bind")
+            #     print(bind.toString())
+            #     if bind.toString().find("NextPage") != -1:
+            #         next_button = button
+            #         break
+            open("metruyencv.biz.crawl_list.json",'w',encoding='utf-8').write(json.dumps(list(set_crawl_list),ensure_ascii=False,indent=4))
             if next_button is None:
                 print("Next button not found, ending scrape.", flush=True, file=sys.stderr)
                 break
             if next_button and (await next_button.getProperty("disabled")).toString() != "disabled":
-                print(f"Navigating to next page... {i*20}", flush=True, file=sys.stderr)
+                print(f"Navigating to next page... {(i+1)*20}", flush=True, file=sys.stderr)
                 await next_button.click()
             else:
                 print("No more pages to navigate.", flush=True, file=sys.stderr)
@@ -189,4 +191,3 @@ async def scrape():
         await browser.close()
 asyncio.run(scrape())
 print(f"Total stories to crawl: {list(set_crawl_list)}")
-open("metruyencv.biz.crawl_list.json",'w',encoding='utf-8').write(json.dumps(list(set_crawl_list),ensure_ascii=False,indent=4))

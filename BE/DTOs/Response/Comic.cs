@@ -14,6 +14,7 @@ public class ComicResponse
 	public int chap_count { get; set; }
 	public int bookmark_count { get; set; }
 	public float rate { get; set; }
+    public string main_category { get; set; }
 	public ComicStatus status { get; set; }
 	public DateTime created_at { get; set; }
 	public DateTime updated_at { get; set; }

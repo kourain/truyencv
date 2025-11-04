@@ -21,6 +21,8 @@ public class Comic : BaseEntity
 
     [Required, StringLength(255)]
     public required string author { get; set; }
+    [Required, StringLength(255)]
+    public required string author_slug { get; set; }
 
     [StringLength(255)]
     public string? embedded_from { get; set; }
