@@ -10,6 +10,7 @@ public static class Register
     {
         ComicCommentConfig.Configure(modelBuilder);
         ComicConfig.Configure(modelBuilder);
+        ComicHaveCategoryConfig.Configure(modelBuilder);
         SubscriptionConfig.Configure(modelBuilder);
         UserConfig.Configure(modelBuilder);
     }
