@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
 
-import AdvertisementBanner from "@components/user/comic/AdvertisementBanner";
+import AdsBanner from "@components/user/comic/AdsBanner";
 import AuthorOtherWorks from "@components/user/comic/AuthorOtherWorks";
 import HeroSection from "@components/user/comic/HeroSection";
 import LatestChapters from "@components/user/comic/LatestChapters";
@@ -24,17 +24,17 @@ const ComicDetailPage = () => {
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-10">
       <HeroSection comic={data?.comic} isLoading={isLoading} />
 
-      <AdvertisementBanner advertisement={data?.advertisements.primary} variant="primary" isLoading={isLoading} />
+      <AdsBanner advertisement={data?.advertisements.primary} variant="primary" isLoading={isLoading} />
 
       <LatestChapters chapters={data?.latest_chapters} slug={slug} isLoading={isLoading} />
 
-      <AdvertisementBanner advertisement={data?.advertisements.secondary} variant="secondary" isLoading={isLoading} />
+      <AdsBanner advertisement={data?.advertisements.secondary} variant="secondary" isLoading={isLoading} />
 
       <StoryIntroduction introduction={data?.introduction} isLoading={isLoading} />
 
       <AuthorOtherWorks items={data?.related_by_author} authorName={data?.comic.author_name} isLoading={isLoading} />
 
-      <AdvertisementBanner advertisement={data?.advertisements.tertiary} variant="tertiary" isLoading={isLoading} />
+      <AdsBanner advertisement={data?.advertisements.tertiary} variant="tertiary" isLoading={isLoading} />
 
       <TabViewSection
         highlights={data?.highlights}

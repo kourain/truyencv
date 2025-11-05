@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-interface AdvertisementBannerProps {
+interface AdsBannerProps {
   advertisement?: ComicDetailAdvertisement;
   variant?: "primary" | "secondary" | "tertiary";
   isLoading?: boolean;
@@ -14,7 +14,7 @@ const variantStyles: Record<"primary" | "secondary" | "tertiary", string> = {
   tertiary: "border-surface-muted/50 bg-surface-muted/40",
 };
 
-const AdvertisementBanner = ({ advertisement, variant = "primary", isLoading = false }: AdvertisementBannerProps) => {
+const AdsBanner = ({ advertisement, variant = "primary", isLoading = false }: AdsBannerProps) => {
   if (isLoading) {
     return <div className="h-48 w-full animate-pulse rounded-xl border border-surface-muted/50 bg-surface-muted/40" />;
   }
@@ -54,4 +54,4 @@ const AdvertisementBanner = ({ advertisement, variant = "primary", isLoading = f
   );
 };
 
-export default AdvertisementBanner;
+export default AdsBanner;
