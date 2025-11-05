@@ -117,7 +117,10 @@ category_dict = {
     "Mỹ Thực" : 4034,
     "Phản Phái" : 4035,
     "Sau Màn" : 4036,
-    "Thiên Tài" : 4037
+    "Thiên Tài" : 4037,
+    "Trò Chơi" : 4038,
+    "Góc Nhìn Nam" : 5001,
+    "Góc Nhìn Nữ" : 5002
 }
 def clean_html_content(html):
     """
@@ -169,58 +172,77 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
 
     async def run(slug,chap):
         if os.path.exists(f"truyen/{slug}/chap-{chap}"):
+            os.renames(f"truyen/{slug}/chap-{chap}",f"truyen/{slug}/chap-{chap}.txt")
+            return
+        if os.path.exists(f"truyen/{slug}/chap-{chap}.txt"):
             return
         page = await browser.newPage()
+        await page.setCookie(*cookie)
+        # Bật request interception
+        await page.setRequestInterception(True)
+        
+        async def block_resources(request):
+            # Chặn image, media, font
+            if request.resourceType in ['image', 'media', 'font']:
+                await request.abort()
+            else:
+                await request.continue_()
+        
+        page.on('request', lambda req: asyncio.ensure_future(block_resources(req)))
         try:
         # if True:
             # Step 2: Create a new page in the browser
-            await page.setCookie(*cookie)
-
-            if chap == 0 and not os.path.exists(f"truyen/{slug}/index.json"):
-
-                await page.goto(f"https://metruyencv.biz/truyen/{slug}")
-                title = await page.title()
-                # description_div = r'<div class="text-gray-600 dark:text-gray-300 py-4 px-2 md:px-1 text-base break-words" bis_skin_checked="1">(.)*</div>'
-                description_container:ElementHandle | None = await page.querySelector('div.text-gray-600.dark\\:text-gray-300.py-4.px-2.md\\:px-1.text-base.break-words')
-                description_html = await page.evaluate('(element) => element.innerHTML', description_container)
-                # description = re.search(description_div,description_html).group(0)
-                description = clean_html_content(description_html)
-                section:ElementHandle = await page.querySelector('div.mb-4.mx-auto.text-center.md\\:mx-0.md\\:text-left div.leading-10.md\\:leading-normal.space-x-4')
-                span:list[ElementHandle] = await section.querySelectorAll('span')
-                category_ids = []
-                for s in range(span.__len__()):
-                    if s > 1:
-                        text = await page.evaluate('(element) => element.innerText', span[s])
-                        # print(text)
-                        category_ids.append(category_dict[text])
-                open(f"truyen/{slug}/index.json",'w',encoding='utf-8').write(json.dumps({
-                    "title": title.replace(" - Metruyencv.biz","").replace("Convert","").replace("\n"," ").strip(),
-                    "description": description,
-                    "author": await page.evaluate('(element) => element.innerText', await page.querySelector("div.mb-4.mx-auto.text-center.md\\:mx-0.md\\:text-left div.mb-6 a.text-gray-500")),
-                    "cover_url": await page.evaluate('(element) => element.src', await page.querySelector("img.w-44.h-60.shadow-lg.rounded.mx-auto")),
-                    "main_category_id": category_dict[await page.evaluate('(element) => element.innerText', span[1])] or 0,
-                    "category_ids": category_ids,
-                    "embedded_from": "metruyencv.biz",
-                    "embedded_from_url": f"https://metruyencv.biz/truyen/{slug}",
-                    "comic_status": f"{await page.evaluate('(element) => element.innerText', span[0])}"
-                },ensure_ascii=False,indent=4))
-                ad_t = await page.querySelector("div#masthead a#topbox-one")
-                if ad_t:
-                    slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
-                    ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
-                ad_t = await page.querySelector("div#middle-one a#topbox-two")
-                if ad_t:
-                    slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
-                    ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
-                ad_t = await page.querySelector("div#middle-two a#topbox-three")
-                if ad_t:
-                    slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
-                    ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
+            if chap == 0:
+                if not os.path.exists(f"truyen/{slug}/index.json"):
+                    await page.goto(f"https://metruyencv.biz/truyen/{slug}")
+                    title = await page.title()
+                    # description_div = r'<div class="text-gray-600 dark:text-gray-300 py-4 px-2 md:px-1 text-base break-words" bis_skin_checked="1">(.)*</div>'
+                    description_container:ElementHandle | None = await page.querySelector('div.text-gray-600.dark\\:text-gray-300.py-4.px-2.md\\:px-1.text-base.break-words')
+                    description_html = await page.evaluate('(element) => element.innerHTML', description_container)
+                    # description = re.search(description_div,description_html).group(0)
+                    description = clean_html_content(description_html)
+                    section:ElementHandle = await page.querySelector('div.mb-4.mx-auto.text-center.md\\:mx-0.md\\:text-left div.leading-10.md\\:leading-normal.space-x-4')
+                    span:list[ElementHandle] = await section.querySelectorAll('span')
+                    category_ids = []
+                    for s in range(span.__len__()):
+                        if s > 1:
+                            text = await page.evaluate('(element) => element.innerText', span[s])
+                            # print(text)
+                            category_ids.append(category_dict[text])
+                    open(f"truyen/{slug}/index.json",'w',encoding='utf-8').write(json.dumps({
+                        "title": title.replace(" - Metruyencv.biz","").replace("Convert","").replace("\n"," ").strip(),
+                        "description": description,
+                        "author": await page.evaluate('(element) => element.innerText', await page.querySelector("div.mb-4.mx-auto.text-center.md\\:mx-0.md\\:text-left div.mb-6 a.text-gray-500")),
+                        "cover_url": await page.evaluate('(element) => element.src', await page.querySelector("img.w-44.h-60.shadow-lg.rounded.mx-auto")),
+                        "main_category_id": category_dict[await page.evaluate('(element) => element.innerText', span[1])] or 0,
+                        "category_ids": category_ids,
+                        "embedded_from": "metruyencv.biz",
+                        "embedded_from_url": f"https://metruyencv.biz/truyen/{slug}",
+                        "comic_status": f"{await page.evaluate('(element) => element.innerText', span[0])}"
+                    },ensure_ascii=False,indent=4))
+                    ad_t = await page.querySelector("div#masthead a#topbox-one")
+                    if ad_t:
+                        slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
+                        ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
+                    ad_t = await page.querySelector("div#middle-one a#topbox-two")
+                    if ad_t:
+                        slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
+                        ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
+                    ad_t = await page.querySelector("div#middle-two a#topbox-three")
+                    if ad_t:
+                        slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
+                        ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
+                    await page.close()
+                    open(f"truyen/ads/{slug}.json",'w',encoding='utf-8').write(json.dumps(ads,ensure_ascii=False,indent=4))
+                    return
                 await page.close()
-                open(f"truyen/ads/{slug}.json",'w',encoding='utf-8').write(json.dumps(ads,ensure_ascii=False,indent=4))
                 return
             # Step 3: Navigate to the webpage
             await page.goto(f"https://metruyencv.biz/truyen/{slug}/chuong-{chap}")
+            title = await page.title()
+            if title.lower().find("not found") >= 0:
+                await page.close()
+                return
             # Step 4: Locate the element with id "chapter-content"
             container:ElementHandle | None = await page.querySelector('#chapter-content') 
 
@@ -229,7 +251,7 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
                 print(f"{chap} Chapter not found or too short.")
                 await page.close()
                 return
-            open(f"truyen/{slug}/chap-{chap}",'w',encoding='utf-8').write(clean_html_content(text))
+            open(f"truyen/{slug}/chap-{chap}.txt",'w',encoding='utf-8').write(clean_html_content(text))
         except Exception as e:
             print(f"{chap} An error occurred: {e}")
         await page.close()
@@ -241,10 +263,13 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
         task = []
         for i in range(from_chap,from_chap+step):
             task.append(run(url,i))
-            if len(task) == 25:
+            if len(task) == 40:
                 print(f"Processing up to chapter {i}...")
                 await asyncio.gather(*task)
                 task.clear()
+        if task.__len__() > 0:
+            print(f"Processing remaining chapters up to {from_chap+step}...")
+            await asyncio.gather(*task)
     await browser.close()
 list_comic = list(json.load(open("metruyencv.biz.crawl_list.json",'r',encoding='utf-8')))
-asyncio.run(scrape(list_comic,0,250))
+asyncio.run(scrape(list_comic,0,150))
