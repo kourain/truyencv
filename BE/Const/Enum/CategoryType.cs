@@ -6,5 +6,6 @@ public enum CategoryType
     [Description("Thể loại")] Genre = 1,
     [Description("Bối cảnh thế giới")] WorldTheme = 2,
     [Description("Nhân vật chính")] MainCharacter = 3,
-    [Description("Trường phái")] Class = 4
+    [Description("Trường phái")] Class = 4,
+    [Description("Góc nhìn")] View = 5
 }
