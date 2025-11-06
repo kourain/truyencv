@@ -209,47 +209,76 @@ const AdminChaptersPage = () => {
         ) : chaptersQuery.isError ? (
           <p className="text-sm text-red-300">Không thể tải danh sách chương. Vui lòng kiểm tra lại ID truyện.</p>
         ) : chaptersQuery.data && chaptersQuery.data.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {chaptersQuery.data.map((chapter) => (
-              <article key={chapter.id} className="flex flex-col gap-3 rounded-2xl border border-surface-muted bg-surface/70 p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h4 className="text-lg font-semibold text-primary-foreground">Chương {chapter.chapter}</h4>
-                    <p className="text-xs uppercase tracking-wide text-surface-foreground/60">ID: {chapter.id}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingChapterId(chapter.id);
-                        setFormState({ comic_id: chapter.comic_id, chapter: chapter.chapter, content: chapter.content });
-                      }}
-                      className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+          <div className="overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80 shadow">
+            <table className="min-w-full text-sm">
+              <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
+                <tr>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold">Chương</th>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold">ID chương</th>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold">Nội dung</th>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold">Tạo lúc</th>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold">Cập nhật</th>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
+                {chaptersQuery.data.map((chapter) => {
+                  const isEditing = editingChapterId === chapter.id;
+                  const isDeleting = deleteMutation.isPending && deleteMutation.variables === chapter.id;
+
+                  return (
+                    <tr
+                      key={chapter.id}
+                      className={`transition ${
+                        isEditing ? "bg-primary/15 text-primary-foreground" : "hover:bg-surface-muted/40"
+                      }`}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
-                      Sửa
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteMutation.mutate(chapter.id)}
-                      className="inline-flex items-center gap-1 rounded-full border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-                    >
-                      {deleteMutation.isPending ? (
-                        <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-                <p className="line-clamp-4 text-sm text-surface-foreground/70">{chapter.content}</p>
-                <div className="flex items-center justify-between text-xs text-surface-foreground/60">
-                  <span>Tạo lúc: {new Date(chapter.created_at).toLocaleString()}</span>
-                  <span>Cập nhật: {new Date(chapter.updated_at).toLocaleString()}</span>
-                </div>
-              </article>
-            ))}
+                      <td className="px-4 py-3 text-xs text-surface-foreground/70">#{chapter.chapter}</td>
+                      <td className="px-4 py-3 text-xs text-surface-foreground/70">#{chapter.id}</td>
+                      <td className="px-4 py-3 text-xs text-surface-foreground/70">
+                        <p className="line-clamp-3" title={chapter.content}>
+                          {chapter.content}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-surface-foreground/60">
+                        {new Date(chapter.created_at).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-surface-foreground/60">
+                        {new Date(chapter.updated_at).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingChapterId(chapter.id);
+                              setFormState({ comic_id: chapter.comic_id, chapter: chapter.chapter, content: chapter.content });
+                            }}
+                            className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            Sửa
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteMutation.mutate(chapter.id)}
+                            className="inline-flex items-center gap-2 rounded-md border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10 disabled:opacity-60"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                            Xóa
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ) : (
           <p className="text-sm text-surface-foreground/60">Truyện chưa có chương nào.</p>

@@ -54,7 +54,7 @@ namespace TruyenCV
                     }),
                 StringComparer.OrdinalIgnoreCase);
 
-            Log.Fatal("CORS Allowed Origins: " + string.Join(", ", allowedOriginSet));
+            Log.Warning("CORS Allowed Origins: " + string.Join(", ", allowedOriginSet));
             builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(policy =>

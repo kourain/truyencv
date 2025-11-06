@@ -11,17 +11,20 @@ public class ComicReadingService : IComicReadingService
     private readonly IComicChapterService _comicChapterService;
     private readonly IComicRecommendService _comicRecommendService;
     private readonly IUserComicUnlockHistoryService _unlockHistoryService;
+    private readonly IUserComicReadHistoryService _readHistoryService;
 
     public ComicReadingService(
         IComicService comicService,
         IComicChapterService comicChapterService,
         IComicRecommendService comicRecommendService,
-        IUserComicUnlockHistoryService unlockHistoryService)
+        IUserComicUnlockHistoryService unlockHistoryService,
+        IUserComicReadHistoryService readHistoryService)
     {
         _comicService = comicService;
         _comicChapterService = comicChapterService;
         _comicRecommendService = comicRecommendService;
         _unlockHistoryService = unlockHistoryService;
+        _readHistoryService = readHistoryService;
     }
 
     public async Task<ComicChapterReadResponse?> GetChapterAsync(string slug, int chapterNumber, long userId)
@@ -104,5 +107,21 @@ public class ComicReadingService : IComicReadingService
             year = currentMonthRecommend?.year ?? now.Year,
             has_recommended = hasRecommended
         };
+    }
+
+    public async Task RecordChapterReadAsync(long comicId, int chapterNumber, long userId)
+    {
+        if (chapterNumber <= 0)
+        {
+            throw new UserRequestException("Số chương không hợp lệ");
+        }
+        var chapter = await _comicChapterService.GetChapterByComicIdAndChapterAsync(comicId, chapterNumber);
+        if (chapter == null)
+        {
+            return;
+        }
+
+        var chapterId = chapter.id.ToSnowflakeId(nameof(chapter.id));
+        await _readHistoryService.UpsertReadHistoryAsync(userId, comicId, chapterId);
     }
 }

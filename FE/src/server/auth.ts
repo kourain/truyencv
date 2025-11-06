@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 
 import { authCookieNames } from "@helpers/authTokens";
 import { verifyAccessToken } from "./jwt";
+import { fetchAuthViaPing } from "@services/health.service";
 
 export const parseJwtToken = async (token: string | null): Promise<ServerAuthState> => {
   if (!token) {
@@ -52,6 +53,6 @@ export const parseJwtToken = async (token: string | null): Promise<ServerAuthSta
 }
 export const getServerAuthState = async (): Promise<ServerAuthState> => {
   const cookieStore = await cookies();
-  const token = cookieStore.get(authCookieNames.access)?.value ?? null;
+  const token = cookieStore.get(authCookieNames.access)?.value ?? await fetchAuthViaPing();
   return await parseJwtToken(token);
 };

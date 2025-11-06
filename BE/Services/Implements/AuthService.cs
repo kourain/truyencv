@@ -71,8 +71,8 @@ namespace TruyenCV.Services
                 .Where(rt => rt.token == refreshTokenValue)
                 .Include(rt => rt.User)
                 .Where(rt => rt.User.deleted_at == null && rt.User.is_banned == false)
-                .Include(rt => rt.User.Roles.Where(role => role.deleted_at == null && role.revoked_at < DateTime.UtcNow))
-                .Include(rt => rt.User.Permissions.Where(permission => permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow))
+                .Include(rt => rt.User.Roles.Where(role => role.deleted_at == null && (role.revoked_at == null || role.revoked_at < DateTime.UtcNow)))
+                .Include(rt => rt.User.Permissions.Where(permission => permission.deleted_at == null && (permission.revoked_at == null || permission.revoked_at < DateTime.UtcNow)))
                 .FirstOrDefaultAsync();
 
             if (refreshToken == null || !refreshToken.is_active)
@@ -132,7 +132,7 @@ namespace TruyenCV.Services
         public async Task<List<string>> GetUserRolesAsync(long userId)
         {
             return await _context.UserHasRoles
-                .Where(role => role.user_id == userId && role.deleted_at == null && role.revoked_at < DateTime.UtcNow)
+                .Where(role => role.user_id == userId && role.deleted_at == null && (role.revoked_at == null || role.revoked_at < DateTime.UtcNow))
                 .Select(role => role.role_name.ToString())
                 .ToListAsync();
         }
@@ -140,7 +140,7 @@ namespace TruyenCV.Services
         public async Task<List<string>> GetUserPermissionsAsync(long userId)
         {
             return await _context.UserHasPermissions
-                .Where(permission => permission.user_id == userId && permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow)
+                .Where(permission => permission.user_id == userId && permission.deleted_at == null && (permission.revoked_at == null || permission.revoked_at < DateTime.UtcNow))
                 .Select(permission => permission.permissions.ToString())
                 .ToListAsync();
         }

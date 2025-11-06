@@ -5,6 +5,7 @@ const resource = "/admin/User";
 export type UserListParams = {
 	offset?: number;
 	limit?: number;
+	keyword?: string;
 };
 
 export const fetchUsers = async (params: UserListParams = {}) => {
@@ -27,6 +28,26 @@ const createMockUsers = (limit = 6): UserResponse[] => {
 	}));
 };
 
+const filterMockUsers = (users: UserResponse[], keyword?: string) => {
+	if (!keyword) {
+		return users;
+	}
+
+	const normalized = keyword.trim().toLowerCase();
+
+	return users.filter((user) => {
+		const email = user.email?.toLowerCase() ?? "";
+		const id = user.id.toLowerCase();
+		const name = (user.full_name ?? user.name ?? "").toLowerCase();
+
+		return (
+			email.includes(normalized) ||
+			id === normalized ||
+			name.includes(normalized)
+		);
+	});
+};
+
 export const fetchUsersWithFallback = async (params: UserListParams = {}) => {
 	try {
 		const data = await fetchUsers(params);
@@ -36,8 +57,11 @@ export const fetchUsersWithFallback = async (params: UserListParams = {}) => {
 			console.warn("[ADMIN][UserService] Sử dụng dữ liệu mock do lỗi API", error);
 		}
 
+		const mock = createMockUsers(params.limit ?? 6);
+		const filtered = filterMockUsers(mock, params.keyword);
+
 		return {
-			data: createMockUsers(params.limit ?? 6),
+			data: filtered.slice(0, params.limit ?? filtered.length),
 			isMock: true
 		};
 	}

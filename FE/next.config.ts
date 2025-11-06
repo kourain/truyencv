@@ -52,7 +52,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     ...FE_ADMIN.split(","),
     ...FE_USER.split(",")
-  ]
+  ],
+  productionBrowserSourceMaps : false,
 };
 
 export default nextConfig;

@@ -18,7 +18,6 @@ const DEFAULT_LIMIT = 20;
 type RoleFormState = {
   role_name: string;
   user_id: string | null;
-  assigned_by: string | null;
 };
 
 type FilterState = {
@@ -28,8 +27,7 @@ type FilterState = {
 
 const initialForm: RoleFormState = {
   role_name: "",
-  user_id: null,
-  assigned_by: null
+  user_id: null
 };
 
 const initialFilter: FilterState = {
@@ -64,8 +62,8 @@ const AdminUserRolesPage = () => {
     mutationFn: () =>
       createUserRole({
         role_name: formState.role_name,
-  user_id: formState.user_id!,
-  assigned_by: formState.assigned_by ?? formState.user_id!
+        user_id: formState.user_id!,
+        assigned_by: formState.user_id!
       }),
     onSuccess: () => {
       invalidateRoles();
@@ -78,8 +76,8 @@ const AdminUserRolesPage = () => {
       updateUserRole({
         id: editingRoleId!,
         role_name: formState.role_name,
-  user_id: formState.user_id!,
-  assigned_by: formState.assigned_by ?? formState.user_id!
+        user_id: formState.user_id!,
+        assigned_by: formState.user_id!
       }),
     onSuccess: () => {
       invalidateRoles();
@@ -167,19 +165,6 @@ const AdminUserRolesPage = () => {
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
               />
             </label>
-            <label className="space-y-2 text-sm">
-              <span className="font-medium text-primary-foreground">ID người gán quyền (tùy chọn)</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={formState.assigned_by ?? ""}
-                onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, assigned_by: event.target.value.trim() ? event.target.value.trim() : null }))
-                }
-                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-              />
-            </label>
           </div>
           <div className="flex justify-end gap-3">
             {editingRoleId && (
@@ -212,7 +197,7 @@ const AdminUserRolesPage = () => {
             <button
               type="button"
               onClick={() => setOffset((prev) => Math.max(prev - DEFAULT_LIMIT, 0))}
-              className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
+              className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground disabled:opacity-60"
               disabled={offset === 0}
             >
               Trang trước
@@ -223,57 +208,100 @@ const AdminUserRolesPage = () => {
             <button
               type="button"
               onClick={() => setOffset((prev) => prev + DEFAULT_LIMIT)}
-              className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
+              className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
             >
               Trang tiếp
             </button>
           </div>
         </header>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {rolesQuery.isLoading && <p className="text-sm text-surface-foreground/60">Đang tải dữ liệu...</p>}
-          {rolesQuery.isError && <p className="text-sm text-red-300">Không thể tải danh sách phân quyền.</p>}
-          {rolesQuery.data?.map((role) => (
-            <article key={role.id} className="flex flex-col gap-3 rounded-2xl border border-surface-muted bg-surface/70 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h4 className="text-lg font-semibold text-primary-foreground">{role.role_name}</h4>
-                  <p className="text-xs uppercase tracking-wide text-surface-foreground/60">User #{role.user_id}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingRoleId(role.id);
-                      setFormState({
-                        role_name: role.role_name,
-                        user_id: role.user_id,
-                        assigned_by: role.assigned_by
-                      });
-                    }}
-                    className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+        <div className="overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80 shadow">
+          <table className="min-w-full text-sm">
+            <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">#</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Role</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">User ID</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Gán bởi</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Tạo lúc</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Hành động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
+              {rolesQuery.isLoading && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                    Đang tải dữ liệu phân quyền...
+                  </td>
+                </tr>
+              )}
+              {rolesQuery.isError && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-xs text-red-300">
+                    Không thể tải danh sách phân quyền.
+                  </td>
+                </tr>
+              )}
+              {!rolesQuery.isLoading && !rolesQuery.isError && rolesQuery.data && rolesQuery.data.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                    Chưa có phân quyền nào.
+                  </td>
+                </tr>
+              )}
+              {rolesQuery.data?.map((role, index) => {
+                const isEditing = editingRoleId === role.id;
+                const isDeleting = deleteMutation.isPending && deleteMutation.variables === role.id;
+
+                return (
+                  <tr
+                    key={role.id}
+                    className={`transition ${
+                      isEditing ? "bg-primary/15 text-primary-foreground" : "hover:bg-surface-muted/40"
+                    }`}
                   >
-                    <Shield className="h-3.5 w-3.5" />
-                    Sửa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteMutation.mutate(role.id)}
-                    className="inline-flex items-center gap-1 rounded-full border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-                  >
-                    {deleteMutation.isPending ? (
-                      <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
-                    )}
-                    Xóa
-                  </button>
-                </div>
-              </div>
-              <p className="text-xs text-surface-foreground/60">
-                Gán bởi #{role.assigned_by} • {new Date(role.created_at).toLocaleString()}
-              </p>
-            </article>
-          ))}
+                    <td className="px-4 py-3 text-xs text-surface-foreground/60">{offset + index + 1}</td>
+                    <td className="px-4 py-3 font-semibold">{role.role_name}</td>
+                    <td className="px-4 py-3 text-xs">#{role.user_id}</td>
+                    <td className="px-4 py-3 text-xs">#{role.assigned_by}</td>
+                    <td className="px-4 py-3 text-xs text-surface-foreground/60">
+                      {new Date(role.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingRoleId(role.id);
+                            setFormState({
+                              role_name: role.role_name,
+                              user_id: role.user_id
+                            });
+                          }}
+                          className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+                        >
+                          <Shield className="h-3.5 w-3.5" />
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteMutation.mutate(role.id)}
+                          className="inline-flex items-center gap-2 rounded-md border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10 disabled:opacity-60"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -333,19 +361,30 @@ const AdminUserRolesPage = () => {
           ) : filterQuery.isError ? (
             <p className="mt-3 text-sm text-red-300">Không thể tải dữ liệu theo điều kiện lọc.</p>
           ) : filterQuery.data && filterQuery.data.length > 0 ? (
-            <ul className="mt-3 space-y-3 text-sm text-surface-foreground/80">
-              {(filterQuery.data as UserHasRoleResponse[]).map((item) => (
-                <li key={item.id} className="rounded-xl border border-surface-muted/60 bg-surface px-4 py-3">
-                  <p className="font-semibold text-primary-foreground">Role: {item.role_name}</p>
-                  <p className="text-xs text-surface-foreground/60">
-                    User #{item.user_id} • Gán bởi #{item.assigned_by}
-                  </p>
-                  <p className="text-xs text-surface-foreground/60">
-                    Tạo lúc: {new Date(item.created_at).toLocaleString()}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-3 overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80">
+              <table className="min-w-full text-sm">
+                <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
+                  <tr>
+                    <th scope="col" className="px-4 py-2 text-left font-semibold">Role</th>
+                    <th scope="col" className="px-4 py-2 text-left font-semibold">User ID</th>
+                    <th scope="col" className="px-4 py-2 text-left font-semibold">Gán bởi</th>
+                    <th scope="col" className="px-4 py-2 text-left font-semibold">Tạo lúc</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
+                  {(filterQuery.data as UserHasRoleResponse[]).map((item) => (
+                    <tr key={item.id}>
+                      <td className="px-4 py-2 font-semibold text-primary-foreground">{item.role_name}</td>
+                      <td className="px-4 py-2 text-xs text-surface-foreground/70">#{item.user_id}</td>
+                      <td className="px-4 py-2 text-xs text-surface-foreground/70">#{item.assigned_by}</td>
+                      <td className="px-4 py-2 text-xs text-surface-foreground/60">
+                        {new Date(item.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p className="mt-3 text-sm text-surface-foreground/60">Không có dữ liệu phù hợp.</p>
           )}

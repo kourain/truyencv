@@ -97,6 +97,8 @@ interface UserProfileResponse {
 	read_chapter_count: string;
 	bookmark_count: string;
 	coin: string;
+	key: string;
+	active_subscription_name?: string | null;
 	roles: string[];
 	permissions: string[];
 };

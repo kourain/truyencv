@@ -167,7 +167,7 @@ public class ComicService : IComicService
         return comics.Select(c => c.ToRespDTO());
     }
 
-    public async Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest)
+    public async Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest, long embedded_by)
     {
         comicRequest.name = comicRequest.name?.Trim();
         if (string.IsNullOrWhiteSpace(comicRequest.slug))
@@ -180,7 +180,7 @@ public class ComicService : IComicService
 
         // Chuyển đổi từ DTO sang Entity
         var comic = comicRequest.ToEntity();
-
+        comic.embedded_by = embedded_by;
         var embeddingValues = await _embeddingService.CreateEmbeddingAsync($"{comic.name}, {comic.description}");
         if (embeddingValues is { Length: > 0 })
         {

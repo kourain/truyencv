@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,26 +20,25 @@ namespace TruyenCV.Middleware
 			{
 				Console.WriteLine($"{route.Key}: {route.Value}");
 			}
-			//EG: 
-			// area: V2
-			// action: GetById
-			// controller: User
-			// id: 1
-			switch (context.Request.RouteValues["area"])
+
+			var hasArea = context.Request.RouteValues.TryGetValue("area", out var areaValue);
+			var area = hasArea ? areaValue?.ToString() : null;
+
+			switch (area)
 			{
-				case "V1":
-					// Xử lý cho area V1
-					break;
-
-				case "V2":
-					// Xử lý cho area V1
-					break;
-
+				case null:
+					await _next(context);
+					return;
+				case "Admin":
+					await _next(context);
+					return;
+				case "User":
+					await _next(context);
+					return;
 				default:
-					context.Response.StatusCode = 404;
-					break;
+					context.Response.StatusCode = StatusCodes.Status404NotFound;
+					return;
 			}
-			await _next(context);
 		}
 	}
 }

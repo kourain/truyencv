@@ -32,11 +32,47 @@ namespace TruyenCV.Services
             return user?.ToRespDTO();
         }
 
-        public async Task<IEnumerable<UserResponse>> GetUsersAsync(int offset, int limit)
+        public async Task<IEnumerable<UserResponse>> GetUsersAsync(int offset, int limit, string? keyword = null)
         {
-            var users = await _userRepository.GetPagedAsync(offset, limit);
-            Serilog.Log.Error("Fetched {Count} users from database", users.Count());
+            offset = Math.Max(offset, 0);
+            limit = Math.Clamp(limit, 1, 100);
+
+            var query = _dbcontext.Users
+                .AsNoTracking()
+                .Where(u => u.deleted_at == null);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var sanitized = SanitizeKeyword(keyword);
+                var pattern = $"%{sanitized}%";
+                var hasNumericId = long.TryParse(keyword, out var numericId);
+
+                query = query.Where(u =>
+                    (hasNumericId && u.id == numericId)
+                    || EF.Functions.ILike(u.email, pattern, "\\")
+                    || EF.Functions.ILike(u.name, pattern, "\\"));
+            }
+
+            query = query
+                .OrderByDescending(u => u.created_at)
+                .ThenBy(u => u.id);
+
+            var users = await query
+                .Skip(offset)
+                .Take(limit)
+                .ToListAsync();
+
+            Serilog.Log.Information("Fetched {Count} users (offset: {Offset}, limit: {Limit}, keyword: {Keyword})", users.Count, offset, limit, keyword);
+
             return users.Select(u => u.ToRespDTO());
+        }
+
+        private static string SanitizeKeyword(string keyword)
+        {
+            return keyword.Trim()
+                .Replace("\\", "\\\\")
+                .Replace("%", "\\%")
+                .Replace("_", "\\_");
         }
 
         public async Task<UserResponse> CreateUserAsync(CreateUserRequest userRequest)
@@ -144,6 +180,8 @@ namespace TruyenCV.Services
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .Include(u => u.Roles.Where(role => role.deleted_at == null))
                 .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                .Include(u => u.Subscriptions.Where(subscription => subscription.deleted_at == null))
+                    .ThenInclude(subscription => subscription.Subscription)
                 .FirstOrDefaultAsync();
 
             return user?.ToProfileDTO();
