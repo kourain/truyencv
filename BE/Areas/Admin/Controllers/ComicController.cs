@@ -30,7 +30,7 @@ public sealed class ComicController : ControllerBase
 		var comic = await _comicService.GetComicByIdAsync(id);
 		if (comic == null)
 			return NotFound(new { message = "Không tìm thấy comic" });
-		
+
 		return Ok(comic);
 	}
 
@@ -43,7 +43,7 @@ public sealed class ComicController : ControllerBase
 		var comic = await _comicService.GetComicBySlugAsync(slug);
 		if (comic == null)
 			return NotFound(new { message = "Không tìm thấy comic" });
-		
+
 		return Ok(comic);
 	}
 
@@ -95,9 +95,15 @@ public sealed class ComicController : ControllerBase
 	{
 		try
 		{
-			var usId = User.GetUserId();
-			var comic = await _comicService.CreateComicAsync(request, usId.Value);
-			return CreatedAtAction(nameof(GetById), new { id = comic.id }, comic);
+			if (User.GetUserId() is long usId)
+			{
+				var comic = await _comicService.CreateComicAsync(request, usId);
+				return CreatedAtAction(nameof(GetById), new { id = comic.id }, comic);
+			}
+			else
+			{
+				return Unauthorized(new { message = "Không xác định được người dùng" });
+			}
 		}
 		catch (Exception ex)
 		{
@@ -120,7 +126,7 @@ public sealed class ComicController : ControllerBase
 			var comic = await _comicService.UpdateComicAsync(requestId, request);
 			if (comic == null)
 				return NotFound(new { message = "Không tìm thấy comic" });
-			
+
 			return Ok(comic);
 		}
 		catch (Exception ex)
@@ -138,7 +144,7 @@ public sealed class ComicController : ControllerBase
 		var result = await _comicService.DeleteComicAsync(id);
 		if (!result)
 			return NotFound(new { message = "Không tìm thấy comic" });
-		
+
 		return Ok(new { message = "Xóa comic thành công" });
 	}
 }
