@@ -6,7 +6,7 @@ import { Info } from "lucide-react";
 import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
-import AdvertisementBanner from "@components/user/comic/AdvertisementBanner";
+import AdsBanner from "@components/user/comic/AdsBanner";
 import AuthorOtherWorks from "@components/user/comic/AuthorOtherWorks";
 import { useUserComicChapterQuery } from "@services/user/comic-chapter.service";
 import { useUserComicDetailQuery } from "@services/user/comic-detail.service";
@@ -133,7 +133,7 @@ const ComicChapterPage = () => {
   return (
     <>
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-10">
-        <AdvertisementBanner
+        <AdsBanner
           advertisement={advertisementPrimary}
           variant="primary"
           isLoading={isLoading}
@@ -184,7 +184,7 @@ const ComicChapterPage = () => {
           isLoading={isLoading}
         />
 
-        <AdvertisementBanner
+        <AdsBanner
           advertisement={advertisementSecondary}
           variant="secondary"
           isLoading={isLoading}

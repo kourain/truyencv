@@ -32,9 +32,9 @@ const HistorySection = ({ items, isLoading }: HistorySectionProps) => (
 
 const HistoryCard = ({ history }: { history: UserHistoryItem }) => (
   <div className="group flex gap-4 rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
-    <div className="relative h-24 w-20 overflow-hidden rounded-2xl bg-surface-muted/60">
+    <div className="relative h-24 w-20 overflow-hidden bg-surface-muted/60">
       {history.cover_url ? (
-        <img src={history.cover_url} alt={history.comic_title} className="h-full w-full object-cover" loading="lazy" />
+        <img src={history.cover_url} alt={history.comic_title} className="h-full w-full rounded-sm object-cover" loading="lazy" />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-xs text-surface-foreground/60">No cover</div>
       )}

@@ -7,6 +7,7 @@ using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Serilog;
 
 namespace TruyenCV.Services
 {
@@ -217,15 +218,17 @@ namespace TruyenCV.Services
         {
             var now = DateTime.UtcNow;
 
-            return await _dbcontext.Users
+            var us = await _dbcontext.Users
                 .AsSplitQuery()
                 .Where(u => u.id == userId && u.deleted_at == null && u.is_banned == false)
-                .Include(u => u.Roles.Where(role => role.deleted_at == null))
+                .Include(u => u.Roles.Where(role => role.deleted_at == null && role.revoked_at == null))
                 .Include(u => u.Permissions.Where(permission =>
                     permission.deleted_at == null &&
                     permission.revoked_at == null &&
                     (permission.revoke_until == null || permission.revoke_until < now)))
                 .FirstOrDefaultAsync();
+            Log.Warning("GetActiveUserWithAccessAsync fetched user: {@User}", us);
+            return us;
         }
     }
 }

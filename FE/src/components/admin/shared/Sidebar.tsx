@@ -63,6 +63,9 @@ const navigationItems: navigationItem[] = [
 
 const AdminSidebar = () => {
   const pathname = usePathname();
+  if (pathname.match(/login|register|reset-password|verify-email/)) {
+    return null;
+  }
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
