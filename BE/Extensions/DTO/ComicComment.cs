@@ -38,6 +38,7 @@ public static partial class Extensions
 			reply_id = commentEntity.reply_id?.ToString(),
 			is_rate = commentEntity.is_rate,
 			rate_star = commentEntity.rate_star,
+			is_hidden = commentEntity.is_hidden,
 			created_at = commentEntity.created_at,
 			updated_at = commentEntity.updated_at
 		};

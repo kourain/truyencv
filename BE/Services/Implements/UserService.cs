@@ -180,6 +180,8 @@ namespace TruyenCV.Services
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .Include(u => u.Roles.Where(role => role.deleted_at == null))
                 .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                .Include(u => u.Subscriptions.Where(subscription => subscription.deleted_at == null))
+                    .ThenInclude(subscription => subscription.Subscription)
                 .FirstOrDefaultAsync();
 
             return user?.ToProfileDTO();

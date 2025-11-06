@@ -20,9 +20,9 @@ public class PaymentHistoryController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetList([FromQuery] int offset = 0, [FromQuery] int limit = 50)
+    public async Task<IActionResult> GetList([FromQuery] int offset = 0, [FromQuery] int limit = 50, [FromQuery] string? keyword = null)
     {
-        var histories = await _paymentHistoryService.GetAsync(offset, limit);
+        var histories = await _paymentHistoryService.GetAsync(offset, limit, keyword);
         return Ok(histories);
     }
 
@@ -53,6 +53,13 @@ public class PaymentHistoryController : ControllerBase
 
         var histories = await _paymentHistoryService.GetByUserIdAsync(parsedUserId);
         return Ok(histories);
+    }
+
+    [HttpGet("revenue/summary")]
+    public async Task<IActionResult> GetRevenueSummary([FromQuery] int days = 60)
+    {
+        var summary = await _paymentHistoryService.GetRevenueSummaryAsync(days);
+        return Ok(summary);
     }
 
     [HttpPost]

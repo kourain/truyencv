@@ -11,6 +11,7 @@ public class ComicCommentResponse
 	public string? reply_id { get; set; }
 	public bool is_rate { get; set; }
 	public int? rate_star { get; set; }
+	public bool is_hidden { get; set; }
 	public DateTime created_at { get; set; }
 	public DateTime updated_at { get; set; }
 }

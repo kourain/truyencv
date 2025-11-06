@@ -1,4 +1,4 @@
-export interface CreateSubscriptionRequest {
+interface CreateSubscriptionRequest {
 	code: string;
 	name: string;
 	description?: string | null;
@@ -7,7 +7,7 @@ export interface CreateSubscriptionRequest {
 	is_active?: boolean;
 }
 
-export interface UpdateSubscriptionRequest {
+interface UpdateSubscriptionRequest {
 	id: string;
 	code: string;
 	name: string;
@@ -17,7 +17,7 @@ export interface UpdateSubscriptionRequest {
 	is_active: boolean;
 }
 
-export interface SubscriptionResponse {
+interface SubscriptionResponse {
 	id: string;
 	code: string;
 	name: string;

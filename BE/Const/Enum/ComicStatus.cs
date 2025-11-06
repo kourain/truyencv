@@ -10,4 +10,6 @@ public enum ComicStatus
     Stopped = 3,
     [Display(Name = "Completed")]
     Completed = 4,
+    [Display(Name = "Banned")]
+    Banned = 5,
 }
