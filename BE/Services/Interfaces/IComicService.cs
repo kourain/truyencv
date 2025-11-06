@@ -53,6 +53,18 @@ public interface IComicService
 	Task<IEnumerable<ComicResponse>> GetComicsByAuthorAsync(string author);
 
 	/// <summary>
+	/// Lấy danh sách truyện được nhúng bởi một user (embedded_by)
+	/// </summary>
+	/// <param name="embeddedBy">ID user nhúng (long)</param>
+	/// <returns>Danh sách comic</returns>
+	Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedByAsync(long embeddedBy);
+
+	/// <summary>
+	/// Lấy danh sách truyện được nhúng bởi cùng user với truyện có slug
+	/// </summary>
+	Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedBySlugAsync(string slug);
+
+	/// <summary>
 	/// Lấy danh sách comic theo trạng thái
 	/// </summary>
 	/// <param name="status">Trạng thái comic</param>

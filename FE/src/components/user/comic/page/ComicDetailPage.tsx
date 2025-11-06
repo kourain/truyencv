@@ -32,7 +32,7 @@ const ComicDetailPage = () => {
 
       <StoryIntroduction introduction={data?.introduction} isLoading={isLoading} />
 
-      <AuthorOtherWorks items={data?.related_by_author} authorName={data?.comic.author_name} isLoading={isLoading} />
+      <AuthorOtherWorks items={data?.related_by_author} authorName={data?.comic.author_name} slug={slug} isLoading={isLoading} />
 
       <AdsBanner advertisement={data?.advertisements.tertiary} variant="tertiary" isLoading={isLoading} />
 
@@ -40,6 +40,8 @@ const ComicDetailPage = () => {
         highlights={data?.highlights}
         reviews={data?.reviews}
         discussions={data?.discussions}
+        comicId={data?.comic?.id}
+        slug={slug}
         isLoading={isLoading}
       />
     </main>

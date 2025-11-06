@@ -39,6 +39,14 @@ public sealed class ComicController : ControllerBase
         }
         return Ok(result);
     }
+
+    [AllowAnonymous]
+    [HttpGet("/{slug}/embedded")]
+    public async Task<IActionResult> GetComicsEmbeddedBySameUser([FromRoute] string slug)
+    {
+        var related = await _comicService.GetComicsByEmbeddedBySlugAsync(slug);
+        return Ok(related);
+    }
     [HttpGet("{slug}/chapters/{chapterNumber:int}")]
     public async Task<IActionResult> GetChapter(string slug, int chapterNumber)
     {
