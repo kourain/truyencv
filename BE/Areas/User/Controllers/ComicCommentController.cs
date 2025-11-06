@@ -18,6 +18,19 @@ public sealed class ComicCommentController : ControllerBase
         _commentService = commentService;
     }
 
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMyComments()
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new { message = "Không thể xác định người dùng" });
+        }
+
+        var comments = await _commentService.GetCommentsByUserIdAsync(userId.Value);
+        return Ok(comments);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateComicCommentRequest request)
     {
