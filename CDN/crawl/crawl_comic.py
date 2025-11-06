@@ -1,7 +1,9 @@
 import json,os,re,asyncio
 from pyppeteer import launch
 from pyppeteer.element_handle import ElementHandle
-cookie = json.loads(open("metruyencv.biz.cookies.json",'r',encoding='utf-8').read())
+raw_json = open("metruyencv.biz.cookies.json",'r',encoding='utf-8').read()
+js1 = json.loads(raw_json)
+# js2 = json.loads(raw_json.replace("metruyencv.biz","metruyencv.com"))
 
 category_dict = {
     "Tiên Hiệp" : 1001,
@@ -165,25 +167,30 @@ def clean_html_content(html):
 ads = {}
 cookie = json.loads(open("metruyencv.biz.cookies.json",'r',encoding='utf-8').read())
 import asyncio
-
+URLS = [
+    "https://metruyencv.biz",
+    "https://metruyencv.com"
+]
 async def scrape(urls:list[str],from_chap:int,step:int=10):
     browser = await launch(headless=False, executablePath='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
     os.makedirs("truyen",exist_ok=True)
 
-    async def run(slug,chap):
+    async def run(slug,chap,url=0):
         if os.path.exists(f"truyen/{slug}/chap-{chap}"):
             os.renames(f"truyen/{slug}/chap-{chap}",f"truyen/{slug}/chap-{chap}.txt")
             return
         if os.path.exists(f"truyen/{slug}/chap-{chap}.txt"):
             return
         page = await browser.newPage()
-        await page.setCookie(*cookie)
+        # page.setDefaultNavigationTimeout(60000)  # 60 giây
+        # await page.setCookie(*(cookie[url]))
+        await page.setCookie(*js1)
         # Bật request interception
         await page.setRequestInterception(True)
         
         async def block_resources(request):
             # Chặn image, media, font
-            if request.resourceType in ['image', 'media', 'font']:
+            if request.resourceType in ['image', 'media', 'font', 'stylesheet']:
                 await request.abort()
             else:
                 await request.continue_()
@@ -194,7 +201,7 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
             # Step 2: Create a new page in the browser
             if chap == 0:
                 if not os.path.exists(f"truyen/{slug}/index.json"):
-                    await page.goto(f"https://metruyencv.biz/truyen/{slug}")
+                    await page.goto(f"{URLS[url]}/truyen/{slug}")
                     title = await page.title()
                     # description_div = r'<div class="text-gray-600 dark:text-gray-300 py-4 px-2 md:px-1 text-base break-words" bis_skin_checked="1">(.)*</div>'
                     description_container:ElementHandle | None = await page.querySelector('div.text-gray-600.dark\\:text-gray-300.py-4.px-2.md\\:px-1.text-base.break-words')
@@ -216,8 +223,8 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
                         "cover_url": await page.evaluate('(element) => element.src', await page.querySelector("img.w-44.h-60.shadow-lg.rounded.mx-auto")),
                         "main_category_id": category_dict[await page.evaluate('(element) => element.innerText', span[1])] or 0,
                         "category_ids": category_ids,
-                        "embedded_from": "metruyencv.biz",
-                        "embedded_from_url": f"https://metruyencv.biz/truyen/{slug}",
+                        "embedded_from": URLS[url],
+                        "embedded_from_url": f"{URLS[url]}/truyen/{slug}",
                         "comic_status": f"{await page.evaluate('(element) => element.innerText', span[0])}"
                     },ensure_ascii=False,indent=4))
                     ad_t = await page.querySelector("div#masthead a#topbox-one")
@@ -238,7 +245,7 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
                 await page.close()
                 return
             # Step 3: Navigate to the webpage
-            await page.goto(f"https://metruyencv.biz/truyen/{slug}/chuong-{chap}")
+            await page.goto(f"{URLS[url]}/truyen/{slug}/chuong-{chap}")
             title = await page.title()
             if title.lower().find("not found") >= 0:
                 await page.close()
@@ -250,10 +257,17 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
             if text.__len__() < 1000:
                 print(f"{chap} Chapter not found or too short.")
                 await page.close()
+                if url == 0:
+                    await run(slug,chap,url=1)
                 return
             open(f"truyen/{slug}/chap-{chap}.txt",'w',encoding='utf-8').write(clean_html_content(text))
         except Exception as e:
             print(f"{chap} An error occurred: {e}")
+            await page.close()
+            if url == 0:
+                await run(slug,chap,url=1)
+                pass
+            return
         await page.close()
     os.makedirs("truyen/ads",exist_ok=True)
     for url in urls:
@@ -263,7 +277,7 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
         task = []
         for i in range(from_chap,from_chap+step):
             task.append(run(url,i))
-            if len(task) == 40:
+            if len(task) == 50:
                 print(f"Processing up to chapter {i}...")
                 await asyncio.gather(*task)
                 task.clear()
@@ -272,4 +286,4 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
             await asyncio.gather(*task)
     await browser.close()
 list_comic = list(json.load(open("metruyencv.biz.crawl_list.json",'r',encoding='utf-8')))
-asyncio.run(scrape(list_comic,0,150))
+asyncio.run(scrape(list_comic,0,41))
