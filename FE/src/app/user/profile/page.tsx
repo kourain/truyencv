@@ -21,6 +21,7 @@ import {
   useUserCommentHistoryQuery,
 } from "@services/user/profile.service";
 import { formatNumber, formatRelativeTime } from "@helpers/format";
+import { HistoryStatus } from "@const/enum/history-status";
 
 const ActivityCard = ({ label, value }: { label: string; value: number }) => {
   return (
