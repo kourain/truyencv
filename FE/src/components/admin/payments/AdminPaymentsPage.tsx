@@ -5,8 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, CreditCard, Loader2, RefreshCcw, Search, TrendingUp, Wallet } from "lucide-react";
 
 import { fetchPaymentHistories, fetchPaymentRevenueSummary } from "@services/admin";
-import type { PaymentHistoryResponse, PaymentRevenuePointResponse } from "@types/payment-history";
-
 import RevenueChart from "./RevenueChart";
 import CreatePaymentHistoryForm from "./CreatePaymentHistoryForm";
 

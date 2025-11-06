@@ -47,14 +47,14 @@ public class PaymentHistoryRepository : Repository<PaymentHistory>, IPaymentHist
 
     public async Task<IEnumerable<PaymentHistoryDailyAggregate>> GetDailyRevenueAsync(DateTime fromUtc, DateTime toUtc)
     {
-        return await _dbSet.AsNoTracking()
+        return (await _dbSet.AsNoTracking()
             .Where(history => history.deleted_at == null && history.created_at >= fromUtc && history.created_at <= toUtc)
             .GroupBy(history => history.created_at.Date)
+            .ToListAsync())
             .Select(group => new PaymentHistoryDailyAggregate(
                 group.Key,
                 group.Sum(item => item.amount_coin),
                 group.Sum(item => item.amount_money)))
-            .OrderBy(result => result.Date)
-            .ToListAsync();
+            .OrderBy(result => result.Date);
     }
 }
