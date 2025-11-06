@@ -25,6 +25,9 @@ public class Subscription : BaseEntity
 
     public bool is_active { get; set; } = true;
 
+    // Number of open-ticket credits granted to user when purchasing this subscription
+    public int ticket_added { get; set; } = 0;
+
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
     public virtual ICollection<UserHasSubscription>? UserSubscriptions { get; set; }
 }
