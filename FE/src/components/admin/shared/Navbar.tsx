@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 
 import { LogOut, Settings, Sparkles, User as UserIcon } from "lucide-react";
 import { clearAuthTokens } from "@helpers/authTokens";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@hooks/useAuth";
 
 const AdminNavbar = () => {
@@ -16,7 +16,10 @@ const AdminNavbar = () => {
     await clearAuthTokens();
     window.location.href = "/admin/auth/login";
   }, []);
-
+  const pathname = usePathname();
+  if (pathname.match(/login|register|reset-password|verify-email/)) {
+    return null;
+  }
   const handleOpenSettings = useCallback(() => {
     router.push("/admin/profile");
   }, [router]);
