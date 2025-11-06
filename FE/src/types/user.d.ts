@@ -101,6 +101,15 @@ interface UserProfileResponse {
 	permissions: string[];
 };
 
+interface UserComicReadHistoryResponse {
+	id: string;
+	user_id: string;
+	comic_id: string;
+	chapter_id: string;
+	read_at: string;
+	updated_at: string;
+}
+
 interface ChangePasswordPayload {
 	current_password: string;
 	new_password: string;
