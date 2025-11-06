@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import clsx from "clsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, KeyRound, ListRestart, RefreshCcw, ShieldCheck, Trash2, UserCircle2 } from "lucide-react";
 
@@ -69,43 +70,86 @@ const AdminUsersPage = () => {
             Làm mới
           </button>
         </header>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {usersQuery.isLoading && <p className="text-sm text-surface-foreground/60">Đang tải dữ liệu...</p>}
-          {usersQuery.isError && (
-            <p className="text-sm text-red-300">Không thể tải danh sách người dùng. Vui lòng thử lại.</p>
-          )}
-          {usersQuery.data?.map((user) => (
-            <article
-              key={user.id}
-              className={`flex cursor-pointer flex-col gap-3 rounded-2xl border px-5 py-4 transition ${
-                selectedUserId === user.id
-                  ? "border-primary/60 bg-primary/15"
-                  : "border-surface-muted bg-surface/70 hover:border-primary/40"
-              }`}
-              onClick={() => setSelectedUserId(user.id)}
-            >
-              <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <UserCircle2 className="h-5 w-5" />
-                </span>
-                <div>
-                  <h4 className="text-lg font-semibold text-primary-foreground">{user.full_name || user.name}</h4>
-                  <p className="text-xs text-surface-foreground/60">{user.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs text-surface-foreground/60">
-                <span>ID: {user.id}</span>
-                <span>Tạo ngày {new Date(user.created_at).toLocaleDateString()}</span>
-              </div>
-            </article>
-          ))}
+        <div className="overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80 shadow">
+          <table className="min-w-full text-sm">
+            <thead className="bg-surface-muted/50 text-xs uppercase tracking-wide text-surface-foreground/60">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">#</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Tài khoản</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Email</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Ngày tạo</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-muted/40">
+              {usersQuery.isLoading && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                    Đang tải dữ liệu người dùng...
+                  </td>
+                </tr>
+              )}
+              {usersQuery.isError && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-xs text-red-300">
+                    Không thể tải danh sách người dùng. Vui lòng thử lại.
+                  </td>
+                </tr>
+              )}
+              {!usersQuery.isLoading && !usersQuery.isError && usersQuery.data && usersQuery.data.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-xs text-surface-foreground/50">
+                    Chưa có người dùng nào trong danh sách.
+                  </td>
+                </tr>
+              )}
+              {usersQuery.data?.map((user, index) => {
+                const isActiveRow = selectedUserId === user.id;
+
+                return (
+                  <tr
+                    key={user.id}
+                    className={clsx(
+                      "cursor-pointer transition",
+                      isActiveRow
+                        ? "bg-primary/15 text-primary-foreground"
+                        : "hover:bg-surface-muted/40 text-surface-foreground/80"
+                    )}
+                    onClick={() => setSelectedUserId(user.id)}
+                  >
+                    <td className="px-4 py-3 align-middle text-xs text-surface-foreground/60">
+                      {offset + index + 1}
+                    </td>
+                    <td className="px-4 py-3 align-middle">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                          <UserCircle2 className="h-4 w-4" />
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold">
+                            {user.full_name || user.name}
+                          </span>
+                          <span className="text-xs text-surface-foreground/60">ID: {user.id}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 align-middle text-xs text-surface-foreground/70">
+                      {user.email || "Chưa cập nhật"}
+                    </td>
+                    <td className="px-4 py-3 align-middle text-xs text-surface-foreground/70">
+                      {new Date(user.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
         <div className="flex items-center justify-between text-xs text-surface-foreground/60">
           <button
             type="button"
             onClick={() => setOffset((prev) => Math.max(prev - DEFAULT_LIMIT, 0))}
             disabled={offset === 0}
-            className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground disabled:opacity-60"
+            className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground disabled:opacity-60"
           >
             Trang trước
           </button>
@@ -115,7 +159,7 @@ const AdminUsersPage = () => {
           <button
             type="button"
             onClick={() => setOffset((prev) => prev + DEFAULT_LIMIT)}
-            className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
+            className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
           >
             Trang tiếp
           </button>
