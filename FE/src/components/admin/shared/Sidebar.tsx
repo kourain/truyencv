@@ -2,19 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  BookOpen,
-  ChartBarBig,
-  Layers,
-  LayoutDashboard,
-  MessageSquareText,
-  Users,
-  ShieldCheck,
-  X,
-  PanelLeftOpen,
-  PanelLeftClose,
-  Menu,
-} from "lucide-react";
+import { BookOpen, ChartBarBig, Layers, LayoutDashboard, MessageSquareText, Users, ShieldCheck, X, PanelLeftOpen, PanelLeftClose, Menu, } from "lucide-react";
 import { useState } from "react";
 
 const AUTH_ROUTE_REGEX = /^\/admin\/auth\//;
@@ -66,8 +54,12 @@ const AdminSidebar = () => {
   if (pathname.match(/login|register|reset-password|verify-email/)) {
     return null;
   }
+  else return <AdminSidebarRender />;
+};
+const AdminSidebarRender = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   const onClose = () => setMobileOpen(false);
   if (AUTH_ROUTE_REGEX.test(pathname)) {
@@ -183,5 +175,4 @@ const AdminSidebar = () => {
     </>
   );
 };
-
 export default AdminSidebar;

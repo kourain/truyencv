@@ -14,6 +14,9 @@ const AdminNavbar = () => {
   if (pathname.match(/login|register|reset-password|verify-email/)) {
     return null;
   }
+  else return <AdminNavBarRender />;
+};
+const AdminNavBarRender = () => {
   const router = useRouter();
   const auth = useAuth();
   const avatarSrc = auth.avatar?.trim() || null;
@@ -95,5 +98,4 @@ const AdminNavbar = () => {
     </header>
   );
 };
-
 export default AdminNavbar;

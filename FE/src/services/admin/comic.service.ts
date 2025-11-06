@@ -7,6 +7,8 @@ export type ComicListParams = {
 	limit?: number;
 	keyword?: string;
 	status?: number;
+	author?: string;
+	embedded_from?: string;
 };
 
 const resource = "/admin/Comic";
@@ -30,6 +32,7 @@ const createMockComics = (limit = 8): ComicResponse[] => {
 		author: index % 2 === 0 ? "Lam Nguyệt" : "Hàn Vũ",
 		embedded_from: null,
 		embedded_from_url: null,
+		cover_url: null,
 		chap_count: 40 + index * 5,
 		bookmark_count: 10 + index * 3,
 		rate: 3.5 + (index % 3) * 0.4,

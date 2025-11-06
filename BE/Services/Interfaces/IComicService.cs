@@ -72,7 +72,7 @@ public interface IComicService
 	/// </summary>
 	/// <param name="comicRequest">Thông tin comic mới</param>
 	/// <returns>Thông tin comic đã tạo</returns>
-	Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest);
+	Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest, long embedded_by);
 
 	/// <summary>
 	/// Cập nhật thông tin comic
