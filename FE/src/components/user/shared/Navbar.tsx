@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import clsx from "clsx";
@@ -9,6 +10,7 @@ import { SearchBar } from "./SearchBar";
 import { clearAuthTokens } from "@helpers/authTokens";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@hooks/useAuth";
+import { redirectToLogin } from "@helpers/httpClient";
 const UserNavbar = () => {
   const router = useRouter();
   const auth = useAuth();
@@ -16,6 +18,7 @@ const UserNavbar = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(true);
   const searchVisibilityRef = useRef(true);
+  const avatarSrc = auth.avatar?.trim() || null;
   const handleLogout = useCallback(async () => {
     console.log("UserNavbar: Logging out...");
     await clearAuthTokens();
@@ -102,13 +105,31 @@ const UserNavbar = () => {
 
   const renderUserControls = (wrapperClass: string) => (
     <div className={clsx("relative flex items-center gap-3", wrapperClass)}>
-      <button
-        type="button"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-surface-muted/80 bg-surface transition hover:border-primary"
-        onClick={() => setIsUserMenuOpen((prev) => !prev)}
-      >
-        <UserIcon className="h-5 w-5 text-primary-foreground" />
-      </button>
+      {auth.isAuthenticated ? (
+        <button
+          type="button"
+          className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-surface-muted/80 bg-surface transition hover:border-primary"
+          onClick={() => setIsUserMenuOpen((prev) => !prev)}
+        >
+          {avatarSrc ? (
+            <Image
+              src={avatarSrc}
+              alt={auth.name ? `Ảnh đại diện của ${auth.name}` : "Ảnh đại diện người dùng"}
+              width={40}
+              height={40}
+              className="h-full w-full object-cover"
+              unoptimized
+            />
+          ) : (
+            <UserIcon className="h-5 w-5 text-primary-foreground" />
+          )}
+        </button>
+      ) : (
+        <button className="inline-flex flex-row justify-center" onClick={() => { redirectToLogin(); }}>
+          <UserIcon className="h-5 w-5 text-primary-foreground" />
+          Đăng nhập
+        </button>
+      )}
 
       {isUserMenuOpen && (
         <div className="absolute right-0 top-12 w-56 overflow-hidden rounded-2xl border border-surface-muted/60 bg-surface shadow-2xl">

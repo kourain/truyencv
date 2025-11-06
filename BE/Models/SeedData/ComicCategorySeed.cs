@@ -136,7 +136,11 @@ public static class ComicCategorySeed
             CreateCategory(4034, "Mỹ Thực", CategoryType.Class),
             CreateCategory(4035, "Phản Phái", CategoryType.Class),
             CreateCategory(4036, "Sau Màn", CategoryType.Class),
-            CreateCategory(4037, "Thiên Tài", CategoryType.Class)
+            CreateCategory(4037, "Thiên Tài", CategoryType.Class),
+            CreateCategory(4038, "Trò Chơi", CategoryType.Class),
+            //view
+            CreateCategory(5001, "Góc Nhìn Nam", CategoryType.View),
+            CreateCategory(5002, "Góc Nhìn Nữ", CategoryType.View),
         };
 
         modelBuilder.Entity<ComicCategory>().HasData(comicCategories);
