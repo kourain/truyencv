@@ -7,19 +7,21 @@ import { LogOut, Settings, Sparkles, User as UserIcon } from "lucide-react";
 import { clearAuthTokens } from "@helpers/authTokens";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@hooks/useAuth";
+import Image from "next/image";
 
 const AdminNavbar = () => {
+  const pathname = usePathname();
+  if (pathname.match(/login|register|reset-password|verify-email/)) {
+    return null;
+  }
   const router = useRouter();
   const auth = useAuth();
+  const avatarSrc = auth.avatar?.trim() || null;
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const handleLogout = useCallback(async () => {
     await clearAuthTokens();
     window.location.href = "/admin/auth/login";
   }, []);
-  const pathname = usePathname();
-  if (pathname.match(/login|register|reset-password|verify-email/)) {
-    return null;
-  }
   const handleOpenSettings = useCallback(() => {
     router.push("/admin/profile");
   }, [router]);
@@ -39,10 +41,21 @@ const AdminNavbar = () => {
         <div className="relative flex items-center gap-3">
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-surface-muted/80 bg-surface transition hover:border-primary"
+            className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-surface-muted/80 bg-surface transition hover:border-primary"
             onClick={() => setIsAdminMenuOpen((prev) => !prev)}
           >
-            <UserIcon className="h-5 w-5 text-primary-foreground" />
+            {avatarSrc ? (
+              <Image
+                src={avatarSrc}
+                alt={auth.name ? `Ảnh đại diện của ${auth.name}` : "Ảnh đại diện người dùng"}
+                width={40}
+                height={40}
+                className="h-full w-full object-cover"
+                unoptimized
+              />
+            ) : (
+              <UserIcon className="h-5 w-5 text-primary-foreground" />
+            )}
           </button>
 
           {isAdminMenuOpen && (

@@ -140,7 +140,7 @@ namespace TruyenCV.Services
         public async Task<UserProfileResponse?> GetProfileAsync(long userId)
         {
             var user = await _dbcontext.Users
-                .AsSplitQuery()
+                .AsSplitQuery().IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .Include(u => u.Roles.Where(role => role.deleted_at == null))
                 .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
@@ -161,7 +161,7 @@ namespace TruyenCV.Services
                 throw new UserRequestException("Mật khẩu mới phải có tối thiểu 6 ký tự", nameof(newPassword));
             }
 
-            var user = await _dbcontext.Users
+            var user = await _dbcontext.Users.IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .FirstOrDefaultAsync();
 
@@ -191,7 +191,7 @@ namespace TruyenCV.Services
 
         public async Task<UserProfileResponse?> VerifyEmailAsync(long userId)
         {
-            var user = await _dbcontext.Users
+            var user = await _dbcontext.Users.IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .Include(u => u.Roles.Where(role => role.deleted_at == null))
                 .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
@@ -219,15 +219,11 @@ namespace TruyenCV.Services
             var now = DateTime.UtcNow;
 
             var us = await _dbcontext.Users
-                .AsSplitQuery()
+                .AsSplitQuery().IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null && u.is_banned == false)
-                .Include(u => u.Roles.Where(role => role.deleted_at == null && role.revoked_at == null))
-                .Include(u => u.Permissions.Where(permission =>
-                    permission.deleted_at == null &&
-                    permission.revoked_at == null &&
-                    (permission.revoke_until == null || permission.revoke_until < now)))
                 .FirstOrDefaultAsync();
-            Log.Warning("GetActiveUserWithAccessAsync fetched user: {@User}", us);
+            us.Roles = await _dbcontext.UserHasRoles.Where(u => u.user_id == userId && u.deleted_at == null && (u.revoked_at == null || u.revoked_at < now)).ToListAsync();
+            us.Permissions = await _dbcontext.UserHasPermissions.Where(u => u.user_id == userId && u.deleted_at == null && (u.revoked_at == null || u.revoked_at < now)).ToListAsync();
             return us;
         }
     }

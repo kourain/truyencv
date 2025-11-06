@@ -12,10 +12,10 @@ public class UserHasPermission : BaseEntity
 	[Required]
 	public required Permissions permissions { get; set; }
 
-    [Required]
+    [Required, ForeignKey(nameof(User))]
     public required long user_id { get; set; }
 
-    [Required]
+    [Required, ForeignKey(nameof(AssignedBy))]
     public required long assigned_by { get; set; }
     [JsonIgnore]
     public virtual User? User { get; set; }

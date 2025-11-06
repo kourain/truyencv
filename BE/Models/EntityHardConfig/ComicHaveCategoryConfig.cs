@@ -9,6 +9,6 @@ public static class ComicHaveCategoryConfig
     {
         modelBuilder.Entity<ComicHaveCategory>()
             // .ToTable(t=> t.HasCheckConstraint("CK_comic_have_categories_comic_id", "comic_id > 0"))
-            .ToTable(t=> t.HasCheckConstraint("CK_comic_have_categories_category_id", "category_id > 2000"));
+            .ToTable(t=> t.HasCheckConstraint("CK_comic_have_categories_comic_category_id", "comic_category_id > 2000"));
     }
 }

@@ -10,6 +10,8 @@ interface TabViewSectionProps {
   reviews?: ComicDetailReview[];
   discussions?: ComicDetailDiscussion[];
   highlights?: string[];
+  comicId?: string;
+  slug?: string;
   isLoading?: boolean;
 }
 
@@ -21,7 +23,7 @@ const tabs = [
 
 type TabKey = (typeof tabs)[number]["key"];
 
-const TabViewSection = ({ reviews, discussions, highlights, isLoading = false }: TabViewSectionProps) => {
+const TabViewSection = ({ reviews, discussions, highlights, comicId, slug, isLoading = false }: TabViewSectionProps) => {
   const [activeTab, setActiveTab] = useState<TabKey>("highlights");
 
   return (
@@ -52,7 +54,7 @@ const TabViewSection = ({ reviews, discussions, highlights, isLoading = false }:
           <ReviewsPanel reviews={reviews} isLoading={isLoading} />
         )}
         {activeTab === "discussions" && (
-          <DiscussionsPanel discussions={discussions} isLoading={isLoading} />
+          <DiscussionsPanel discussions={discussions} isLoading={isLoading} comicId={comicId} slug={slug} />
         )}
       </div>
     </section>

@@ -8,6 +8,7 @@ public class CreateSubscriptionRequest
     public long price_coin { get; set; }
     public int duration_day { get; set; }
     public bool is_active { get; set; } = true;
+    public int ticket_added { get; set; } = 0;
 }
 
 public class UpdateSubscriptionRequest
@@ -19,4 +20,5 @@ public class UpdateSubscriptionRequest
     public long price_coin { get; set; }
     public int duration_day { get; set; }
     public bool is_active { get; set; } = true;
+    public int ticket_added { get; set; } = 0;
 }
