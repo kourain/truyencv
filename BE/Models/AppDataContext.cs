@@ -38,7 +38,18 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
     {
         modelBuilder.EntityHardConfig();
         modelBuilder.SeedData(defaultDate);
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var navigation in entityType.GetNavigations())
+            {
+                navigation.SetIsEagerLoaded(false);
+            }
+        }
         base.OnModelCreating(modelBuilder);
+    }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
     }
     private void Save()
     {

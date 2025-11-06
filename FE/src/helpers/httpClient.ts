@@ -114,7 +114,7 @@ httpClient.interceptors.response.use(
         return Promise.reject(error);
       }
       if (isBrowser)
-        if (status === 401) {
+        if (status === 401 || status === 403) {
           console.error("[API ERROR] 401 url:", error.request.responseURL);
           if (error.request.responseURL.includes("/auth/logout") === false)
             await clearAuthTokens();

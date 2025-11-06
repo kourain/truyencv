@@ -9,6 +9,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@hooks/useAuth";
 
 const AdminNavbar = () => {
+  const pathname = usePathname();
+  if (pathname.match(/login|register|reset-password|verify-email/)) {
+    return null;
+  }
   const router = useRouter();
   const auth = useAuth();
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
@@ -16,10 +20,6 @@ const AdminNavbar = () => {
     await clearAuthTokens();
     window.location.href = "/admin/auth/login";
   }, []);
-  const pathname = usePathname();
-  if (pathname.match(/login|register|reset-password|verify-email/)) {
-    return null;
-  }
   const handleOpenSettings = useCallback(() => {
     router.push("/admin/profile");
   }, [router]);

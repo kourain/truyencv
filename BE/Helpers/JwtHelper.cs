@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
+using Serilog;
 
 namespace TruyenCV.Helpers
 {
@@ -64,6 +65,16 @@ namespace TruyenCV.Helpers
             };
 
             // Thêm nhiều role nếu có
+            if (roles.Count() == 0)
+            {
+                roles = user.Roles.Select(r => r.role_name);
+            }
+            if (permissions.Count() == 0)
+            {
+                permissions = user.Permissions.Select(p => p.permissions);
+            }
+            // Log.Warning("roles fetched user: {@string}", roles);
+            // Log.Warning("permissions fetched user: {@Permissions}", permissions);
             foreach (var role in roles.Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 if (!string.IsNullOrWhiteSpace(role))
