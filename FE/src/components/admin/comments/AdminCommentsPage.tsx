@@ -123,45 +123,72 @@ const AdminCommentsPage = () => {
             ) : commentsQuery.isError ? (
               <p className="text-sm text-red-300">Không thể tải danh sách bình luận. Vui lòng kiểm tra ID.</p>
             ) : commentsQuery.data && commentsQuery.data.length > 0 ? (
-              <ul className="space-y-3 text-sm text-surface-foreground/80">
-                {commentsQuery.data.map((comment) => (
-                  <li
-                    key={comment.id}
-                    className="rounded-xl border border-surface-muted/60 bg-surface px-4 py-3 transition hover:border-primary/60"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm text-primary-foreground">{comment.comment}</p>
-                        <p className="mt-1 text-xs text-surface-foreground/60">
-                          #{comment.id} • Truyện {comment.comic_id}
-                          {comment.comic_chapter_id ? ` • Chương ${comment.comic_chapter_id}` : ""} • Người dùng {comment.user_id}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setFocusedCommentId(comment.id)}
-                          className="text-xs font-semibold uppercase tracking-wide text-primary transition hover:text-primary/80"
+              <div className="overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
+                    <tr>
+                      <th scope="col" className="px-4 py-3 text-left font-semibold">ID</th>
+                      <th scope="col" className="px-4 py-3 text-left font-semibold">Nội dung</th>
+                      <th scope="col" className="px-4 py-3 text-left font-semibold">Thuộc</th>
+                      <th scope="col" className="px-4 py-3 text-left font-semibold">Tạo lúc</th>
+                      <th scope="col" className="px-4 py-3 text-left font-semibold">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
+                    {commentsQuery.data.map((comment) => {
+                      const isDeleting = deleteMutation.isPending && deleteMutation.variables === comment.id;
+                      const isFocused = focusedCommentId === comment.id;
+
+                      return (
+                        <tr
+                          key={comment.id}
+                          className={`transition ${
+                            isFocused ? "bg-primary/15 text-primary-foreground" : "hover:bg-surface-muted/40"
+                          }`}
                         >
-                          Chi tiết
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteMutation.mutate(comment.id)}
-                          className="inline-flex items-center gap-1 rounded-full border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-                        >
-                          {deleteMutation.isPending ? (
-                            <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3.5 w-3.5" />
-                          )}
-                          Xóa
-                        </button>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                          <td className="px-4 py-3 text-xs text-surface-foreground/70">#{comment.id}</td>
+                          <td className="px-4 py-3 text-xs text-surface-foreground/80">
+                            <p className="line-clamp-3" title={comment.comment}>
+                              {comment.comment}
+                            </p>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-surface-foreground/60">
+                            Truyện {comment.comic_id}
+                            {comment.comic_chapter_id ? ` • Chương ${comment.comic_chapter_id}` : ""} • Người dùng {comment.user_id}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-surface-foreground/60">
+                            {new Date(comment.created_at).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setFocusedCommentId(comment.id)}
+                                className="rounded-md border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+                              >
+                                Chi tiết
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteMutation.mutate(comment.id)}
+                                className="inline-flex items-center gap-2 rounded-md border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10 disabled:opacity-60"
+                                disabled={isDeleting}
+                              >
+                                {isDeleting ? (
+                                  <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                )}
+                                Xóa
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             ) : (
               <p className="text-sm text-surface-foreground/60">Không tìm thấy bình luận phù hợp.</p>
             )}

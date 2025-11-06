@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, KeyRound, ListRestart, RefreshCcw, ShieldCheck, Trash2, UserCircle2 } from "lucide-react";
@@ -9,6 +9,7 @@ import {
   fetchUserById,
   fetchUserRefreshTokens,
   fetchUsers,
+  fetchUserRolesByUser,
   revokeAllUserRefreshTokens,
   revokeUserRefreshToken
 } from "@services/admin";
@@ -19,21 +20,39 @@ const AdminUsersPage = () => {
   const queryClient = useQueryClient();
   const [offset, setOffset] = useState(0);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [keyword, setKeyword] = useState("");
+
+  const normalizedKeyword = useMemo(() => keyword.trim(), [keyword]);
+
+  useEffect(() => {
+    setOffset(0);
+  }, [normalizedKeyword]);
 
   const usersQuery = useQuery({
-    queryKey: ["admin-users", offset],
-    queryFn: () => fetchUsers({ offset, limit: DEFAULT_LIMIT })
+    queryKey: ["admin-users", offset, normalizedKeyword],
+    queryFn: () =>
+      fetchUsers({
+        offset,
+        limit: DEFAULT_LIMIT,
+        keyword: normalizedKeyword || undefined
+      })
   });
 
   const selectedUserQuery = useQuery({
     queryKey: ["admin-user", selectedUserId],
-  queryFn: () => fetchUserById(selectedUserId!),
+    queryFn: () => fetchUserById(selectedUserId!),
     enabled: selectedUserId !== null
   });
 
   const refreshTokensQuery = useQuery({
     queryKey: ["admin-user-refresh-tokens", selectedUserId],
-  queryFn: () => fetchUserRefreshTokens(selectedUserId!),
+    queryFn: () => fetchUserRefreshTokens(selectedUserId!),
+    enabled: selectedUserId !== null
+  });
+
+  const userRolesQuery = useQuery({
+    queryKey: ["admin-user-roles", selectedUserId],
+    queryFn: () => fetchUserRolesByUser(selectedUserId!),
     enabled: selectedUserId !== null
   });
 
@@ -63,13 +82,33 @@ const AdminUsersPage = () => {
           </div>
           <button
             type="button"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ["admin-users", offset] })}
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["admin-users"] })}
             className="inline-flex items-center gap-2 rounded-full border border-surface-muted px-4 py-2 text-xs font-semibold uppercase tracking-wide text-surface-foreground/70 transition hover:border-primary/60 hover:text-primary-foreground"
           >
             <RefreshCcw className="h-4 w-4" />
             Làm mới
           </button>
         </header>
+        <div className="flex flex-col gap-3 rounded-2xl border border-surface-muted/70 bg-surface/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <label className="flex w-full items-center gap-3 text-sm text-surface-foreground/70">
+            <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide">Tìm kiếm</span>
+            <input
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="Email hoặc mã người dùng"
+              className="flex-1 rounded-xl border border-surface-muted bg-surface px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+            />
+          </label>
+          {normalizedKeyword && (
+            <button
+              type="button"
+              onClick={() => setKeyword("")}
+              className="self-end rounded-full border border-surface-muted px-4 py-2 text-xs font-semibold uppercase tracking-wide text-surface-foreground/70 transition hover:border-primary/60 hover:text-primary-foreground sm:self-center"
+            >
+              Xóa tìm kiếm
+            </button>
+          )}
+        </div>
         <div className="overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80 shadow">
           <table className="min-w-full text-sm">
             <thead className="bg-surface-muted/50 text-xs uppercase tracking-wide text-surface-foreground/60">
@@ -193,6 +232,27 @@ const AdminUsersPage = () => {
               <div>
                 <p className="text-xs uppercase tracking-wide text-surface-foreground/60">Ngày tạo</p>
                 <p>{new Date(selectedUserQuery.data.created_at).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-surface-foreground/60">Vai trò hiện có</p>
+                {selectedUserId === null ? null : userRolesQuery.isLoading ? (
+                  <p className="mt-1 text-xs text-surface-foreground/60">Đang tải vai trò...</p>
+                ) : userRolesQuery.isError ? (
+                  <p className="mt-1 text-xs text-red-300">Không thể tải vai trò của người dùng.</p>
+                ) : userRolesQuery.data && userRolesQuery.data.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {userRolesQuery.data.map((role) => (
+                      <span
+                        key={role.id}
+                        className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary"
+                      >
+                        {role.role_name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-surface-foreground/60">Người dùng chưa được gán vai trò.</p>
+                )}
               </div>
             </article>
           ) : null}

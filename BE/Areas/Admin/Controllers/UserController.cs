@@ -43,9 +43,9 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] int offset = 0, [FromQuery] int limit = 10)
+        public async Task<IActionResult> GetUsers([FromQuery] int offset = 0, [FromQuery] int limit = 10, [FromQuery] string? keyword = null)
         {
-            var users = await _userService.GetUsersAsync(offset, limit);
+            var users = await _userService.GetUsersAsync(offset, limit, keyword);
             return Ok(users);
         }
 

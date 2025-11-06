@@ -1,3 +1,4 @@
+import { useAuth } from "@hooks/useAuth";
 import { logout } from "@services/auth.service";
 import { Buffer } from "buffer";
 

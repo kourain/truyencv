@@ -1,22 +1,22 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, PlusCircle, RefreshCcw, Trash2 } from "lucide-react";
 
 import { createComic, deleteComic, fetchComics, updateComic } from "@services/admin";
-import { ComicStatus } from "../../../const/enum/comic-status";
+import { ComicStatus, ComicStatusLabel } from "../../../const/enum/comic-status";
 import type { ComicResponse } from "../../../types/comic";
 
 const DEFAULT_LIMIT = 12;
 
 const initialFormState = {
   name: "",
-  slug: "",
   author: "",
   description: "",
   embedded_from: "",
   embedded_from_url: "",
+  cover_url: "",
   chap_count: 0,
   rate: 0,
   status: ComicStatus.Continuing
@@ -24,30 +24,53 @@ const initialFormState = {
 
 type ComicFormState = typeof initialFormState;
 
+const initialFilters = {
+  keyword: "",
+  status: "",
+  author: "",
+  embedded_from: ""
+};
+
 const AdminComicsPage = () => {
   const queryClient = useQueryClient();
   const [offset, setOffset] = useState(0);
   const [formState, setFormState] = useState<ComicFormState>(initialFormState);
   const [editingComicId, setEditingComicId] = useState<string | null>(null);
+  const [filters, setFilters] = useState(initialFilters);
+
+  const queryFilters = useMemo(
+    () => ({
+      keyword: filters.keyword.trim() || undefined,
+      status: filters.status ? Number(filters.status) : undefined,
+      author: filters.author.trim() || undefined,
+      embedded_from: filters.embedded_from.trim() || undefined
+    }),
+    [filters]
+  );
+
+  useEffect(() => {
+    setOffset(0);
+  }, [queryFilters]);
 
   const comicsQuery = useQuery({
-    queryKey: ["admin-comics", offset],
-    queryFn: () => fetchComics({ offset, limit: DEFAULT_LIMIT })
+    queryKey: ["admin-comics", offset, queryFilters],
+    queryFn: () => fetchComics({ offset, limit: DEFAULT_LIMIT, ...queryFilters })
   });
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      createComic({
-        name: formState.name,
-        slug: formState.slug,
-        description: formState.description,
-        author: formState.author,
-        embedded_from: formState.embedded_from || null,
-        embedded_from_url: formState.embedded_from_url || null,
-        chap_count: formState.chap_count,
-        rate: formState.rate,
+    mutationFn: () => {
+      const payload = {
+        name: formState.name.trim(),
+        description: formState.description.trim(),
+        author: formState.author.trim(),
+        embedded_from: formState.embedded_from.trim() || null,
+        embedded_from_url: formState.embedded_from_url.trim() || null,
+        cover_url: formState.cover_url.trim() || null,
         status: formState.status
-      }),
+      };
+
+      return createComic(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-comics"] });
       resetForm();
@@ -57,13 +80,13 @@ const AdminComicsPage = () => {
   const updateMutation = useMutation({
     mutationFn: () =>
       updateComic({
-  id: editingComicId!,
-        name: formState.name,
-        slug: formState.slug,
-        description: formState.description,
-        author: formState.author,
-        embedded_from: formState.embedded_from || null,
-        embedded_from_url: formState.embedded_from_url || null,
+        id: editingComicId!,
+        name: formState.name.trim(),
+        description: formState.description.trim(),
+        author: formState.author.trim(),
+        embedded_from: formState.embedded_from.trim() || null,
+        embedded_from_url: formState.embedded_from_url.trim() || null,
+        cover_url: formState.cover_url.trim() || null,
         chap_count: formState.chap_count,
         rate: formState.rate,
         status: formState.status
@@ -87,13 +110,24 @@ const AdminComicsPage = () => {
     () =>
       Object.entries(ComicStatus)
         .filter(([, value]) => typeof value === "number")
-        .map(([label, value]) => ({ label, value: value as number })),
+        .map(([, value]) => {
+          const numericValue = value as number;
+
+          return {
+            label: ComicStatusLabel[numericValue as ComicStatus],
+            value: numericValue
+          };
+        }),
     []
   );
 
   const resetForm = () => {
-    setFormState(initialFormState);
+    setFormState({ ...initialFormState });
     setEditingComicId(null);
+  };
+
+  const resetFilters = () => {
+    setFilters({ ...initialFilters });
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -111,11 +145,11 @@ const AdminComicsPage = () => {
     setEditingComicId(comic.id);
     setFormState({
       name: comic.name,
-      slug: comic.slug,
       author: comic.author,
       description: comic.description,
       embedded_from: comic.embedded_from ?? "",
       embedded_from_url: comic.embedded_from_url ?? "",
+      cover_url: comic.cover_url ?? "",
       chap_count: comic.chap_count,
       rate: comic.rate,
       status: comic.status
@@ -162,26 +196,8 @@ const AdminComicsPage = () => {
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
               />
             </label>
-            <label className="space-y-2 text-sm">
-              <span className="font-medium text-primary-foreground">Slug</span>
-              <input
-                required
-                value={formState.slug}
-                onChange={(event) => setFormState((prev) => ({ ...prev, slug: event.target.value }))}
-                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-              />
-            </label>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm">
-              <span className="font-medium text-primary-foreground">Tác giả</span>
-              <input
-                required
-                value={formState.author}
-                onChange={(event) => setFormState((prev) => ({ ...prev, author: event.target.value }))}
-                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-              />
-            </label>
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">Trạng thái</span>
               <select
@@ -197,6 +213,15 @@ const AdminComicsPage = () => {
                   </option>
                 ))}
               </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-primary-foreground">Ảnh bìa (cover_url)</span>
+              <input
+                value={formState.cover_url}
+                onChange={(event) => setFormState((prev) => ({ ...prev, cover_url: event.target.value }))}
+                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                placeholder="https://cdn.example.com/cover.jpg"
+              />
             </label>
           </div>
           <label className="space-y-2 text-sm">
@@ -231,6 +256,15 @@ const AdminComicsPage = () => {
               />
             </label>
           </div>
+          {formState.cover_url && (
+            <div className="overflow-hidden rounded-xl border border-surface-muted/70">
+              <img
+                src={formState.cover_url}
+                alt={`Ảnh bìa truyện ${formState.name || ""}`}
+                className="h-48 w-full object-cover"
+              />
+            </div>
+          )}
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">Số chương</span>
@@ -240,7 +274,11 @@ const AdminComicsPage = () => {
                 value={formState.chap_count}
                 onChange={(event) => setFormState((prev) => ({ ...prev, chap_count: Number(event.target.value) }))}
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                disabled={!editingComicId}
               />
+              {!editingComicId && (
+                <p className="text-xs text-surface-foreground/60">Tự động cập nhật sau khi nhập chương.</p>
+              )}
             </label>
             <label className="space-y-2 text-sm">
               <span className="font-medium text-primary-foreground">Đánh giá</span>
@@ -252,7 +290,11 @@ const AdminComicsPage = () => {
                 value={formState.rate}
                 onChange={(event) => setFormState((prev) => ({ ...prev, rate: Number(event.target.value) }))}
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                disabled={!editingComicId}
               />
+              {!editingComicId && (
+                <p className="text-xs text-surface-foreground/60">Hệ thống tính toán dựa trên đánh giá độc giả.</p>
+              )}
             </label>
           </div>
           <div className="flex justify-end gap-3">
@@ -286,7 +328,7 @@ const AdminComicsPage = () => {
             <button
               type="button"
               onClick={() => setOffset((prev) => Math.max(prev - DEFAULT_LIMIT, 0))}
-              className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
+              className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground disabled:opacity-60"
               disabled={offset === 0}
             >
               Trang trước
@@ -297,58 +339,169 @@ const AdminComicsPage = () => {
             <button
               type="button"
               onClick={() => setOffset((prev) => prev + DEFAULT_LIMIT)}
-              className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
+              className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
             >
               Trang tiếp
             </button>
           </div>
         </header>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {comicsQuery.isLoading && <p className="text-sm text-surface-foreground/60">Đang tải dữ liệu...</p>}
-          {comicsQuery.isError && (
-            <p className="text-sm text-red-300">Không thể tải danh sách truyện. Vui lòng thử lại.</p>
-          )}
-          {comicsQuery.data?.map((comic) => (
-            <article key={comic.id} className="flex flex-col gap-3 rounded-2xl border border-surface-muted bg-surface/70 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h4 className="text-lg font-semibold text-primary-foreground">{comic.name}</h4>
-                  <p className="text-xs uppercase tracking-wide text-surface-foreground/60">{comic.slug}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleEdit(comic)}
-                    className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+        <div className="space-y-3 rounded-2xl border border-surface-muted/70 bg-surface/60 p-4">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <label className="space-y-1 text-xs">
+              <span className="font-semibold uppercase tracking-wide text-surface-foreground/70">Từ khóa</span>
+              <input
+                value={filters.keyword}
+                onChange={(event) => setFilters((prev) => ({ ...prev, keyword: event.target.value }))}
+                placeholder="Tên truyện hoặc slug"
+                className="w-full rounded-xl border border-surface-muted bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </label>
+            <label className="space-y-1 text-xs">
+              <span className="font-semibold uppercase tracking-wide text-surface-foreground/70">Tác giả</span>
+              <input
+                value={filters.author}
+                onChange={(event) => setFilters((prev) => ({ ...prev, author: event.target.value }))}
+                placeholder="Tên tác giả"
+                className="w-full rounded-xl border border-surface-muted bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </label>
+            <label className="space-y-1 text-xs">
+              <span className="font-semibold uppercase tracking-wide text-surface-foreground/70">Nguồn nhúng</span>
+              <input
+                value={filters.embedded_from}
+                onChange={(event) => setFilters((prev) => ({ ...prev, embedded_from: event.target.value }))}
+                placeholder="Tên nguồn"
+                className="w-full rounded-xl border border-surface-muted bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </label>
+            <label className="space-y-1 text-xs">
+              <span className="font-semibold uppercase tracking-wide text-surface-foreground/70">Trạng thái</span>
+              <select
+                value={filters.status}
+                onChange={(event) => setFilters((prev) => ({ ...prev, status: event.target.value }))}
+                className="w-full rounded-xl border border-surface-muted bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="">Tất cả</option>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="inline-flex items-center gap-2 rounded-full border border-surface-muted px-4 py-2 text-xs font-semibold uppercase tracking-wide text-surface-foreground/70 transition hover:border-primary/60 hover:text-primary-foreground"
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
+        </div>
+        <div className="overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80 shadow">
+          <table className="min-w-full text-sm">
+            <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">#</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Truyện</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Tác giả</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Số chương</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Đánh giá</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Trạng thái</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Hành động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
+              {comicsQuery.isLoading && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                    Đang tải danh sách truyện...
+                  </td>
+                </tr>
+              )}
+              {comicsQuery.isError && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-6 text-center text-xs text-red-300">
+                    Không thể tải danh sách truyện. Vui lòng thử lại.
+                  </td>
+                </tr>
+              )}
+              {!comicsQuery.isLoading && !comicsQuery.isError && comicsQuery.data && comicsQuery.data.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                    Chưa có truyện nào.
+                  </td>
+                </tr>
+              )}
+              {comicsQuery.data?.map((comic, index) => {
+                const isEditing = editingComicId === comic.id;
+                const isDeleting = deleteMutation.isPending && deleteMutation.variables === comic.id;
+                const statusLabel = ComicStatusLabel[comic.status];
+
+                return (
+                  <tr
+                    key={comic.id}
+                    className={`transition ${
+                      isEditing ? "bg-primary/15 text-primary-foreground" : "hover:bg-surface-muted/40"
+                    }`}
                   >
-                    <Pencil className="h-3.5 w-3.5" />
-                    Sửa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteMutation.mutate(comic.id)}
-                    className="inline-flex items-center gap-1 rounded-full border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-                  >
-                    {deleteMutation.isPending ? (
-                      <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
-                    )}
-                    Xóa
-                  </button>
-                </div>
-              </div>
-              <p className="text-sm text-surface-foreground/70">{comic.description}</p>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-surface-foreground/60">
-                <span>
-                  Tác giả: <span className="text-primary-foreground">{comic.author}</span>
-                </span>
-                <span>Chương: {comic.chap_count}</span>
-                <span>Đánh giá: {comic.rate.toFixed(1)}</span>
-                <span>Trạng thái: {ComicStatus[comic.status]}</span>
-              </div>
-            </article>
-          ))}
+                    <td className="px-4 py-3 text-xs text-surface-foreground/60">{offset + index + 1}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-3">
+                        <div className="hidden h-16 w-12 overflow-hidden rounded-md border border-surface-muted/70 bg-surface-muted/40 sm:block">
+                          {comic.cover_url ? (
+                            <img src={comic.cover_url} alt={`Ảnh bìa ${comic.name}`} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-[10px] text-surface-foreground/40">
+                              No Cover
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-semibold">{comic.name}</span>
+                          <span className="text-xs text-surface-foreground/60">{comic.slug}</span>
+                          <span className="text-xs text-surface-foreground/60 line-clamp-2" title={comic.description}>
+                            {comic.description}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-surface-foreground/70">{comic.author}</td>
+                    <td className="px-4 py-3 text-xs text-surface-foreground/70">{comic.chap_count}</td>
+                    <td className="px-4 py-3 text-xs text-surface-foreground/70">{comic.rate.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-xs text-surface-foreground/70">{statusLabel}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(comic)}
+                          className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteMutation.mutate(comic.id)}
+                          className="inline-flex items-center gap-2 rounded-md border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10 disabled:opacity-60"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

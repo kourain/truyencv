@@ -137,6 +137,24 @@ public class ComicService : IComicService
         return comics.Select(c => c.ToRespDTO());
     }
 
+    public async Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedByAsync(long embeddedBy)
+    {
+        var comics = await _comicRepository.GetByEmbeddedByAsync(embeddedBy);
+        return comics.Select(c => c.ToRespDTO());
+    }
+
+    public async Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedBySlugAsync(string slug)
+    {
+        var comicEntity = await _comicRepository.GetBySlugAsync(slug);
+        if (comicEntity == null)
+            return Array.Empty<ComicResponse>();
+
+        var embeddedBy = comicEntity.embedded_by;
+        var comics = await _comicRepository.GetByEmbeddedByAsync(embeddedBy);
+        var result = comics.Where(c => c.slug != slug).Select(c => c.ToRespDTO());
+        return result;
+    }
+
     public async Task<IEnumerable<ComicResponse>> GetComicsByStatusAsync(ComicStatus status)
     {
         var comics = await _comicRepository.GetByStatusAsync(status);
@@ -149,7 +167,7 @@ public class ComicService : IComicService
         return comics.Select(c => c.ToRespDTO());
     }
 
-    public async Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest)
+    public async Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest, long embedded_by)
     {
         comicRequest.name = comicRequest.name?.Trim();
         if (string.IsNullOrWhiteSpace(comicRequest.slug))
@@ -162,7 +180,7 @@ public class ComicService : IComicService
 
         // Chuyển đổi từ DTO sang Entity
         var comic = comicRequest.ToEntity();
-
+        comic.embedded_by = embedded_by;
         var embeddingValues = await _embeddingService.CreateEmbeddingAsync($"{comic.name}, {comic.description}");
         if (embeddingValues is { Length: > 0 })
         {

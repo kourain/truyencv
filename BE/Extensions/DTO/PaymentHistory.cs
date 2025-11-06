@@ -22,7 +22,7 @@ public static partial class Extensions
         };
     }
 
-    public static PaymentHistoryResponse ToRespDTO(this PaymentHistory entity)
+    public static PaymentHistoryResponse ToRespDTO(this PaymentHistory entity, User? user = null)
     {
         return new PaymentHistoryResponse
         {
@@ -33,6 +33,8 @@ public static partial class Extensions
             payment_method = entity.payment_method,
             reference_id = entity.reference_id,
             note = entity.note,
+            user_email = user?.email,
+            user_name = user?.name,
             created_at = entity.created_at,
             updated_at = entity.updated_at
         };

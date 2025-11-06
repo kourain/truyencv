@@ -17,10 +17,10 @@ namespace TruyenCV.Middleware
         }
         public async Task InvokeAsync(HttpContext context, IServiceProvider provider)
         {
+            var access_token = context.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
             if (!Regex.IsMatch(context.Request.Path, "^/auth/(refresh-token|login)", RegexOptions.IgnoreCase))
             {
                 var _authService = provider.GetRequiredService<IAuthService>();
-                var access_token = context.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
                 var refresh_token = context.Request.Headers["X-Refresh-Token"].ToString();
                 // if access_token not right :???
                 if (access_token.Length < 15 && !string.IsNullOrWhiteSpace(refresh_token))
@@ -43,6 +43,7 @@ namespace TruyenCV.Middleware
                     }
                 }
             }
+            context.Response.Headers["X-Access-Token"] = access_token;
             await _next(context);
         }
     }

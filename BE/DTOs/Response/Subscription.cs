@@ -11,6 +11,7 @@ public class SubscriptionResponse
     public long price_coin { get; set; }
     public int duration_day { get; set; }
     public bool is_active { get; set; }
+    public int ticket_added { get; set; }
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
 }

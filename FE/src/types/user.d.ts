@@ -97,9 +97,20 @@ interface UserProfileResponse {
 	read_chapter_count: string;
 	bookmark_count: string;
 	coin: string;
+	key: string;
+	active_subscription_name?: string | null;
 	roles: string[];
 	permissions: string[];
 };
+
+interface UserComicReadHistoryResponse {
+	id: string;
+	user_id: string;
+	comic_id: string;
+	chapter_id: string;
+	read_at: string;
+	updated_at: string;
+}
 
 interface ChangePasswordPayload {
 	current_password: string;
