@@ -200,7 +200,7 @@ const AdminCategoriesPage = () => {
             <button
               type="button"
               onClick={() => setOffset((prev) => Math.max(prev - DEFAULT_LIMIT, 0))}
-              className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
+              className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground disabled:opacity-60"
               disabled={offset === 0}
             >
               Trang trước
@@ -211,49 +211,88 @@ const AdminCategoriesPage = () => {
             <button
               type="button"
               onClick={() => setOffset((prev) => prev + DEFAULT_LIMIT)}
-              className="rounded-full border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
+              className="rounded-md border border-surface-muted px-3 py-1 transition hover:border-primary/60 hover:text-primary-foreground"
             >
               Trang tiếp
             </button>
           </div>
         </header>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {categoriesQuery.isLoading && <p className="text-sm text-surface-foreground/60">Đang tải dữ liệu...</p>}
-          {categoriesQuery.isError && (
-            <p className="text-sm text-red-300">Không thể tải danh sách thể loại. Vui lòng thử lại.</p>
-          )}
-          {categoriesQuery.data?.map((category) => (
-            <article key={category.id} className="flex flex-col gap-3 rounded-2xl border border-surface-muted bg-surface/70 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h4 className="text-lg font-semibold text-primary-foreground">{category.name}</h4>
-                  <p className="text-xs uppercase tracking-wide text-surface-foreground/60">ID: {category.id}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleEdit(category)}
-                    className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+        <div className="overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80 shadow">
+          <table className="min-w-full text-sm">
+            <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">#</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Tên thể loại</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">ID</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">Hành động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
+              {categoriesQuery.isLoading && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                    Đang tải danh sách thể loại...
+                  </td>
+                </tr>
+              )}
+              {categoriesQuery.isError && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-xs text-red-300">
+                    Không thể tải danh sách thể loại. Vui lòng thử lại.
+                  </td>
+                </tr>
+              )}
+              {!categoriesQuery.isLoading && !categoriesQuery.isError && categoriesQuery.data && categoriesQuery.data.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                    Chưa có thể loại nào.
+                  </td>
+                </tr>
+              )}
+              {categoriesQuery.data?.map((category, index) => {
+                const isEditing = editingId === category.id;
+                const isDeleting = deleteMutation.isPending && deleteMutation.variables === category.id;
+
+                return (
+                  <tr
+                    key={category.id}
+                    className={`transition ${
+                      isEditing ? "bg-primary/15 text-primary-foreground" : "hover:bg-surface-muted/40"
+                    }`}
                   >
-                    <Tag className="h-3.5 w-3.5" />
-                    Sửa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteMutation.mutate(category.id)}
-                    className="inline-flex items-center gap-1 rounded-full border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-                  >
-                    {deleteMutation.isPending ? (
-                      <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3.5 w-3.5" />
-                    )}
-                    Xóa
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
+                    <td className="px-4 py-3 text-xs text-surface-foreground/60">{offset + index + 1}</td>
+                    <td className="px-4 py-3 font-semibold">{category.name}</td>
+                    <td className="px-4 py-3 text-xs">#{category.id}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(category)}
+                          className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary transition hover:bg-primary/10"
+                        >
+                          <Tag className="h-3.5 w-3.5" />
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteMutation.mutate(category.id)}
+                          className="inline-flex items-center gap-2 rounded-md border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10 disabled:opacity-60"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -324,25 +363,36 @@ const AdminCategoriesPage = () => {
               ) : selectedCategoryQuery.isError ? (
                 <p className="mt-2 text-xs text-red-300">Không thể tải danh sách truyện.</p>
               ) : selectedCategoryQuery.data && selectedCategoryQuery.data.length > 0 ? (
-                <ul className="mt-3 space-y-2 text-sm text-surface-foreground/70">
-                  {selectedCategoryQuery.data.map((comic) => (
-                    <li
-                      key={comic.id}
-                      className="flex items-center justify-between rounded-xl border border-surface-muted/60 bg-surface px-4 py-2"
-                    >
-                      <span>{comic.name}</span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeMappingMutation.mutate({ comicId: comic.id, categoryId: mappingForm.categoryId! })
-                        }
-                        className="text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:text-red-100"
-                      >
-                        Gỡ
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <div className="mt-3 overflow-hidden rounded-lg border border-surface-muted/60 bg-surface/80">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
+                      <tr>
+                        <th scope="col" className="px-4 py-2 text-left font-semibold">Tên truyện</th>
+                        <th scope="col" className="px-4 py-2 text-left font-semibold">ID</th>
+                        <th scope="col" className="px-4 py-2 text-left font-semibold">Hành động</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
+                      {selectedCategoryQuery.data.map((comic) => (
+                        <tr key={comic.id}>
+                          <td className="px-4 py-2">{comic.name}</td>
+                          <td className="px-4 py-2 text-xs">#{comic.id}</td>
+                          <td className="px-4 py-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                removeMappingMutation.mutate({ comicId: comic.id, categoryId: mappingForm.categoryId! })
+                              }
+                              className="rounded-md border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
+                            >
+                              Gỡ
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <p className="mt-2 text-xs text-surface-foreground/60">Chưa có truyện nào thuộc thể loại này.</p>
               )}

@@ -1,4 +1,4 @@
-import { HistoryStatus } from "./history-status";
+import { HistoryStatus } from "../const/enum/history-status";
 
 export interface CreateUserUseKeyHistoryRequest {
 	user_id: string;

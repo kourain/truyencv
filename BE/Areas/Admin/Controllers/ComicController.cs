@@ -95,7 +95,8 @@ public sealed class ComicController : ControllerBase
 	{
 		try
 		{
-			var comic = await _comicService.CreateComicAsync(request);
+			var usId = User.GetUserId();
+			var comic = await _comicService.CreateComicAsync(request, usId.Value);
 			return CreatedAtAction(nameof(GetById), new { id = comic.id }, comic);
 		}
 		catch (Exception ex)

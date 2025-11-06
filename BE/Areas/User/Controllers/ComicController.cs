@@ -37,7 +37,6 @@ public sealed class ComicController : ControllerBase
         {
             return NotFound(new { message = "Không tìm thấy truyện" });
         }
-
         return Ok(result);
     }
 
@@ -51,18 +50,27 @@ public sealed class ComicController : ControllerBase
     [HttpGet("{slug}/chapters/{chapterNumber:int}")]
     public async Task<IActionResult> GetChapter(string slug, int chapterNumber)
     {
+        if(string.IsNullOrWhiteSpace(slug))
+        {
+            return BadRequest(new { message = "Slug truyện không hợp lệ" });
+        }
+        if(chapterNumber <= 0)
+        {
+            return BadRequest(new { message = "Số chương không hợp lệ" });
+        }
         var userId = User.GetUserId();
         if (userId == null)
         {
             return Unauthorized(new { message = "Không thể xác định người dùng" });
         }
-
+        // lấy chương
         var result = await _comicReadingService.GetChapterAsync(slug, chapterNumber, userId.Value);
         if (result == null)
         {
             return NotFound(new { message = "Không tìm thấy chương" });
         }
-
+        // ghi lịch sử
+        await _comicReadingService.RecordChapterReadAsync(result.comic_id.ToSnowflakeId(), chapterNumber, userId.Value);
         return Ok(result);
     }
 }

@@ -11,6 +11,15 @@ public class PaymentHistoryResponse
     public string payment_method { get; set; } = "unknown";
     public string? reference_id { get; set; }
     public string? note { get; set; }
+    public string? user_email { get; set; }
+    public string? user_name { get; set; }
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }
+}
+
+public class PaymentRevenuePointResponse
+{
+    public required string date { get; set; }
+    public long total_amount_coin { get; set; }
+    public long total_amount_money { get; set; }
 }

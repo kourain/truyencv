@@ -10,11 +10,12 @@ export const fetchUserProfile = async (): Promise<UserProfileResponse> => {
   return response.data;
 };
 
-export const useUserProfileQuery = () => {
+export const useUserProfileQuery = (options?: { enabled?: boolean }) => {
   return useQuery<UserProfileResponse>({
     queryKey: ["user-profile"],
     queryFn: fetchUserProfile,
     staleTime: 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
 };
 

@@ -11,4 +11,6 @@ public interface IComicReportService
     Task<IEnumerable<ComicReportResponse>> GetReportsByUserAsync(long userId, int offset, int limit);
     Task<ComicReportResponse?> UpdateStatusAsync(long id, ReportStatus status);
     Task<ComicReportResponse?> GetByIdAsync(long id);
+    Task<ComicReportResponse?> BanComicAsync(long id);
+    Task<ComicReportResponse?> HideCommentAsync(long id);
 }

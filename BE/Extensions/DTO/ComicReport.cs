@@ -32,6 +32,12 @@ public static partial class Extensions
             reporter_id = report.reporter_id.ToString(),
             reason = report.reason,
             status = report.status,
+            comic_name = null,
+            comic_status = null,
+            reporter_email = null,
+            reporter_name = null,
+            comment_content = null,
+            comment_is_hidden = null,
             created_at = report.created_at,
             updated_at = report.updated_at
         };

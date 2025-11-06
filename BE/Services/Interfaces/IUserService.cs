@@ -21,8 +21,9 @@ namespace TruyenCV.Services
         /// </summary>
         /// <param name="offset">Vị trí bắt đầu</param>
         /// <param name="limit">Số lượng bản ghi</param>
-        /// <returns>Danh sách người dùng</returns>
-        Task<IEnumerable<UserResponse>> GetUsersAsync(int offset, int limit);
+    /// <param name="keyword">Từ khóa tìm kiếm (email hoặc mã người dùng)</param>
+    /// <returns>Danh sách người dùng</returns>
+    Task<IEnumerable<UserResponse>> GetUsersAsync(int offset, int limit, string? keyword = null);
         
         /// <summary>
         /// Tạo người dùng mới

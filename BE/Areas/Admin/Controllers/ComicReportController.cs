@@ -55,4 +55,28 @@ public sealed class ComicReportController : ControllerBase
 
         return Ok(updated);
     }
+
+    [HttpPost("{id}/ban-comic")]
+    public async Task<IActionResult> BanComic(long id)
+    {
+        var result = await _reportService.BanComicAsync(id);
+        if (result == null)
+        {
+            return NotFound(new { message = "Không tìm thấy báo cáo" });
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/hide-comment")]
+    public async Task<IActionResult> HideComment(long id)
+    {
+        var result = await _reportService.HideCommentAsync(id);
+        if (result == null)
+        {
+            return NotFound(new { message = "Không tìm thấy báo cáo" });
+        }
+
+        return Ok(result);
+    }
 }

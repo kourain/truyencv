@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { appEnv, isBrowser } from "@const/env";
-import { clearAuthTokens, getAccessToken, getRefreshToken, getSVAccessToken, getSVRefreshToken, setAuthTokens } from "./authTokens";
+import { AuthStateFromJWT, clearAuthTokens, decodeJwtToken, getAccessToken, getRefreshToken, getSVAccessToken, getSVRefreshToken, setAuthTokens } from "./authTokens";
+import { useAuth } from "@hooks/useAuth";
 
 const defaultConfig: AxiosRequestConfig = {
   baseURL: appEnv.BACKEND_URL || undefined,
@@ -69,23 +70,24 @@ httpClient.interceptors.request.use(async (config) => {
   return nextConfig;
 });
 
-const updateAuthToken = (headers: AxiosResponse["headers"]): boolean => {
+const updateAuthToken = (headers: AxiosResponse["headers"]): string | null => {
   const newAccessToken = headers["x-access-token"] || "";
   const newRefreshToken = headers["x-refresh-token"] || "";
   const newAccessTokenExpiry = parseInt(headers["x-access-token-expiry"] || "1", 10);
   const newRefreshTokenExpiry = parseInt(headers["x-refresh-token-expiry"] || "30", 10);
   if (newAccessToken.length > 0 && newRefreshToken.length > 0) {
     setAuthTokens(newAccessToken, newRefreshToken, newAccessTokenExpiry, newRefreshTokenExpiry);
-    return true;
+    return newAccessToken;
   }
-  return false;
+  return null;
 };
 
 httpClient.interceptors.response.use(
   (response: AxiosResponse) => {
     if (isBrowser) {
+      const accessToken = updateAuthToken(response.headers);
       const responseData = response?.data as Partial<AuthTokensResponse> | undefined;
-      if (updateAuthToken(response.headers) === false && response.config.url!.includes("/auth/login")) {
+      if (accessToken === null && response.config.url!.includes("/auth/login")) {
         const bodyRefreshToken = responseData?.refresh_token ?? "";
         const bodyAccessToken = responseData?.access_token ?? "";
         const accessExpiryMinutes = responseData?.access_token_minutes;
