@@ -6,13 +6,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `https://${appEnv.FE_USER[0]}.com`,
       lastModified: new Date(),
-      changeFrequency: 'yearly',
+      changeFrequency: 'monthly',
       priority: 1,
     },
     {
-      url: `https://${appEnv.FE_USER[0]}.com/about`,
+      url: `https://${appEnv.FE_USER[0]}.com/comic`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {

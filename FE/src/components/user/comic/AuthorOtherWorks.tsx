@@ -7,10 +7,14 @@ import Image from "next/image";
 interface AuthorOtherWorksProps {
   items?: ComicDetailRelatedComic[];
   authorName?: string;
+  slug?: string;
   isLoading?: boolean;
 }
 
-const AuthorOtherWorks = ({ items, authorName, isLoading = false }: AuthorOtherWorksProps) => {
+import { useComicsEmbeddedBySlugQuery } from "@services/user/comic-embedded.service";
+
+const AuthorOtherWorks = ({ items, authorName, slug, isLoading = false }: AuthorOtherWorksProps) => {
+  const { data: embeddedItems, isLoading: isLoadingEmbedded } = useComicsEmbeddedBySlugQuery(slug ?? "");
   if (isLoading) {
     return (
       <section className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg">
@@ -27,7 +31,9 @@ const AuthorOtherWorks = ({ items, authorName, isLoading = false }: AuthorOtherW
     );
   }
 
-  if (!items?.length) {
+  const effectiveItems = items ?? embeddedItems;
+
+  if (!effectiveItems?.length) {
     return null;
   }
 
@@ -40,7 +46,7 @@ const AuthorOtherWorks = ({ items, authorName, isLoading = false }: AuthorOtherW
         </h2>
       </header>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => (
+  {effectiveItems.map((item) => (
           <Link
             key={item.id}
             href={`/user/comic/${item.slug}`}
