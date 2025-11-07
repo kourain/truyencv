@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -39,10 +41,54 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
             () => _dbSet.AsNoTracking()
                 .Where(h => h.user_id == userId && h.deleted_at == null)
                 .OrderByDescending(h => h.updated_at)
+                .Take(safeLimit)
+                .Include(m => m.Comic)
+                .Where(m => m.Comic != null && m.Comic.deleted_at == null && m.Comic.status != ComicStatus.Banned)
+                .Include(m => m.ComicChapter)
+                .Where(m => m.ComicChapter != null && m.ComicChapter.deleted_at == null)
                 .ToListAsync(),
-            $"user:{userId}",
+            $"user:{userId}:lm{safeLimit}",
             DefaultCacheMinutes
         );
         return (result ?? Enumerable.Empty<UserComicReadHistory>()).Take(safeLimit);
+    }
+
+    public async Task<IEnumerable<UserComicReadAggregate>> GetTopByUpdatedAtAsync(DateTime fromUtc, int limit)
+    {
+        limit = Math.Clamp(limit, 1, 50);
+
+        return (await _redisCache.GetFromRedisAsync(
+                () => _dbSet.AsNoTracking()
+                .Where(history => history.deleted_at == null && history.updated_at >= fromUtc)
+                .ToListAsync(), DefaultCacheMinutes))
+            .GroupBy(history => history.comic_id)
+            .Select(group => new UserComicReadAggregate(
+                group.Key,
+                group.LongCount(),
+                group.Max(item => item.updated_at)))
+            .OrderByDescending(result => result.reader_count)
+            .ThenByDescending(result => result.last_read_at)
+            .Take(limit);
+    }
+
+    public async Task<IDictionary<long, long>> GetReaderCountsAsync(IEnumerable<long> comicIds, int month = 3)
+    {
+        var ids = comicIds?.Distinct().ToArray() ?? Array.Empty<long>();
+        if (ids.Length == 0)
+        {
+            return new Dictionary<long, long>();
+        }
+
+        var aggregates = await _dbSet.AsNoTracking()
+            .Where(history => history.deleted_at == null && ids.Contains(history.comic_id) && history.created_at.Month >= DateTime.UtcNow.AddMonths(-month).Month)
+            .GroupBy(history => history.comic_id)
+            .Select(group => new
+            {
+                comic_id = group.Key,
+                reader_count = group.LongCount()
+            })
+            .ToListAsync();
+
+        return aggregates.ToDictionary(item => item.comic_id, item => item.reader_count);
     }
 }

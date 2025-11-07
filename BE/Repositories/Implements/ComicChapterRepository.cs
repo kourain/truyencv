@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
@@ -67,5 +68,18 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 			$"comic:{comicId}:chapter:{chapter}:next",
 			DefaultCacheMinutes
 		);
+	}
+
+	public async Task<IEnumerable<ComicChapter>> GetLatestUpdatedAsync(int limit)
+	{
+		limit = Math.Clamp(limit, 1, 50);
+
+		return await _dbSet.AsNoTracking()
+			.Include(chapter => chapter.Comic)
+			.Where(chapter => chapter.deleted_at == null && chapter.Comic != null && chapter.Comic.deleted_at == null)
+			.OrderByDescending(chapter => chapter.updated_at)
+			.ThenByDescending(chapter => chapter.id)
+			.Take(limit)
+			.ToListAsync();
 	}
 }

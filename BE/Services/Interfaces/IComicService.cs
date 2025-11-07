@@ -100,4 +100,11 @@ public interface IComicService
 	/// <param name="id">ID của comic</param>
 	/// <returns>True nếu xóa thành công, ngược lại là False</returns>
 	Task<bool> DeleteComicAsync(long id);
+
+	/// <summary>
+	/// Lấy dữ liệu tổng hợp cho trang chủ người dùng
+	/// </summary>
+	/// <param name="userId">ID người dùng</param>
+	/// <returns>Dữ liệu trang chủ</returns>
+	Task<UserHomeResponse> GetHomeForUserAsync(long userId);
 }

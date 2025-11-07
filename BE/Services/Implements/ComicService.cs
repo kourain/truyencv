@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
+using TruyenCV.Models;
 using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using Pgvector;
@@ -17,12 +18,27 @@ public class ComicService : IComicService
     private readonly IComicRepository _comicRepository;
     private readonly IDistributedCache _redisCache;
     private readonly ITextEmbeddingService _embeddingService;
+    private readonly IUserComicReadHistoryRepository _readHistoryRepository;
+    private readonly IComicChapterRepository _comicChapterRepository;
+    private readonly IComicRecommendRepository _comicRecommendRepository;
+    private readonly IComicCommentRepository _comicCommentRepository;
 
-    public ComicService(IComicRepository comicRepository, IDistributedCache redisCache, ITextEmbeddingService embeddingService)
+    public ComicService(
+        IComicRepository comicRepository,
+        IDistributedCache redisCache,
+        ITextEmbeddingService embeddingService,
+        IUserComicReadHistoryRepository readHistoryRepository,
+        IComicChapterRepository comicChapterRepository,
+        IComicRecommendRepository comicRecommendRepository,
+        IComicCommentRepository comicCommentRepository)
     {
         _comicRepository = comicRepository;
         _redisCache = redisCache;
         _embeddingService = embeddingService;
+        _readHistoryRepository = readHistoryRepository;
+        _comicChapterRepository = comicChapterRepository;
+        _comicRecommendRepository = comicRecommendRepository;
+        _comicCommentRepository = comicCommentRepository;
     }
 
     public async Task<ComicResponse?> GetComicByIdAsync(long id)
@@ -238,5 +254,212 @@ public class ComicService : IComicService
         await _redisCache.AddOrUpdateInRedisAsync(comic, comic.id);
 
         return true;
+    }
+
+    public async Task<UserHomeResponse> GetHomeForUserAsync(long userId)
+    {
+        const int historyLimit = 12;
+        const int editorPickLimit = 6;
+        const int rankingLimit = 10;
+        const int updatesLimit = 12;
+        const int completedLimit = 10;
+        const int reviewLimit = 6;
+
+        var historyTask = await BuildHistoryAsync(userId, historyLimit);
+        var editorPicksTask = await BuildEditorPicksAsync(editorPickLimit);
+        var recommendedTask = await BuildTopRecommendedAsync(rankingLimit);
+        var weeklyReadsTask = await BuildTopWeeklyReadsAsync(rankingLimit);
+        var updatesTask = await BuildLatestUpdatesAsync(updatesLimit);
+        var completedTask = await BuildRecentlyCompletedAsync(completedLimit);
+        var reviewsTask = await BuildLatestReviewsAsync(reviewLimit);
+
+        return new UserHomeResponse
+        {
+            history = historyTask,
+            editor_picks = editorPicksTask,
+            top_recommended = recommendedTask,
+            top_weekly_reads = weeklyReadsTask,
+            latest_updates = updatesTask,
+            recently_completed = completedTask,
+            latest_reviews = reviewsTask
+        };
+    }
+
+    private async Task<IReadOnlyList<UserHomeHistoryResponse>> BuildHistoryAsync(long userId, int limit)
+    {
+        var histories = (await _readHistoryRepository.GetByUserIdAsync(userId, limit)).ToList();
+        if (histories.Count == 0)
+        {
+            return Array.Empty<UserHomeHistoryResponse>();
+        }
+        return histories
+            .Select(history =>
+            {
+                return new UserHomeHistoryResponse
+                {
+                    comic_id = history.comic_id,
+                    comic_title = history.Comic?.name ?? "Truyện không xác định",
+                    cover_url = history.Comic?.cover_url,
+                    last_read_chapter = history.ComicChapter?.chapter ?? 0,
+                    total_chapters = history.Comic?.chapter_count ?? 0,
+                    last_read_at = history.updated_at
+                };
+            }).ToList();
+    }
+
+    private async Task<IReadOnlyList<UserHomeHighlightedComicResponse>> BuildEditorPicksAsync(int limit)
+    {
+        var comics = (await _comicRepository.GetTopRatedAsync(limit * 2))
+            .Where(comic => comic.deleted_at == null)
+            .Take(limit)
+            .ToList();
+
+        if (comics.Count == 0)
+        {
+            return Array.Empty<UserHomeHighlightedComicResponse>();
+        }
+
+        return comics.Select(comic => new UserHomeHighlightedComicResponse
+        {
+            comic_id = comic.id,
+            comic_title = comic.name,
+            cover_url = comic.cover_url,
+            short_description = BuildShortDescription(comic.description),
+            latest_chapter = comic.chapter_count,
+            average_rating = Math.Round(comic.rate, 2)
+        }).ToList();
+    }
+
+    private async Task<IReadOnlyList<UserHomeRankingComicResponse>> BuildTopRecommendedAsync(int limit)
+    {
+        var lookupDate = DateTime.UtcNow.AddDays(-30);
+        var aggregates = (await _readHistoryRepository.GetTopByUpdatedAtAsync(lookupDate, limit * 2)).ToList();
+        if (aggregates.Count == 0)
+        {
+            return Array.Empty<UserHomeRankingComicResponse>();
+        }
+        return aggregates
+            .Select(item => new UserHomeRankingComicResponse
+            {
+                comic_id = item.comic_id,
+                comic_title = string.Empty,
+                cover_url = string.Empty,
+                total_views = item.reader_count,
+                weekly_views = item.reader_count,
+                recommendation_score = 0
+            })
+            .ToList();
+    }
+
+    private async Task<IReadOnlyList<UserHomeRankingComicResponse>> BuildTopWeeklyReadsAsync(int limit)
+    {
+        var fromUtc = DateTime.UtcNow.AddDays(-7);
+        var aggregates = (await _readHistoryRepository.GetTopByUpdatedAtAsync(fromUtc, limit * 2)).ToList();
+        if (aggregates.Count == 0)
+        {
+            return Array.Empty<UserHomeRankingComicResponse>();
+        }
+        return aggregates
+            .Select(item => new UserHomeRankingComicResponse
+            {
+                comic_id = item.comic_id,
+                comic_title = string.Empty,
+                cover_url = string.Empty,
+                total_views = item.reader_count,
+                weekly_views = item.reader_count,
+                recommendation_score = 0
+            })
+            .ToList();
+    }
+
+    private async Task<IReadOnlyList<UserHomeComicUpdateResponse>> BuildLatestUpdatesAsync(int limit)
+    {
+        var chapters = (await _comicChapterRepository.GetLatestUpdatedAsync(limit * 2)).ToList();
+        if (chapters.Count == 0)
+        {
+            return Array.Empty<UserHomeComicUpdateResponse>();
+        }
+
+        return chapters
+            .Where(chapter => chapter.Comic != null)
+            .OrderByDescending(chapter => chapter.updated_at)
+            .ThenByDescending(chapter => chapter.id)
+            .Take(limit)
+            .Select(chapter => new UserHomeComicUpdateResponse
+            {
+                comic_id = chapter.comic_id,
+                comic_title = chapter.Comic!.name,
+                chapter_title = BuildChapterTitle(chapter.chapter),
+                chapter_number = chapter.chapter,
+                updated_at = chapter.updated_at
+            })
+            .ToList();
+    }
+
+    private async Task<IReadOnlyList<UserHomeCompletedComicResponse>> BuildRecentlyCompletedAsync(int limit)
+    {
+        var comics = (await _comicRepository.FindAsync(comic => comic.status == ComicStatus.Completed && comic.deleted_at == null))
+            .OrderByDescending(comic => comic.updated_at)
+            .ThenByDescending(comic => comic.id)
+            .Take(limit)
+            .ToList();
+
+        if (comics.Count == 0)
+        {
+            return Array.Empty<UserHomeCompletedComicResponse>();
+        }
+
+        return comics.Select(comic => new UserHomeCompletedComicResponse
+        {
+            comic_id = comic.id,
+            comic_title = comic.name,
+            cover_url = comic.cover_url,
+            total_chapters = comic.chapter_count,
+            completed_at = comic.updated_at
+        }).ToList();
+    }
+
+    private async Task<IReadOnlyList<UserHomeReviewResponse>> BuildLatestReviewsAsync(int limit)
+    {
+        var comments = (await _comicCommentRepository.GetLatestRatingReviewsAsync(limit * 2)).ToList();
+        if (comments.Count == 0)
+        {
+            return Array.Empty<UserHomeReviewResponse>();
+        }
+
+        return comments
+            .Where(comment => comment.Comic != null)
+            .OrderByDescending(comment => comment.created_at)
+            .ThenByDescending(comment => comment.id)
+            .Take(limit)
+            .Select(comment => new UserHomeReviewResponse
+            {
+                review_id = comment.id,
+                comic_id = comment.comic_id,
+                comic_title = comment.Comic!.name,
+                user_display_name = comment.User?.name ?? "Độc giả ẩn danh",
+                rating = comment.rate_star ?? 0,
+                liked_count = comment.like,
+                created_at = comment.created_at,
+                content = comment.comment
+            })
+            .ToList();
+    }
+
+    private static string? BuildShortDescription(string? description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return null;
+        }
+
+        const int maxLength = 160;
+        var trimmed = description.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength] + "...";
+    }
+
+    private static string BuildChapterTitle(int chapterNumber)
+    {
+        return $"Chương {chapterNumber}";
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
@@ -21,4 +23,19 @@ public interface IUserComicReadHistoryRepository : IRepository<UserComicReadHist
     /// Lấy danh sách lịch sử đọc của user
     /// </summary>
     Task<IEnumerable<UserComicReadHistory>> GetByUserIdAsync(long userId, int limit);
+
+    /// <summary>
+    /// Lấy danh sách comic đang được đọc nhiều nhất theo khoảng thời gian
+    /// </summary>
+    /// <param name="fromUtc">Mốc thời gian UTC bắt đầu thống kê</param>
+    /// <param name="limit">Số lượng comic cần lấy</param>
+    Task<IEnumerable<UserComicReadAggregate>> GetTopByUpdatedAtAsync(DateTime fromUtc, int limit);
+
+    /// <summary>
+    /// Lấy tổng số người đã đọc theo danh sách comic
+    /// </summary>
+    /// <param name="comicIds">Danh sách comic id</param>
+    Task<IDictionary<long, long>> GetReaderCountsAsync(IEnumerable<long> comicIds,int month = 3);
 }
+
+public record UserComicReadAggregate(long comic_id, long reader_count, DateTime last_read_at);
