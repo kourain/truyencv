@@ -54,6 +54,16 @@ const nextConfig: NextConfig = {
     ...FE_USER.split(",")
   ],
   productionBrowserSourceMaps : false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

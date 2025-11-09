@@ -7,3 +7,4 @@ export * from "./comic-report.service";
 export * from "./user.service";
 export * from "./user-role.service";
 export * from "./payment-history.service";
+export * from "./profile.service";

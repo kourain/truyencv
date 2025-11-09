@@ -1,21 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { getHttpClient } from "@helpers/httpClient";
+import { AxiosError } from "axios";
 
 const resource = "/auth/me";
 
 export const fetchUserProfile = async (): Promise<UserProfileResponse & AuthTokensResponse> => {
   const client = getHttpClient();
-  const response = await client.get<UserProfileResponse>(resource);
-  const accessToken = response.headers["x-access-token"] || null;
-  const accessTokenExpiryMinutes = response.headers["x-access-token-expiry"] || null;
-  const refreshToken = response.headers["x-refresh-token"] || null;
-  const refreshTokenExpiryDays = response.headers["x-refresh-token-expiry"] || null;
-  return {
-    ...response.data,
-    access_token: accessToken, access_token_minutes: accessTokenExpiryMinutes,
-    refresh_token: refreshToken, refresh_token_days: refreshTokenExpiryDays
-  };
+  try {
+    const response = await client.get<UserProfileResponse>(resource);
+    const accessToken = response.headers["x-access-token"] || null;
+    const accessTokenExpiryMinutes = response.headers["x-access-token-expiry"] || null;
+    const refreshToken = response.headers["x-refresh-token"] || null;
+    const refreshTokenExpiryDays = response.headers["x-refresh-token-expiry"] || null;
+    return {
+      ...response.data,
+      access_token: accessToken, access_token_minutes: accessTokenExpiryMinutes,
+      refresh_token: refreshToken, refresh_token_days: refreshTokenExpiryDays
+    };
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        return { id: "-1" } as UserProfileResponse & AuthTokensResponse;
+      }
+    }
+    return {} as UserProfileResponse & AuthTokensResponse;
+  }
 };
 
 export const useUserProfileQuery = (options?: { enabled?: boolean }) => {
