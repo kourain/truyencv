@@ -7,6 +7,7 @@ public class UserHomeHistoryResponse
 {
     public long comic_id { get; set; }
     public string comic_title { get; set; } = string.Empty;
+    public string comic_slug { get; set; } = string.Empty;
     public string? cover_url { get; set; }
     public int last_read_chapter { get; set; }
     public int total_chapters { get; set; }
@@ -17,6 +18,7 @@ public class UserHomeHighlightedComicResponse
 {
     public long comic_id { get; set; }
     public string comic_title { get; set; } = string.Empty;
+    public string comic_slug { get; set; } = string.Empty;
     public string? cover_url { get; set; }
     public string? short_description { get; set; }
     public int latest_chapter { get; set; }
@@ -27,6 +29,7 @@ public class UserHomeRankingComicResponse
 {
     public long comic_id { get; set; }
     public string comic_title { get; set; } = string.Empty;
+    public string comic_slug { get; set; } = string.Empty;
     public string? cover_url { get; set; }
     public long total_views { get; set; }
     public long weekly_views { get; set; }
@@ -37,6 +40,7 @@ public class UserHomeComicUpdateResponse
 {
     public long comic_id { get; set; }
     public string comic_title { get; set; } = string.Empty;
+    public string comic_slug { get; set; } = string.Empty;
     public string chapter_title { get; set; } = string.Empty;
     public int chapter_number { get; set; }
     public DateTime updated_at { get; set; }
@@ -46,6 +50,7 @@ public class UserHomeCompletedComicResponse
 {
     public long comic_id { get; set; }
     public string comic_title { get; set; } = string.Empty;
+    public string comic_slug { get; set; } = string.Empty;
     public string? cover_url { get; set; }
     public int total_chapters { get; set; }
     public DateTime completed_at { get; set; }
@@ -56,6 +61,7 @@ public class UserHomeReviewResponse
     public long review_id { get; set; }
     public long comic_id { get; set; }
     public string comic_title { get; set; } = string.Empty;
+    public string comic_slug { get; set; } = string.Empty;
     public string user_display_name { get; set; } = string.Empty;
     public double rating { get; set; }
     public long liked_count { get; set; }

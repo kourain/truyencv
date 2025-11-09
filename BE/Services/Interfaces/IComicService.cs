@@ -34,7 +34,7 @@ public interface IComicService
 	/// </summary>
 	/// <param name="slug">Slug của comic</param>
 	/// <returns>Thông tin comic hiển thị hoặc null nếu không tìm thấy</returns>
-	Task<ComicResponse?> GetComicDetailBySlugAsync(string slug);
+	Task<ComicDetailResponse?> GetComicDetailBySlugAsync(string slug, long? userId = null);
 
 	/// <summary>
 	/// Tìm kiếm comic

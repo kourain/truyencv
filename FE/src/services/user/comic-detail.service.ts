@@ -68,8 +68,8 @@ const createMockComicDetail = (slug: string): ComicDetailResponse => {
       synopsis:
         "Một hành trình tu luyện đầy thử thách giữa thế giới huyền huyễn, nơi nhân vật chính phải vượt qua muôn vàn khó khăn để bảo vệ những người thân yêu.",
       author_name: "Tác Giả Ẩn Danh",
-      rating_average: 4.6,
-      rating_count: 1280,
+      rate: 4.6,
+      rate_count: 1280,
       bookmark_count: 45230,
       weekly_chapter_count: 6,
       weekly_recommendations: 320,

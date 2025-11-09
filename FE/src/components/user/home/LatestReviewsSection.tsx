@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Star, ThumbsUp } from "lucide-react";
 
 import { formatNumber, formatRelativeTime } from "@helpers/format";
-import type { ReviewSummary } from "@services/user/home.service";
 
 import EmptyState from "./EmptyState";
 import SectionHeader from "./SectionHeader";
@@ -38,7 +38,9 @@ const ReviewCard = ({ review }: { review: ReviewSummary }) => (
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-semibold text-primary-foreground">{review.user_display_name}</span>
-          <span className="text-xs text-surface-foreground/60">{review.comic_title}</span>
+          <Link href={`/comic/${review.comic_slug}`} className="text-xs text-surface-foreground/60 transition hover:text-primary">
+            {review.comic_title}
+          </Link>
         </div>
       </div>
       <div className="flex items-center gap-1 text-primary">

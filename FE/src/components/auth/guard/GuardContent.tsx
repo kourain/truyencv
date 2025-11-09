@@ -25,7 +25,7 @@ export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { ch
     return roles?.some((role) => requiredRoles.includes(role as UserRole));
   };
   useEffect(() => {
-    const isSessionValid = hasRequiredRole(authState.roles) && authState.isAuthenticated;
+    const isSessionValid = hasRequiredRole(authState.userProfile.roles) && authState.isAuthenticated;
     const ensureUserSession = async (): Promise<void> => {
       if (isSessionValid === false) {
         console.log(authState)

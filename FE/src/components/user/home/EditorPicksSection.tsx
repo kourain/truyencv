@@ -1,8 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { Sparkles, Star } from "lucide-react";
-
-import type { HighlightedComic } from "@services/user/home.service";
 
 import SectionHeader from "./SectionHeader";
 import EmptyState from "./EmptyState";
@@ -30,7 +29,10 @@ const EditorPicksSection = ({ items, isLoading }: EditorPicksSectionProps) => (
 );
 
 const EditorPickCard = ({ comic }: { comic: HighlightedComic }) => (
-  <div className="group relative overflow-hidden rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
+  <Link
+    href={`/comic/${comic.comic_slug}`}
+    className="group relative block overflow-hidden rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl"
+  >
     <div className="flex items-start gap-4">
       <div className="relative h-36 w-28 overflow-hidden rounded-2xl bg-surface-muted/60">
         {comic.cover_url ? (
@@ -53,7 +55,7 @@ const EditorPickCard = ({ comic }: { comic: HighlightedComic }) => (
         </div>
       </div>
     </div>
-  </div>
+  </Link>
 );
 
 const EditorPickSkeleton = () => (

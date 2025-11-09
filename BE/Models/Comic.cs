@@ -44,6 +44,7 @@ public class Comic : BaseEntity
     public int? published_year { get; set; } = (int)DateTime.UtcNow.Year;
 
     public float rate { get; set; } = 0;
+    public int rate_count { get; set; } = 0;
     [ForeignKey(nameof(MainCategory))]
     public long main_category_id { get; set; }
     [Required]

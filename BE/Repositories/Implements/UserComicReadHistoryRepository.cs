@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using TruyenCV.Models;
@@ -59,16 +60,19 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
 
         return (await _redisCache.GetFromRedisAsync(
                 () => _dbSet.AsNoTracking()
-                .Where(history => history.deleted_at == null && history.updated_at >= fromUtc)
+                .Include(history => history.Comic)
+                .Where(history => history.deleted_at == null && history.updated_at >= fromUtc && history.Comic != null && history.Comic.deleted_at == null && history.Comic.status != ComicStatus.Banned)
+                .OrderByDescending(history => history.updated_at)
+                .Take(limit)
                 .ToListAsync(), DefaultCacheMinutes))
             .GroupBy(history => history.comic_id)
             .Select(group => new UserComicReadAggregate(
                 group.Key,
                 group.LongCount(),
-                group.Max(item => item.updated_at)))
+                group.Max(item => item.updated_at),
+                group.First().Comic!))
             .OrderByDescending(result => result.reader_count)
-            .ThenByDescending(result => result.last_read_at)
-            .Take(limit);
+            .ThenByDescending(result => result.last_read_at);
     }
 
     public async Task<IDictionary<long, long>> GetReaderCountsAsync(IEnumerable<long> comicIds, int month = 3)

@@ -49,6 +49,7 @@ public class ComicService : IComicService
 
     public async Task<ComicResponse?> GetComicBySlugAsync(string slug)
     {
+        slug = slug.ToLower();
         var comic = await _comicRepository.GetBySlugAsync(slug);
         if (comic?.deleted_at != null)
         {
@@ -116,7 +117,7 @@ public class ComicService : IComicService
         };
     }
 
-    public async Task<ComicResponse?> GetComicDetailBySlugAsync(string slug)
+    public async Task<ComicDetailResponse?> GetComicDetailBySlugAsync(string slug, long? userId = null)
     {
         var comic = await _comicRepository.GetBySlugAsync(slug);
         if (comic == null || comic.deleted_at != null)
@@ -124,7 +125,151 @@ public class ComicService : IComicService
             return null;
         }
 
-        return comic.ToRespDTO();
+        var chaptersTask = _comicChapterRepository.GetByComicIdAsync(comic.id);
+        var commentsTask = _comicCommentRepository.GetByComicIdAsync(comic.id);
+        var recommendationsTask = _comicRecommendRepository.GetByComicAsync(comic.id, 12);
+        var relatedTask = _comicRepository.GetByAuthorAsync(comic.author);
+        var userHistoryTask = userId.HasValue
+            ? _readHistoryRepository.GetByUserAndComicAsync(userId.Value, comic.id)
+            : Task.FromResult<UserComicReadHistory?>(null);
+
+        await Task.WhenAll(chaptersTask, commentsTask, recommendationsTask, relatedTask, userHistoryTask);
+
+        var chapterList = (await chaptersTask)
+            .Where(chapter => chapter.deleted_at == null)
+            .OrderByDescending(chapter => chapter.chapter)
+            .ThenByDescending(chapter => chapter.id)
+            .ToList();
+
+        var latestChapters = chapterList
+            .Take(8)
+            .Select(chapter => new ComicDetailChapterResponse
+            {
+                id = chapter._id,
+                number = chapter.chapter,
+                title = BuildChapterTitle(chapter.chapter),
+                released_at = chapter.updated_at
+            })
+            .ToList();
+
+        var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
+        var weeklyChapterCount = chapterList.Count(chapter => chapter.updated_at >= sevenDaysAgo);
+
+        var recommendEntries = (await recommendationsTask).ToList();
+        var currentUtc = DateTime.UtcNow;
+        var weeklyRecommendations = (int)Math.Clamp(
+            recommendEntries
+                .Where(entry => entry.year == currentUtc.Year && entry.month == currentUtc.Month)
+                .Sum(entry => entry.rcm_count),
+            0,
+            int.MaxValue);
+
+        var comments = (await commentsTask).ToList();
+
+        var reviews = comments
+            .Where(comment => comment.is_rate && comment.rate_star.HasValue)
+            .OrderByDescending(comment => comment.created_at)
+            .ThenByDescending(comment => comment.id)
+            .Take(6)
+            .Select(comment => new ComicDetailReviewResponse
+            {
+                id = comment._id,
+                user_display_name = comment.User?.name ?? "Độc giả ẩn danh",
+                rating = comment.rate_star!.Value,
+                comment = comment.comment,
+                created_at = comment.created_at
+            })
+            .ToList();
+
+        var discussions = comments
+            .Where(comment => !comment.is_rate && comment.reply_id == null)
+            .OrderByDescending(comment => comment.created_at)
+            .ThenByDescending(comment => comment.id)
+            .Take(6)
+            .Select(comment => new ComicDetailDiscussionResponse
+            {
+                id = comment._id,
+                user_display_name = comment.User?.name ?? "Độc giả ẩn danh",
+                message = comment.comment,
+                created_at = comment.created_at
+            })
+            .ToList();
+
+        var related = (await relatedTask)
+            .Where(other => other.id != comic.id && other.deleted_at == null && other.slug != comic.slug)
+            .OrderByDescending(other => other.updated_at)
+            .ThenBy(other => other.id)
+            .Take(6)
+            .Select(other => new ComicDetailRelatedComicResponse
+            {
+                id = other._id,
+                slug = other.slug,
+                title = other.name,
+                cover_url = other.cover_url,
+                latest_chapter = other.chapter_count
+            })
+            .ToList();
+
+        var userHistory = await userHistoryTask;
+        int? userLastReadChapter = null;
+        if (userHistory != null)
+        {
+            userLastReadChapter = userHistory.ComicChapter?.chapter;
+            if (!userLastReadChapter.HasValue)
+            {
+                var chapterFromCache = chapterList.FirstOrDefault(chapter => chapter.id == userHistory.chapter_id);
+                if (chapterFromCache != null)
+                {
+                    userLastReadChapter = chapterFromCache.chapter;
+                }
+                else
+                {
+                    var chapterEntity = await _comicChapterRepository.GetByIdAsync(userHistory.chapter_id);
+                    userLastReadChapter = chapterEntity?.chapter;
+                }
+            }
+        }
+
+        var categoryResponses = comic.ComicHaveCategories?
+            .Where(relation => relation.ComicCategory != null)
+            .Select(relation => new ComicDetailCategoryResponse
+            {
+                id = relation.ComicCategory!._id,
+                name = relation.ComicCategory!.name
+            })
+            .ToList() ?? new List<ComicDetailCategoryResponse>();
+
+        var detailComic = new ComicDetailComicResponse
+        {
+            id = comic._id,
+            slug = comic.slug,
+            title = comic.name,
+            synopsis = comic.description,
+            author_name = comic.author,
+            cover_url = comic.cover_url,
+            banner_url = comic.banner_url,
+            rate = Math.Round(comic.rate, 2),
+            rate_count = comic.rate_count,
+            bookmark_count = comic.bookmark_count,
+            weekly_chapter_count = weeklyChapterCount,
+            weekly_recommendations = weeklyRecommendations,
+            user_last_read_chapter = userLastReadChapter,
+            categories = categoryResponses
+        };
+
+        var highlights = BuildComicHighlights(detailComic, comic);
+
+        return new ComicDetailResponse
+        {
+            comic = detailComic,
+            latest_chapters = latestChapters,
+            advertisements = BuildComicAdvertisements(comic),
+            introduction = comic.description,
+            related_by_author = related,
+            reviews = reviews,
+            discussions = discussions,
+            highlights = highlights
+        };
     }
 
     public async Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword, int limit, double minScore)
@@ -299,12 +444,76 @@ public class ComicService : IComicService
                 {
                     comic_id = history.comic_id,
                     comic_title = history.Comic?.name ?? "Truyện không xác định",
+                    comic_slug = history.Comic?.slug ?? string.Empty,
                     cover_url = history.Comic?.cover_url,
                     last_read_chapter = history.ComicChapter?.chapter ?? 0,
                     total_chapters = history.Comic?.chapter_count ?? 0,
                     last_read_at = history.updated_at
                 };
             }).ToList();
+    }
+
+    private static ComicDetailAdvertisementsResponse BuildComicAdvertisements(Comic comic)
+    {
+        var fallbackImage = comic.banner_url
+            ?? comic.cover_url
+            ?? $"https://picsum.photos/seed/{comic.slug}/1200/360";
+
+        ComicDetailAdvertisementResponse CreateAd(string variant, string label, string description)
+        {
+            return new ComicDetailAdvertisementResponse
+            {
+                id = $"{comic._id}-{variant}",
+                image_url = fallbackImage,
+                href = $"/comic/{comic.slug}",
+                label = label,
+                description = description
+            };
+        }
+
+        return new ComicDetailAdvertisementsResponse
+        {
+            primary = CreateAd("primary", $"Khám phá {comic.name}", "Đọc chương mới nhất và theo dõi truyện mỗi ngày"),
+            secondary = CreateAd("secondary", "Tham gia sự kiện đọc truyện", "Hoàn thành các chương để nhận thưởng và huy hiệu"),
+            tertiary = CreateAd("tertiary", "Nâng cấp trải nghiệm đọc", "Mua gói premium để mở khóa toàn bộ nội dung")
+        };
+    }
+
+    private static IReadOnlyList<string> BuildComicHighlights(ComicDetailComicResponse detailComic, Comic comic)
+    {
+        var highlights = new List<string>();
+
+        if (comic.chapter_count > 0)
+        {
+            highlights.Add($"Đã phát hành {comic.chapter_count} chương");
+        }
+
+        if (detailComic.rate > 0 && detailComic.rate_count > 0)
+        {
+            highlights.Add($"Đánh giá {detailComic.rate:F1}/5 từ {detailComic.rate_count} lượt bình chọn");
+        }
+
+        if (detailComic.weekly_chapter_count > 0)
+        {
+            highlights.Add($"Cập nhật {detailComic.weekly_chapter_count} chương trong 7 ngày qua");
+        }
+
+        if (detailComic.weekly_recommendations > 0)
+        {
+            highlights.Add($"{detailComic.weekly_recommendations} lượt đề cử trong tháng này");
+        }
+
+        if (detailComic.categories.Count > 0)
+        {
+            var categories = string.Join(", ", detailComic.categories.Select(category => category.name));
+            highlights.Add($"Thể loại tiêu biểu: {categories}");
+        }
+        else if (!string.IsNullOrWhiteSpace(comic.MainCategory?.name))
+        {
+            highlights.Add($"Thể loại chính: {comic.MainCategory!.name}");
+        }
+
+        return highlights.Count > 0 ? highlights : new List<string> { "Nội dung đang được cập nhật." };
     }
 
     private async Task<IReadOnlyList<UserHomeHighlightedComicResponse>> BuildEditorPicksAsync(int limit)
@@ -323,6 +532,7 @@ public class ComicService : IComicService
         {
             comic_id = comic.id,
             comic_title = comic.name,
+            comic_slug = comic.slug,
             cover_url = comic.cover_url,
             short_description = BuildShortDescription(comic.description),
             latest_chapter = comic.chapter_count,
@@ -339,15 +549,20 @@ public class ComicService : IComicService
             return Array.Empty<UserHomeRankingComicResponse>();
         }
         return aggregates
-            .Select(item => new UserHomeRankingComicResponse
+            .Select(item =>
             {
-                comic_id = item.comic_id,
-                comic_title = string.Empty,
-                cover_url = string.Empty,
-                total_views = item.reader_count,
-                weekly_views = item.reader_count,
-                recommendation_score = 0
+                return new UserHomeRankingComicResponse
+                {
+                    comic_id = item.comic_id,
+                    comic_title = item.Comic?.name ?? "Truyện không xác định",
+                    comic_slug = item.Comic?.slug ?? string.Empty,
+                    cover_url = item.Comic?.cover_url,
+                    total_views = item.reader_count,
+                    weekly_views = item.reader_count,
+                    recommendation_score = 0
+                };
             })
+            .Take(limit)
             .ToList();
     }
 
@@ -363,12 +578,13 @@ public class ComicService : IComicService
             .Select(item => new UserHomeRankingComicResponse
             {
                 comic_id = item.comic_id,
-                comic_title = string.Empty,
-                cover_url = string.Empty,
+                comic_title = item.Comic.slug,
+                cover_url = item.Comic.cover_url,
                 total_views = item.reader_count,
                 weekly_views = item.reader_count,
                 recommendation_score = 0
             })
+            .Take(limit)
             .ToList();
     }
 
@@ -389,6 +605,7 @@ public class ComicService : IComicService
             {
                 comic_id = chapter.comic_id,
                 comic_title = chapter.Comic!.name,
+                comic_slug = chapter.Comic.slug,
                 chapter_title = BuildChapterTitle(chapter.chapter),
                 chapter_number = chapter.chapter,
                 updated_at = chapter.updated_at
@@ -413,6 +630,7 @@ public class ComicService : IComicService
         {
             comic_id = comic.id,
             comic_title = comic.name,
+            comic_slug = comic.slug,
             cover_url = comic.cover_url,
             total_chapters = comic.chapter_count,
             completed_at = comic.updated_at
@@ -437,6 +655,7 @@ public class ComicService : IComicService
                 review_id = comment.id,
                 comic_id = comment.comic_id,
                 comic_title = comment.Comic!.name,
+                comic_slug = comment.Comic.slug,
                 user_display_name = comment.User?.name ?? "Độc giả ẩn danh",
                 rating = comment.rate_star ?? 0,
                 liked_count = comment.like,
@@ -445,7 +664,6 @@ public class ComicService : IComicService
             })
             .ToList();
     }
-
     private static string? BuildShortDescription(string? description)
     {
         if (string.IsNullOrWhiteSpace(description))

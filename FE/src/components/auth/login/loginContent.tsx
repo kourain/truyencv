@@ -90,7 +90,7 @@ export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
   const [isFirebasePending, setIsFirebasePending] = useState(false);
 
   useEffect(() => {
-    if (auth?.isAuthenticated && auth?.roles.includes(config.role)) {
+    if (auth?.isAuthenticated && auth.userProfile.roles.includes(config.role)) {
       router.replace(fallback);
     }
   }, [auth, config.role, fallback, router]);
@@ -131,7 +131,7 @@ export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
         variant: "success"
       });
       const nextAuthState = AuthStateFromJWT(decodeJwtToken(response.access_token));
-      auth.updateAuthState(nextAuthState);
+      // auth.updateAuthState(nextAuthState);
       console.log("LoginContent: Login successful, redirecting...");
       console.log("LoginContent: Updated auth state", nextAuthState);
       router.replace(fallback);

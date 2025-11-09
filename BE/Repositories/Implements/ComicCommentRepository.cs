@@ -28,7 +28,8 @@ public class ComicCommentRepository : Repository<ComicComment>, IComicCommentRep
     {
         return await _redisCache.GetFromRedisAsync<ComicComment>(
             () => _dbSet.AsNoTracking()
-                .Where(c => c.comic_id == comicId)
+                .Include(c => c.User)
+                .Where(c => c.comic_id == comicId && c.deleted_at == null && !c.is_hidden)
                 .OrderByDescending(c => c.created_at)
                 .ToListAsync(),
             $"comic:{comicId}",

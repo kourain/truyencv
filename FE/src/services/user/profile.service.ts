@@ -4,14 +4,22 @@ import { getHttpClient } from "@helpers/httpClient";
 
 const resource = "/auth/me";
 
-export const fetchUserProfile = async (): Promise<UserProfileResponse> => {
+export const fetchUserProfile = async (): Promise<UserProfileResponse & AuthTokensResponse> => {
   const client = getHttpClient();
   const response = await client.get<UserProfileResponse>(resource);
-  return response.data;
+  const accessToken = response.headers["x-access-token"] || null;
+  const accessTokenExpiryMinutes = response.headers["x-access-token-expiry"] || null;
+  const refreshToken = response.headers["x-refresh-token"] || null;
+  const refreshTokenExpiryDays = response.headers["x-refresh-token-expiry"] || null;
+  return {
+    ...response.data,
+    access_token: accessToken, access_token_minutes: accessTokenExpiryMinutes,
+    refresh_token: refreshToken, refresh_token_days: refreshTokenExpiryDays
+  };
 };
 
 export const useUserProfileQuery = (options?: { enabled?: boolean }) => {
-  return useQuery<UserProfileResponse>({
+  return useQuery<UserProfileResponse & AuthTokensResponse>({
     queryKey: ["user-profile"],
     queryFn: fetchUserProfile,
     staleTime: 60 * 1000,

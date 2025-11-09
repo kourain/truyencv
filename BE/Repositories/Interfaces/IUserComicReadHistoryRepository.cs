@@ -38,4 +38,4 @@ public interface IUserComicReadHistoryRepository : IRepository<UserComicReadHist
     Task<IDictionary<long, long>> GetReaderCountsAsync(IEnumerable<long> comicIds,int month = 3);
 }
 
-public record UserComicReadAggregate(long comic_id, long reader_count, DateTime last_read_at);
+public record UserComicReadAggregate(long comic_id, long reader_count, DateTime last_read_at, Comic Comic);

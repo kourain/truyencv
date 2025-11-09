@@ -60,6 +60,7 @@ public static partial class Extensions
             banner_url = comic.banner_url,
             chap_count = (int)comic.chapter_count,
             bookmark_count = comic.bookmark_count,
+            rate_count = comic.rate_count,
             main_category = categoryDict.TryGetValue(comic.main_category_id, out var categoryName) ? categoryName : "Unknown",
             rate = comic.rate,
             status = comic.status,

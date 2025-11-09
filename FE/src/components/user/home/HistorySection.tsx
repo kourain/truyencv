@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { History } from "lucide-react";
 
-import type { UserHistoryItem } from "@services/user/home.service";
 import { formatRelativeTime } from "@helpers/format";
 
 import EmptyState from "./EmptyState";
@@ -31,7 +31,10 @@ const HistorySection = ({ items, isLoading }: HistorySectionProps) => (
 );
 
 const HistoryCard = ({ history }: { history: UserHistoryItem }) => (
-  <div className="group flex gap-4 rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
+  <Link
+    href={`/comic/${history.comic_slug}`}
+    className="group flex gap-4 rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl"
+  >
     <div className="relative h-24 w-20 overflow-hidden bg-surface-muted/60">
       {history.cover_url ? (
         <img src={history.cover_url} alt={history.comic_title} className="h-full w-full rounded-sm object-cover" loading="lazy" />
@@ -46,7 +49,7 @@ const HistoryCard = ({ history }: { history: UserHistoryItem }) => (
       </div>
       <p className="text-xs text-surface-foreground/50">Cập nhật {formatRelativeTime(history.last_read_at)}</p>
     </div>
-  </div>
+  </Link>
 );
 
 const HistorySkeleton = () => (
