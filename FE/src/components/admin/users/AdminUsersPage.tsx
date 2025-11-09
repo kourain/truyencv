@@ -313,17 +313,19 @@ const AdminUsersPage = () => {
                     <li key={token.id} className="rounded-xl border border-surface-muted/60 bg-surface px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-primary-foreground">ID: {token.id}</p>
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                                token.is_active
-                                  ? "bg-emerald-500/20 text-emerald-300"
-                                  : "bg-red-500/20 text-red-300"
-                              }`}
-                            >
-                              {token.is_active ? "Hoạt động" : "Đã khóa"}
-                            </span>
+                            <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                              <span className="text-xs font-medium text-emerald-400">Đang hoạt động</span>
+                            </div>
+                            {new Date(token.expires_at) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) && (
+                              <div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5">
+                                <span className="text-xs font-medium text-amber-400">
+                                  Hết hạn: {new Date(token.expires_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           <div className="mt-2 space-y-1">
                             <div className="flex items-center gap-2">
@@ -349,9 +351,17 @@ const AdminUsersPage = () => {
                               </p>
                             )}
                           </div>
-                          <div className="mt-2 flex flex-wrap gap-3 text-xs text-surface-foreground/60">
-                            <span>Hết hạn: {new Date(token.expires_at).toLocaleString()}</span>
-                            <span>Tạo lúc: {new Date(token.created_at).toLocaleString()}</span>
+                          <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-surface-foreground/60">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-wider text-surface-foreground/40">Tạo lúc</p>
+                              <p>{new Date(token.created_at).toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase tracking-wider text-surface-foreground/40">Hết hạn</p>
+                              <p className={new Date(token.expires_at) < new Date() ? 'text-red-400' : ''}>
+                                {new Date(token.expires_at).toLocaleString()}
+                              </p>
+                            </div>
                           </div>
                         </div>
                         <button

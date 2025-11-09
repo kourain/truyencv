@@ -64,7 +64,7 @@ namespace TruyenCV.Areas.Admin.Controllers
             // Chuyển đổi RefreshToken thành DTO trước khi trả về
             var tokenResponses = tokens.Select(t => new
             {
-                id = t.id,
+                id = t.id.ToString(),
                 token = t.token,
                 expires_at = t.expires_at,
                 is_active = t.is_active,
