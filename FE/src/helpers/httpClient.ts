@@ -1,7 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { appEnv, isBrowser } from "@const/env";
-import { AuthStateFromJWT, clearAuthTokens, decodeJwtToken, getAccessToken, getRefreshToken, getSVAccessToken, getSVRefreshToken, setAuthTokens } from "./authTokens";
-import { useAuth } from "@hooks/useAuth";
+import { clearAuthTokens, getAccessToken, getRefreshToken, getSVAccessToken, getSVRefreshToken, setAuthTokens } from "./authTokens";
 
 const defaultConfig: AxiosRequestConfig = {
   baseURL: appEnv.BACKEND_URL || undefined,

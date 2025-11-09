@@ -107,8 +107,8 @@ const FirebaseLoginButton = ({
         variant: "success"
       });
 
-      const nextAuthState = AuthStateFromJWT(decodeJwtToken(response.access_token));
-      auth.updateAuthState(nextAuthState);
+      // const nextAuthState = AuthStateFromJWT(decodeJwtToken(response.access_token));
+      // auth.updateAuthState(nextAuthState);
       router.replace(fallback);
     } catch (error) {
       let message = genericErrorMessage ?? DEFAULT_FIREBASE_ERROR;

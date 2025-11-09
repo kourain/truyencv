@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Serilog;
 
 namespace TruyenCV.Services;
 
@@ -50,6 +51,7 @@ public class TextEmbeddingService : ITextEmbeddingService
 
     private async Task<float[][]?> TryRequestEmbeddingAsync(IReadOnlyList<string> segments)
     {
+        _logger.LogWarning("Response from embedding service: 1");
         if (!_options.Enabled)
         {
             return null;
@@ -65,7 +67,7 @@ public class TextEmbeddingService : ITextEmbeddingService
             return null;
         }
 
-        var payload = JsonSerializer.Serialize(new { texts = segments });
+        var payload = JsonConvert.SerializeObject(new { texts = segments });
         var requestUri = _options.ServiceUrl;
         var attempts = Math.Max(1, _options.RetryCount + 1);
         var client = _httpClientFactory.CreateClient(nameof(TextEmbeddingService));
@@ -81,16 +83,17 @@ public class TextEmbeddingService : ITextEmbeddingService
             try
             {
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
-                var body = await response.Content.ReadFromJsonAsync<JObject>();
+                var body = await response.Content.ReadFromJsonAsync<System.Text.Json.Nodes.JsonObject>();
+                _logger.LogWarning("Response from embedding service: {Body}", body?.ToString() ?? "null");
                 if (response.IsSuccessStatusCode)
                 {
                     var results = new float[segments.Count][];
                     for (var i = 0; i < segments.Count; i++)
                     {
-                        var embedding = body?["vectors"][i]?["values"]?.ToObject<float[]>();
+                        var embedding = (body?["vectors"][i]?["values"]?.AsArray());
                         if (embedding != null)
                         {
-                            results[i] = embedding;
+                            results[i] = embedding.Select(v => v!.GetValue<float>()).ToArray();
                         }
                     }
                     return results;
@@ -194,4 +197,12 @@ public class TextEmbeddingService : ITextEmbeddingService
 
         return value[..maxLength] + "…";
     }
+}
+public class EmbeddingResponse
+{
+    public List<EmbeddingVector> vectors { get; set; } = new();
+}
+public class EmbeddingVector
+{
+    public float[] values { get; set; } = Array.Empty<float>();
 }

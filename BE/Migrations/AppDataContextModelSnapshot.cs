@@ -97,8 +97,11 @@ namespace TruyenCV.Migrations
                     b.Property<float>("rate")
                         .HasColumnType("real");
 
+                    b.Property<int>("rate_count")
+                        .HasColumnType("integer");
+
                     b.Property<Vector>("search_vector")
-                        .HasColumnType("vector(256)");
+                        .HasColumnType("vector(768)");
 
                     b.Property<string>("slug")
                         .IsRequired()
@@ -1144,6 +1147,9 @@ namespace TruyenCV.Migrations
                     b.Property<DateTime?>("deleted_at")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("is_hidden")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("is_rate")
                         .HasColumnType("boolean");
 
@@ -1408,6 +1414,9 @@ namespace TruyenCV.Migrations
                     b.Property<long>("price_coin")
                         .HasColumnType("bigint");
 
+                    b.Property<int>("ticket_added")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
@@ -1609,6 +1618,8 @@ namespace TruyenCV.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("id");
+
+                    b.HasIndex("chapter_id");
 
                     b.HasIndex("comic_id");
 
@@ -2112,6 +2123,12 @@ namespace TruyenCV.Migrations
 
             modelBuilder.Entity("TruyenCV.Models.UserComicReadHistory", b =>
                 {
+                    b.HasOne("TruyenCV.Models.ComicChapter", "ComicChapter")
+                        .WithMany()
+                        .HasForeignKey("chapter_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("TruyenCV.Models.Comic", "Comic")
                         .WithMany()
                         .HasForeignKey("comic_id")
@@ -2125,6 +2142,8 @@ namespace TruyenCV.Migrations
                         .IsRequired();
 
                     b.Navigation("Comic");
+
+                    b.Navigation("ComicChapter");
 
                     b.Navigation("User");
                 });

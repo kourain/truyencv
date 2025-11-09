@@ -23,11 +23,6 @@ export type PingResponse = RawPingResponse & {
     response_time_ms: number;
   };
 };
-export const fetchAuthViaPing = async (config?: AxiosRequestConfig) : Promise<string | null> => {
-  const client = getHttpClient();
-  const response = await client.get<RawPingResponse>("/ping", config);
-  return response.headers["X-Access-Token"] || null;
-}
 export const fetchPing = async (config?: AxiosRequestConfig) => {
   const client = getHttpClient();
   const start = typeof performance !== "undefined" ? performance.now() : Date.now();

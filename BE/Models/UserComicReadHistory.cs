@@ -13,15 +13,16 @@ public class UserComicReadHistory : BaseEntity
     public required long user_id { get; set; }
     public required long comic_id { get; set; }
     public required long chapter_id { get; set; }
-
     [NotMapped]
     public DateTime read_at => updated_at;
 
-    [ForeignKey(nameof(user_id))]
     [JsonIgnore]
+    [ForeignKey(nameof(user_id))]
     public virtual User? User { get; set; }
 
-    [ForeignKey(nameof(comic_id))]
     [JsonIgnore]
+    [ForeignKey(nameof(comic_id))]
     public virtual Comic? Comic { get; set; }
+    [ForeignKey(nameof(chapter_id))]
+    public virtual ComicChapter? ComicChapter { get; set; }
 }

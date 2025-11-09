@@ -5,8 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, PlusCircle, RefreshCcw, Trash2 } from "lucide-react";
 
 import { createComic, deleteComic, fetchComics, updateComic } from "@services/admin";
+import { fetchAllComicCategories } from "@services/admin/comic-category.service";
+import { fetchCategoriesOfComic } from "@services/admin/comic-have-category.service";
 import { ComicStatus, ComicStatusLabel } from "../../../const/enum/comic-status";
+import { CategoryType } from "../../../const/enum/category-type";
 import type { ComicResponse } from "../../../types/comic";
+import type { ComicCategoryResponse } from "../../../types/comic-category";
 
 const DEFAULT_LIMIT = 12;
 
@@ -17,6 +21,11 @@ const initialFormState = {
   embedded_from: "",
   embedded_from_url: "",
   cover_url: "",
+  main_category_id: 1001, // Default to "Tiên Hiệp" (Genre)
+  main_character_id: null as number | null, // MainCharacter (ID 2001-2010)
+  world_theme_id: null as number | null, // WorldTheme (ID 3001-3052)
+  class_id: null as number | null, // Class (ID 4001-4038)
+  view_id: null as number | null, // View (ID 5001-5002)
   chap_count: 0,
   rate: 0,
   status: ComicStatus.Continuing
@@ -57,8 +66,58 @@ const AdminComicsPage = () => {
     queryFn: () => fetchComics({ offset, limit: DEFAULT_LIMIT, ...queryFilters })
   });
 
+  // Fetch categories for dropdown
+  const categoriesQuery = useQuery({
+    queryKey: ["admin-categories-all"],
+    queryFn: () => fetchAllComicCategories()
+  });
+
+  const genreCategories = useMemo(() => {
+    if (!categoriesQuery.data) return [];
+    // Filter only Genre categories (ID 1001-1012) for main_category
+    return categoriesQuery.data
+      .filter((cat) => Number(cat.id) >= 1001 && Number(cat.id) <= 1012)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+  }, [categoriesQuery.data]);
+
+  // Group categories by type for separate dropdowns
+  const mainCharacterCategories = useMemo(() => {
+    if (!categoriesQuery.data) return [];
+    return categoriesQuery.data
+      .filter((cat) => Number(cat.id) >= 2001 && Number(cat.id) <= 2010)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+  }, [categoriesQuery.data]);
+
+  const worldThemeCategories = useMemo(() => {
+    if (!categoriesQuery.data) return [];
+    return categoriesQuery.data
+      .filter((cat) => Number(cat.id) >= 3001 && Number(cat.id) <= 3052)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+  }, [categoriesQuery.data]);
+
+  const classCategories = useMemo(() => {
+    if (!categoriesQuery.data) return [];
+    return categoriesQuery.data
+      .filter((cat) => Number(cat.id) >= 4001 && Number(cat.id) <= 4038)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+  }, [categoriesQuery.data]);
+
+  const viewCategories = useMemo(() => {
+    if (!categoriesQuery.data) return [];
+    return categoriesQuery.data
+      .filter((cat) => Number(cat.id) >= 5001 && Number(cat.id) <= 5002)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+  }, [categoriesQuery.data]);
+
   const createMutation = useMutation({
     mutationFn: () => {
+      // Collect all selected category IDs (excluding null values)
+      const categoryIds: number[] = [];
+      if (formState.main_character_id) categoryIds.push(formState.main_character_id);
+      if (formState.world_theme_id) categoryIds.push(formState.world_theme_id);
+      if (formState.class_id) categoryIds.push(formState.class_id);
+      if (formState.view_id) categoryIds.push(formState.view_id);
+
       const payload = {
         name: formState.name.trim(),
         description: formState.description.trim(),
@@ -66,7 +125,10 @@ const AdminComicsPage = () => {
         embedded_from: formState.embedded_from.trim() || null,
         embedded_from_url: formState.embedded_from_url.trim() || null,
         cover_url: formState.cover_url.trim() || null,
+        main_category_id: formState.main_category_id,
+        category_ids: categoryIds.length > 0 ? categoryIds : undefined,
         status: formState.status
+        // Note: chap_count, rate, slug are NOT sent - backend auto-generates/calculates them
       };
 
       return createComic(payload);
@@ -141,19 +203,81 @@ const AdminComicsPage = () => {
     createMutation.mutate();
   };
 
-  const handleEdit = (comic: ComicResponse) => {
+  // Fetch categories for editing comic
+  const comicCategoriesQuery = useQuery({
+    queryKey: ["admin-comic-categories", editingComicId],
+    queryFn: () => fetchCategoriesOfComic(editingComicId!),
+    enabled: editingComicId !== null
+  });
+
+  const handleEdit = async (comic: ComicResponse) => {
     setEditingComicId(comic.id);
-    setFormState({
-      name: comic.name,
-      author: comic.author,
-      description: comic.description,
-      embedded_from: comic.embedded_from ?? "",
-      embedded_from_url: comic.embedded_from_url ?? "",
-      cover_url: comic.cover_url ?? "",
-      chap_count: comic.chap_count,
-      rate: comic.rate,
-      status: comic.status
-    });
+    // Find category ID from category name
+    const categoryIdStr = genreCategories.find((cat) => cat.name === comic.main_category)?.id;
+    const categoryId = categoryIdStr ? Number(categoryIdStr) : null;
+    
+    // Fetch existing categories for this comic
+    try {
+      const existingCategories = await fetchCategoriesOfComic(comic.id);
+      
+      // Separate categories by type (each type can only have 1 category)
+      let mainCharacterId: number | null = null;
+      let worldThemeId: number | null = null;
+      let classId: number | null = null;
+      let viewId: number | null = null;
+      
+      existingCategories.forEach((cat) => {
+        const catId = Number(cat.id);
+        // Exclude main category
+        if (categoryId !== null && catId === categoryId) return;
+        
+        // Categorize by ID range
+        if (catId >= 2001 && catId <= 2010) {
+          mainCharacterId = catId;
+        } else if (catId >= 3001 && catId <= 3052) {
+          worldThemeId = catId;
+        } else if (catId >= 4001 && catId <= 4038) {
+          classId = catId;
+        } else if (catId >= 5001 && catId <= 5002) {
+          viewId = catId;
+        }
+      });
+      
+      setFormState({
+        name: comic.name,
+        author: comic.author,
+        description: comic.description,
+        embedded_from: comic.embedded_from ?? "",
+        embedded_from_url: comic.embedded_from_url ?? "",
+        cover_url: comic.cover_url ?? "",
+        main_category_id: categoryId ? Number(categoryId) : 1001, // Default if not found
+        main_character_id: mainCharacterId,
+        world_theme_id: worldThemeId,
+        class_id: classId,
+        view_id: viewId,
+        chap_count: comic.chap_count,
+        rate: comic.rate,
+        status: comic.status
+      });
+    } catch (error) {
+      // If fetch fails, just set basic info
+      setFormState({
+        name: comic.name,
+        author: comic.author,
+        description: comic.description,
+        embedded_from: comic.embedded_from ?? "",
+        embedded_from_url: comic.embedded_from_url ?? "",
+        cover_url: comic.cover_url ?? "",
+        main_category_id: categoryId ? Number(categoryId) : 1001,
+        main_character_id: null,
+        world_theme_id: null,
+        class_id: null,
+        view_id: null,
+        chap_count: comic.chap_count,
+        rate: comic.rate,
+        status: comic.status
+      });
+    }
   };
 
   return (
@@ -195,6 +319,140 @@ const AdminComicsPage = () => {
                 onChange={(event) => setFormState((prev) => ({ ...prev, name: event.target.value }))}
                 className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
               />
+            </label>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-primary-foreground">Tác giả</span>
+              <input
+                required
+                value={formState.author}
+                onChange={(event) => setFormState((prev) => ({ ...prev, author: event.target.value }))}
+                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+              />
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-primary-foreground">Thể loại chính</span>
+              <select
+                value={formState.main_category_id}
+                onChange={(event) =>
+                  setFormState((prev) => ({ ...prev, main_category_id: Number(event.target.value) }))
+                }
+                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                disabled={categoriesQuery.isLoading}
+              >
+                {categoriesQuery.isLoading ? (
+                  <option>Đang tải...</option>
+                ) : (
+                  genreCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-primary-foreground">Nhân vật chính</span>
+              <select
+                value={formState.main_character_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    main_character_id: event.target.value ? Number(event.target.value) : null
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                disabled={categoriesQuery.isLoading}
+              >
+                <option value="">-- Chọn nhân vật chính --</option>
+                {categoriesQuery.isLoading ? (
+                  <option>Đang tải...</option>
+                ) : (
+                  mainCharacterCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-primary-foreground">Bối cảnh thế giới</span>
+              <select
+                value={formState.world_theme_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    world_theme_id: event.target.value ? Number(event.target.value) : null
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                disabled={categoriesQuery.isLoading}
+              >
+                <option value="">-- Chọn bối cảnh thế giới --</option>
+                {categoriesQuery.isLoading ? (
+                  <option>Đang tải...</option>
+                ) : (
+                  worldThemeCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-primary-foreground">Trường phái</span>
+              <select
+                value={formState.class_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    class_id: event.target.value ? Number(event.target.value) : null
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                disabled={categoriesQuery.isLoading}
+              >
+                <option value="">-- Chọn trường phái --</option>
+                {categoriesQuery.isLoading ? (
+                  <option>Đang tải...</option>
+                ) : (
+                  classCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-medium text-primary-foreground">Góc nhìn</span>
+              <select
+                value={formState.view_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    view_id: event.target.value ? Number(event.target.value) : null
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+                disabled={categoriesQuery.isLoading}
+              >
+                <option value="">-- Chọn góc nhìn --</option>
+                {categoriesQuery.isLoading ? (
+                  <option>Đang tải...</option>
+                ) : (
+                  viewCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
             </label>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -405,6 +663,7 @@ const AdminComicsPage = () => {
             <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
               <tr>
                 <th scope="col" className="px-4 py-3 text-left font-semibold">#</th>
+                <th scope="col" className="px-4 py-3 text-left font-semibold">ID</th>
                 <th scope="col" className="px-4 py-3 text-left font-semibold">Truyện</th>
                 <th scope="col" className="px-4 py-3 text-left font-semibold">Tác giả</th>
                 <th scope="col" className="px-4 py-3 text-left font-semibold">Số chương</th>
@@ -416,21 +675,21 @@ const AdminComicsPage = () => {
             <tbody className="divide-y divide-surface-muted/40 text-surface-foreground/80">
               {comicsQuery.isLoading && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                  <td colSpan={8} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
                     Đang tải danh sách truyện...
                   </td>
                 </tr>
               )}
               {comicsQuery.isError && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-xs text-red-300">
+                  <td colSpan={8} className="px-4 py-6 text-center text-xs text-red-300">
                     Không thể tải danh sách truyện. Vui lòng thử lại.
                   </td>
                 </tr>
               )}
               {!comicsQuery.isLoading && !comicsQuery.isError && comicsQuery.data && comicsQuery.data.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
+                  <td colSpan={8} className="px-4 py-6 text-center text-xs text-surface-foreground/60">
                     Chưa có truyện nào.
                   </td>
                 </tr>
@@ -448,6 +707,7 @@ const AdminComicsPage = () => {
                     }`}
                   >
                     <td className="px-4 py-3 text-xs text-surface-foreground/60">{offset + index + 1}</td>
+                    <td className="px-4 py-3 text-xs text-surface-foreground/60 font-mono">{comic.id}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-3">
                         <div className="hidden h-16 w-12 overflow-hidden rounded-md border border-surface-muted/70 bg-surface-muted/40 sm:block">

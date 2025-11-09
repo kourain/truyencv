@@ -16,22 +16,29 @@ import { formatNumber } from "@helpers/format";
 const UserNavbar = () => {
   const router = useRouter();
   const auth = useAuth();
-  const { data: profile, isFetching: isProfileFetching } = useUserProfileQuery({ enabled: auth.isAuthenticated });
+  const { data: profile, isFetching: isProfileFetching, refetch: refetchProfile } = useUserProfileQuery({ enabled: true });
   const pathname = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(true);
   const searchVisibilityRef = useRef(true);
-  const avatarSrc = auth.avatar?.trim() || null;
+  const avatarSrc = auth.userProfile.avatar?.trim() || null;
   const handleLogout = useCallback(async () => {
     console.log("UserNavbar: Logging out...");
     await clearAuthTokens();
     window.location.href = "/user/auth/login";
   }, []);
-
+  useEffect(() => {
+    if (profile) {
+      auth.updateUserProfile(profile);
+      auth.updateAuthState(profile);
+    }
+  }, [profile]);
   const handleOpenSettings = useCallback(() => {
     router.push("/user/profile");
   }, [router]);
-
+  useEffect(() => {
+    refetchProfile();
+  }, [pathname]);
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -117,7 +124,7 @@ const UserNavbar = () => {
           {avatarSrc ? (
             <Image
               src={avatarSrc}
-              alt={auth.name ? `Ảnh đại diện của ${auth.name}` : "Ảnh đại diện người dùng"}
+              alt={auth.userProfile.name ? `Ảnh đại diện của ${auth.userProfile.name}` : "Ảnh đại diện người dùng"}
               width={40}
               height={40}
               className="h-full w-full object-cover"
@@ -137,7 +144,7 @@ const UserNavbar = () => {
       {isUserMenuOpen && (
         <div className="absolute right-0 top-12 w-56 overflow-hidden rounded-2xl border border-surface-muted/60 bg-surface shadow-2xl">
           <div className="border-b border-surface-muted/60 px-4 py-3">
-            <p className="text-sm font-semibold text-primary-foreground">Xin chào! {auth.name}</p>
+            <p className="text-sm font-semibold text-primary-foreground">Xin chào! {auth.userProfile.name}</p>
             <p className="text-xs text-surface-foreground/60">Quản lý tài khoản của bạn</p>
           </div>
           <nav className="flex flex-col py-1 text-sm text-surface-foreground/80">

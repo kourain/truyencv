@@ -39,11 +39,11 @@ const HeroSection = ({ comic, isLoading = false }: HeroSectionProps) => {
     );
   }
 
-  if (!comic) {
-    return null;
-  }
-
-  const ratingDescriptor = `${comic.rating_average.toFixed(1)}/5 (${formatNumber(comic.rating_count)} đánh giá)`;
+  // if (!comic) {
+  //   return null;
+  // }
+  console.log(comic);
+  const ratingDescriptor = `${comic.rate.toFixed(1)}/5 (${formatNumber(comic.rate_count)} đánh giá)`;
 
   return (
     <section className="grid gap-8 rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg lg:grid-cols-[320px_1fr] lg:p-8">

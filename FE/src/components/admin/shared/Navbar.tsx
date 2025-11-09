@@ -22,7 +22,7 @@ const AdminNavBarRender = () => {
   const router = useRouter();
   const auth = useAuth();
   const { data: profile, isFetching: isProfileFetching } = useUserProfileQuery({ enabled: auth.isAuthenticated });
-  const avatarSrc = auth.avatar?.trim() || null;
+  const avatarSrc = auth.userProfile.avatar?.trim() || null;
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const handleLogout = useCallback(async () => {
     await clearAuthTokens();
@@ -53,7 +53,7 @@ const AdminNavBarRender = () => {
             {avatarSrc ? (
               <Image
                 src={avatarSrc}
-                alt={auth.name ? `Ảnh đại diện của ${auth.name}` : "Ảnh đại diện người dùng"}
+                alt={auth.userProfile.name ? `Ảnh đại diện của ${auth.userProfile.name}` : "Ảnh đại diện người dùng"}
                 width={40}
                 height={40}
                 className="h-full w-full object-cover"
@@ -67,7 +67,7 @@ const AdminNavBarRender = () => {
           {isAdminMenuOpen && (
             <div className="absolute right-0 top-12 w-56 overflow-hidden rounded-2xl border border-surface-muted/60 bg-surface shadow-2xl">
               <div className="border-b border-surface-muted/60 px-4 py-3">
-                <p className="text-sm font-semibold text-primary-foreground">Xin chào! {auth.name}</p>
+                <p className="text-sm font-semibold text-primary-foreground">Xin chào! {auth.userProfile.name}</p>
                 <p className="text-xs text-surface-foreground/60">Quản lý tài khoản của bạn</p>
               </div>
               <nav className="flex flex-col py-1 text-sm text-surface-foreground/80">

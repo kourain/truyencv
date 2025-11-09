@@ -12,9 +12,9 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
   return (
     <AdminAuthGuard>
       <div className="flex min-h-screen flex-col bg-surface text-surface-foreground">
-        {auth.isAuthenticated && <AdminNavbar />}
+        <AdminNavbar />
         <div className="flex">
-          {auth.isAuthenticated && <AdminSidebar />}
+          <AdminSidebar />
           <main className="flex flex-col overflow-x-hidden bg-surface px-4 py-8 md:px-6 w-[100%]">
             {children}
             <Footer />

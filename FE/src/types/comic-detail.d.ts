@@ -54,8 +54,8 @@ interface Comic {
   banner_url?: string;
   synopsis: string;
   author_name: string;
-  rating_average: number;
-  rating_count: number;
+  rate: number;
+  rate_count: number;
   bookmark_count: number;
   weekly_chapter_count: number;
   weekly_recommendations: number;

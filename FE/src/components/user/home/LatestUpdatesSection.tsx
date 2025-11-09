@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Clock } from "lucide-react";
 
 import { formatRelativeTime } from "@helpers/format";
-import type { ComicUpdate } from "@services/user/home.service";
 
 import EmptyState from "./EmptyState";
 import SectionHeader from "./SectionHeader";
@@ -37,7 +37,11 @@ const LatestUpdatesSection = ({ items, isLoading }: LatestUpdatesSectionProps) =
                   key={`${item.comic_id}-${item.chapter_number}`}
                   className="border-t border-surface-muted/40 transition hover:bg-surface-muted/30"
                 >
-                  <td className="px-6 py-4 font-medium text-primary-foreground">{item.comic_title}</td>
+                  <td className="px-6 py-4 font-medium text-primary-foreground">
+                    <Link href={`/comic/${item.comic_slug}`} className="transition hover:text-primary">
+                      {item.comic_title}
+                    </Link>
+                  </td>
                   <td className="px-6 py-4 text-surface-foreground/80">{item.chapter_title}</td>
                   <td className="px-6 py-4 text-xs text-surface-foreground/60">{formatRelativeTime(item.updated_at)}</td>
                 </tr>

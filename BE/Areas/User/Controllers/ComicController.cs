@@ -18,9 +18,10 @@ public sealed class ComicController : ControllerBase
         _comicService = comicService;
     }
     [AllowAnonymous]
-    [HttpGet("/seo/{slug}")]
+    [HttpGet("seo/{slug}")]
     public async Task<IActionResult> GetComicSEOBySlug([FromRoute] string slug)
     {
+        slug = slug.ToLower();
         var result = await _comicService.GetComicSEOBySlugAsync(slug);
         if (result == null)
         {
@@ -29,10 +30,12 @@ public sealed class ComicController : ControllerBase
 
         return Ok(result);
     }
-    [HttpGet("/{slug}")]
+    [HttpGet("{slug}")]
     public async Task<IActionResult> GetComicDetailBySlug([FromRoute] string slug)
     {
-        var result = await _comicService.GetComicDetailBySlugAsync(slug);
+        slug = slug.ToLower();
+        var userId = User.GetUserId();
+        var result = await _comicService.GetComicDetailBySlugAsync(slug, userId);
         if (result == null)
         {
             return NotFound(new { message = "Không tìm thấy truyện" });
@@ -41,7 +44,7 @@ public sealed class ComicController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("/{slug}/embedded")]
+    [HttpGet("{slug}/embedded")]
     public async Task<IActionResult> GetComicsEmbeddedBySameUser([FromRoute] string slug)
     {
         var related = await _comicService.GetComicsByEmbeddedBySlugAsync(slug);
@@ -63,6 +66,7 @@ public sealed class ComicController : ControllerBase
         {
             return Unauthorized(new { message = "Không thể xác định người dùng" });
         }
+        slug = slug.ToLower();
         // lấy chương
         var result = await _comicReadingService.GetChapterAsync(slug, chapterNumber, userId.Value);
         if (result == null)
