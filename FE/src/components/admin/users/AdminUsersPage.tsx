@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, KeyRound, ListRestart, RefreshCcw, ShieldCheck, Trash2, UserCircle2 } from "lucide-react";
+import { AlertTriangle, Check, Copy, KeyRound, ListRestart, RefreshCcw, ShieldCheck, Trash2, UserCircle2 } from "lucide-react";
 
 import {
   fetchUserById,
@@ -71,6 +71,18 @@ const AdminUsersPage = () => {
   });
 
   const isUserSelected = useMemo(() => selectedUserId !== null, [selectedUserId]);
+
+  const [copiedTokenId, setCopiedTokenId] = useState<string | null>(null);
+
+  const handleCopyToken = async (token: string, tokenId: string) => {
+    try {
+      await navigator.clipboard.writeText(token);
+      setCopiedTokenId(tokenId);
+      setTimeout(() => setCopiedTokenId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy token:", error);
+    }
+  };
 
   return (
     <div className="space-y-10">
@@ -292,34 +304,78 @@ const AdminUsersPage = () => {
               <p className="text-sm text-red-300">Không thể tải token của người dùng.</p>
             ) : refreshTokensQuery.data && refreshTokensQuery.data.length > 0 ? (
               <ul className="space-y-3 text-xs text-surface-foreground/70">
-                {refreshTokensQuery.data.map((token) => (
-                  <li key={token.id} className="rounded-xl border border-surface-muted/60 bg-surface px-4 py-3">
-                    <p className="font-semibold text-primary-foreground">ID: {token.id}</p>
-                    <p className="mt-1 break-all">Token: {token.token}</p>
-                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-surface-foreground/60">
-                      <span>Hết hạn: {new Date(token.expires_at).toLocaleString()}</span>
-                      <span>{token.is_active ? "Đang hoạt động" : "Đã khóa"}</span>
-                      <span>Tạo lúc: {new Date(token.created_at).toLocaleString()}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        revokeTokenMutation.mutate({
-                          userId: selectedUserId!,
-                          tokenId: token.id
-                        })
-                      }
-                      className="mt-3 inline-flex items-center gap-2 rounded-full border border-red-500/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10"
-                    >
-                      {revokeTokenMutation.isPending && revokeTokenMutation.variables?.tokenId === token.id ? (
-                        <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3.5 w-3.5" />
-                      )}
-                      Thu hồi token
-                    </button>
-                  </li>
-                ))}
+                {refreshTokensQuery.data.map((token) => {
+                  const isRevoking = revokeTokenMutation.isPending && revokeTokenMutation.variables?.tokenId === token.id;
+                  const isCopied = copiedTokenId === token.id;
+                  const tokenPreview = token.token.length > 60 ? `${token.token.substring(0, 60)}...` : token.token;
+
+                  return (
+                    <li key={token.id} className="rounded-xl border border-surface-muted/60 bg-surface px-4 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-primary-foreground">ID: {token.id}</p>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                                token.is_active
+                                  ? "bg-emerald-500/20 text-emerald-300"
+                                  : "bg-red-500/20 text-red-300"
+                              }`}
+                            >
+                              {token.is_active ? "Hoạt động" : "Đã khóa"}
+                            </span>
+                          </div>
+                          <div className="mt-2 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <p className="break-all font-mono text-[10px] text-surface-foreground/60">
+                                {tokenPreview}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyToken(token.token, token.id)}
+                                className="flex-shrink-0 rounded-md border border-surface-muted/60 p-1.5 transition hover:bg-surface-muted/40"
+                                title="Copy token"
+                              >
+                                {isCopied ? (
+                                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5 text-surface-foreground/60" />
+                                )}
+                              </button>
+                            </div>
+                            {token.token.length > 60 && (
+                              <p className="text-[10px] text-surface-foreground/50">
+                                Token đã được rút gọn. Click nút copy để xem đầy đủ.
+                              </p>
+                            )}
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-3 text-xs text-surface-foreground/60">
+                            <span>Hết hạn: {new Date(token.expires_at).toLocaleString()}</span>
+                            <span>Tạo lúc: {new Date(token.created_at).toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            revokeTokenMutation.mutate({
+                              userId: selectedUserId!,
+                              tokenId: token.id
+                            })
+                          }
+                          disabled={isRevoking || !token.is_active}
+                          className="flex-shrink-0 inline-flex items-center gap-2 rounded-full border border-red-500/50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isRevoking ? (
+                            <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3.5 w-3.5" />
+                          )}
+                          Thu hồi
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="text-sm text-surface-foreground/60">Người dùng hiện không có token nào.</p>

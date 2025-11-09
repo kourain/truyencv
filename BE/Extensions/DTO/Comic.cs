@@ -13,17 +13,17 @@ public static partial class Extensions
         {
             name = request.name,
             description = request.description,
-            slug = request.slug,
+            slug = request.slug ?? string.Empty, // Will be set by service if null
             author = request.author,
             author_slug = request.author.ToSlug(),
             embedded_from = request.embedded_from,
             embedded_from_url = request.embedded_from_url,
             cover_url = request.cover_url,
             banner_url = request.banner_url,
-            chapter_count = request.chap_count,
+            chapter_count = 0, // Always 0 for new comics - auto-calculated
             main_category_id = request.main_category_id,
             bookmark_count = 0,
-            rate = request.rate,
+            rate = 0, // Always 0 for new comics - auto-calculated from user ratings
             status = request.status,
             created_at = DateTime.UtcNow,
             updated_at = DateTime.UtcNow

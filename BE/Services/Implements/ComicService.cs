@@ -22,6 +22,8 @@ public class ComicService : IComicService
     private readonly IComicChapterRepository _comicChapterRepository;
     private readonly IComicRecommendRepository _comicRecommendRepository;
     private readonly IComicCommentRepository _comicCommentRepository;
+    private readonly IComicHaveCategoryRepository _comicHaveCategoryRepository;
+    private readonly IComicCategoryRepository _comicCategoryRepository;
 
     public ComicService(
         IComicRepository comicRepository,
@@ -30,7 +32,9 @@ public class ComicService : IComicService
         IUserComicReadHistoryRepository readHistoryRepository,
         IComicChapterRepository comicChapterRepository,
         IComicRecommendRepository comicRecommendRepository,
-        IComicCommentRepository comicCommentRepository)
+        IComicCommentRepository comicCommentRepository,
+        IComicHaveCategoryRepository comicHaveCategoryRepository,
+        IComicCategoryRepository comicCategoryRepository)
     {
         _comicRepository = comicRepository;
         _redisCache = redisCache;
@@ -39,6 +43,8 @@ public class ComicService : IComicService
         _comicChapterRepository = comicChapterRepository;
         _comicRecommendRepository = comicRecommendRepository;
         _comicCommentRepository = comicCommentRepository;
+        _comicHaveCategoryRepository = comicHaveCategoryRepository;
+        _comicCategoryRepository = comicCategoryRepository;
     }
 
     public async Task<ComicResponse?> GetComicByIdAsync(long id)
@@ -339,9 +345,18 @@ public class ComicService : IComicService
         if (await _comicRepository.ExistsAsync(c => c.slug == comicRequest.slug))
             comicRequest.slug = $"{comicRequest.slug}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
 
+        // Validate và set default main_category_id nếu không hợp lệ
+        if (comicRequest.main_category_id <= 0 || comicRequest.main_category_id >= 2000)
+        {
+            comicRequest.main_category_id = 1001; // Default to "Tiên Hiệp"
+        }
+
         // Chuyển đổi từ DTO sang Entity
         var comic = comicRequest.ToEntity();
         comic.embedded_by = embedded_by;
+        // Ensure rate and chap_count are 0 for new comics (not set by frontend)
+        comic.rate = 0;
+        comic.chapter_count = 0;
         var embeddingValues = await _embeddingService.CreateEmbeddingAsync($"{comic.name}, {comic.description}");
         if (embeddingValues is { Length: > 0 })
         {
@@ -350,6 +365,69 @@ public class ComicService : IComicService
 
         // Thêm comic vào database
         var newComic = await _comicRepository.AddAsync(comic);
+
+        // Thêm categories nếu có (chỉ chấp nhận categories có ID > 2000)
+        // Mỗi category type chỉ được chọn 1 lần
+        if (comicRequest.category_ids != null && comicRequest.category_ids.Any())
+        {
+            // Track categories by type to ensure only 1 per type
+            var mainCharacterIds = new List<long>();
+            var worldThemeIds = new List<long>();
+            var classIds = new List<long>();
+            var viewIds = new List<long>();
+
+            // Validate và phân loại các categories
+            foreach (var categoryId in comicRequest.category_ids)
+            {
+                // Chỉ chấp nhận categories có ID > 2000
+                if (categoryId <= 2000)
+                    continue; // Skip categories with ID <= 2000
+
+                // Validate category exists
+                var category = await _comicCategoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                    continue; // Skip invalid category IDs
+
+                // Phân loại theo ID range
+                if (categoryId >= 2001 && categoryId <= 2010)
+                {
+                    mainCharacterIds.Add(categoryId);
+                }
+                else if (categoryId >= 3001 && categoryId <= 3052)
+                {
+                    worldThemeIds.Add(categoryId);
+                }
+                else if (categoryId >= 4001 && categoryId <= 4038)
+                {
+                    classIds.Add(categoryId);
+                }
+                else if (categoryId >= 5001 && categoryId <= 5002)
+                {
+                    viewIds.Add(categoryId);
+                }
+            }
+
+            // Chỉ thêm category đầu tiên của mỗi type (mỗi type chỉ được chọn 1)
+            var categoriesToAdd = new List<long>();
+            if (mainCharacterIds.Any())
+                categoriesToAdd.Add(mainCharacterIds.First());
+            if (worldThemeIds.Any())
+                categoriesToAdd.Add(worldThemeIds.First());
+            if (classIds.Any())
+                categoriesToAdd.Add(classIds.First());
+            if (viewIds.Any())
+                categoriesToAdd.Add(viewIds.First());
+
+            // Thêm các categories vào database
+            foreach (var categoryId in categoriesToAdd)
+            {
+                // Kiểm tra đã tồn tại chưa (tránh duplicate)
+                if (!await _comicHaveCategoryRepository.ExistsAsync(newComic.id, categoryId))
+                {
+                    await _comicHaveCategoryRepository.AddAsync(newComic.id, categoryId);
+                }
+            }
+        }
 
         // Cập nhật cache
         await _redisCache.AddOrUpdateInRedisAsync(newComic, newComic.id);

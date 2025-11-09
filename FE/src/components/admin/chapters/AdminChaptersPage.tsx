@@ -1,15 +1,20 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpenCheck, Pencil, PlusCircle, RefreshCcw, Trash2 } from "lucide-react";
+import { BookOpenCheck, Pencil, PlusCircle, RefreshCcw, Search, Trash2, X } from "lucide-react";
 
 import { createComicChapter, deleteComicChapter, fetchChaptersByComic, updateComicChapter } from "@services/admin";
+import { fetchComics, fetchComicById } from "@services/admin/comic.service";
+import type { ComicResponse } from "../../../types/comic";
 
 const AdminChaptersPage = () => {
   const queryClient = useQueryClient();
   const [selectedComicId, setSelectedComicId] = useState<string | null>(null);
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedComic, setSelectedComic] = useState<ComicResponse | null>(null);
   const [formState, setFormState] = useState<{
     comic_id: string | null;
     chapter: number;
@@ -26,8 +31,80 @@ const AdminChaptersPage = () => {
     enabled: selectedComicId !== null
   });
 
+  // Search comics by name
+  const comicsSearchQuery = useQuery({
+    queryKey: ["admin-comics-search", searchKeyword],
+    queryFn: () => fetchComics({ keyword: searchKeyword, limit: 10 }),
+    enabled: searchKeyword.trim().length >= 2, // Only search when at least 2 characters
+    staleTime: 30000 // Cache for 30 seconds
+  });
+
+  const searchResults = useMemo(() => {
+    if (!comicsSearchQuery.data || !searchKeyword.trim()) return [];
+    return comicsSearchQuery.data;
+  }, [comicsSearchQuery.data, searchKeyword]);
+
+  // Fetch comic info when ID is entered directly (not from search)
+  const comicInfoQuery = useQuery({
+    queryKey: ["admin-comic-info", selectedComicId],
+    queryFn: () => fetchComicById(selectedComicId!),
+    enabled:
+      selectedComicId !== null &&
+      (selectedComic === null || selectedComic.id !== selectedComicId), // Only fetch if not already selected from search
+    staleTime: 60000 // Cache for 1 minute
+  });
+
+  // Update selectedComic when comic info is fetched from ID
+  useEffect(() => {
+    if (comicInfoQuery.data && (selectedComic === null || selectedComic.id !== selectedComicId)) {
+      setSelectedComic(comicInfoQuery.data);
+    }
+  }, [comicInfoQuery.data, selectedComic, selectedComicId]);
+
+  // Auto-set chapter number to max + 1 when comic is selected and chapters are loaded
+  useEffect(() => {
+    if (
+      selectedComicId &&
+      chaptersQuery.data &&
+      editingChapterId === null // Only auto-set when creating new chapter, not editing
+    ) {
+      if (chaptersQuery.data.length > 0) {
+        const maxChapter = Math.max(...chaptersQuery.data.map((ch) => ch.chapter));
+        const nextChapter = maxChapter + 1;
+        
+        // Always update to next chapter when chapters are loaded (for new comic selection or after creating)
+        setFormState((prev) => ({
+          ...prev,
+          chapter: nextChapter
+        }));
+      } else {
+        // If no chapters exist, set to 1
+        setFormState((prev) => ({
+          ...prev,
+          chapter: 1
+        }));
+      }
+    }
+  }, [selectedComicId, chaptersQuery.data, editingChapterId]);
+
+  // Close dropdown when clicking outside
+  const searchRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const resetForm = () => {
     setEditingChapterId(null);
+    // Don't set chapter here - let useEffect auto-set it based on max chapter
     setFormState({ comic_id: selectedComicId, chapter: 1, content: "" });
   };
 
@@ -85,6 +162,31 @@ const AdminChaptersPage = () => {
     setSelectedComicId(comicIdValue);
     setEditingChapterId(null);
     setFormState({ comic_id: comicIdValue, chapter: 1, content: "" });
+    setSearchKeyword("");
+    setShowSearchResults(false);
+    // Don't clear selectedComic when entering ID directly - let it be fetched
+    if (!comicIdValue) {
+      setSelectedComic(null);
+    }
+  };
+
+  const handleSelectComicFromSearch = (comic: ComicResponse) => {
+    setSelectedComic(comic);
+    handleSelectComic(comic.id);
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchKeyword(value);
+    setShowSearchResults(value.trim().length >= 2);
+    if (value.trim().length < 2) {
+      setShowSearchResults(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchKeyword("");
+    setShowSearchResults(false);
+    setSelectedComic(null);
   };
 
   return (
@@ -93,17 +195,117 @@ const AdminChaptersPage = () => {
         <div className="space-y-4">
           <header>
             <p className="text-xs uppercase tracking-[0.4em] text-primary/70">Chọn truyện</p>
-            <h2 className="text-lg font-semibold text-primary-foreground">Nhập ID truyện để quản lý chương</h2>
+            <h2 className="text-lg font-semibold text-primary-foreground">Tìm kiếm hoặc nhập ID truyện</h2>
           </header>
+          
+          {/* Search by name */}
+          <div className="relative" ref={searchRef}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-foreground/40" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo tên truyện..."
+                value={searchKeyword}
+                onChange={(event) => handleSearchInputChange(event.target.value)}
+                onFocus={() => {
+                  if (searchKeyword.trim().length >= 2) {
+                    setShowSearchResults(true);
+                  }
+                }}
+                className="w-full rounded-xl border border-surface-muted bg-surface pl-10 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+              />
+              {searchKeyword && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-foreground/40 hover:text-surface-foreground/70"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            
+            {/* Search results dropdown */}
+            {showSearchResults && (
+              <div className="absolute z-10 mt-2 w-full rounded-xl border border-surface-muted bg-surface shadow-lg max-h-64 overflow-y-auto">
+                {comicsSearchQuery.isLoading ? (
+                  <div className="px-4 py-3 text-xs text-surface-foreground/60">Đang tìm kiếm...</div>
+                ) : searchResults.length === 0 ? (
+                  <div className="px-4 py-3 text-xs text-surface-foreground/60">Không tìm thấy truyện nào.</div>
+                ) : (
+                  searchResults.map((comic) => (
+                    <button
+                      key={comic.id}
+                      type="button"
+                      onClick={() => handleSelectComicFromSearch(comic)}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-surface-muted/40 transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        {comic.cover_url && (
+                          <img
+                            src={comic.cover_url}
+                            alt={comic.name}
+                            className="h-10 w-8 rounded object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold truncate">{comic.name}</div>
+                          <div className="text-xs text-surface-foreground/60">
+                            ID: {comic.id} • {comic.author}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Or input ID directly */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-surface-muted"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-surface px-2 text-surface-foreground/60">Hoặc</span>
+            </div>
+          </div>
+          
           <input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            placeholder="VD: 101"
+            placeholder="Nhập ID truyện trực tiếp (VD: 101)"
             value={selectedComicId ?? ""}
             onChange={(event) => handleSelectComic(event.target.value.trim() ? event.target.value.trim() : null)}
             className="w-full rounded-xl border border-surface-muted bg-surface px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
           />
+
+          {/* Selected comic info */}
+          {(selectedComic || (selectedComicId && comicInfoQuery.data)) && (
+            <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+              <div className="flex items-center gap-3">
+                {(selectedComic?.cover_url || comicInfoQuery.data?.cover_url) && (
+                  <img
+                    src={selectedComic?.cover_url || comicInfoQuery.data?.cover_url || ""}
+                    alt={selectedComic?.name || comicInfoQuery.data?.name || ""}
+                    className="h-12 w-9 rounded object-cover"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm">
+                    {selectedComic?.name || comicInfoQuery.data?.name || `Truyện ID: ${selectedComicId}`}
+                  </div>
+                  <div className="text-xs text-surface-foreground/60">
+                    ID: {selectedComic?.id || comicInfoQuery.data?.id || selectedComicId} •{" "}
+                    {selectedComic?.author || comicInfoQuery.data?.author || "Đang tải..."}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => {
@@ -213,8 +415,7 @@ const AdminChaptersPage = () => {
             <table className="min-w-full text-sm">
               <thead className="bg-surface-muted/40 text-xs uppercase tracking-wide text-surface-foreground/60">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left font-semibold">Chương</th>
-                  <th scope="col" className="px-4 py-3 text-left font-semibold">ID chương</th>
+                  <th scope="col" className="px-4 py-3 text-left font-semibold">Chương (ID)</th>
                   <th scope="col" className="px-4 py-3 text-left font-semibold">Nội dung</th>
                   <th scope="col" className="px-4 py-3 text-left font-semibold">Tạo lúc</th>
                   <th scope="col" className="px-4 py-3 text-left font-semibold">Cập nhật</th>
@@ -233,8 +434,12 @@ const AdminChaptersPage = () => {
                         isEditing ? "bg-primary/15 text-primary-foreground" : "hover:bg-surface-muted/40"
                       }`}
                     >
-                      <td className="px-4 py-3 text-xs text-surface-foreground/70">#{chapter.chapter}</td>
-                      <td className="px-4 py-3 text-xs text-surface-foreground/70">#{chapter.id}</td>
+                      <td className="px-4 py-3 text-xs text-surface-foreground/70">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-semibold">#{chapter.chapter}</span>
+                          <span className="text-surface-foreground/50 font-mono text-[10px]">ID: {chapter.id}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-xs text-surface-foreground/70">
                         <p className="line-clamp-3" title={chapter.content}>
                           {chapter.content}
