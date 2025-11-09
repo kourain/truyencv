@@ -53,7 +53,7 @@ namespace TruyenCV
                         return origin.IndexOf("://") == -1 ? "https://" + origin : origin;
                     }),
                 StringComparer.OrdinalIgnoreCase);
-
+            allowedOriginSet.Add("http://localhost:3000");
             Log.Warning("CORS Allowed Origins: " + string.Join(", ", allowedOriginSet));
             builder.Services.AddCors(options =>
             {
