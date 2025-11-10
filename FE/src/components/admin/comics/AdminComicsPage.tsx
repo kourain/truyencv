@@ -8,9 +8,7 @@ import { createComic, deleteComic, fetchComics, updateComic } from "@services/ad
 import { fetchAllComicCategories } from "@services/admin/comic-category.service";
 import { fetchCategoriesOfComic } from "@services/admin/comic-have-category.service";
 import { ComicStatus, ComicStatusLabel } from "../../../const/enum/comic-status";
-import { CategoryType } from "../../../const/enum/category-type";
 import type { ComicResponse } from "../../../types/comic";
-import type { ComicCategoryResponse } from "../../../types/comic-category";
 
 const DEFAULT_LIMIT = 12;
 
