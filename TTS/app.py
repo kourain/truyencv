@@ -1,5 +1,6 @@
 """FastAPI service exposing viXTTS inference based on the reference demo."""
 
+import os
 import string
 from contextlib import asynccontextmanager
 import datetime
@@ -101,7 +102,7 @@ def _infer(
     text: str,
     reference_path: Path,
     normalize_text: bool,
-) -> Path:
+) -> str:
     model = XTTS_MODEL
     if model is None:
         raise RuntimeError("Mô hình chưa được khởi tạo")
@@ -156,9 +157,9 @@ def _infer(
     return output_path
 
 
-def _cleanup_file(path: Path) -> None:
+def _cleanup_file(path: str) -> None:
     try:
-        path.unlink()
+        os.unlink(path)
     except FileNotFoundError:
         pass
 
@@ -181,7 +182,7 @@ async def synthesize(
     if not reference_audio.strip():
         raise HTTPException(status_code=400, detail="Thiếu tên tệp mẫu giọng nói")
 
-    reference_path = VOICES_DIR / reference_audio.strip()
+    reference_path = Path(VOICES_DIR) / reference_audio.strip()
     if not reference_path.suffix:
         reference_path = reference_path.with_suffix(".wav")
     if not reference_path.exists():
@@ -197,7 +198,7 @@ async def synthesize(
     background_task = BackgroundTask(_cleanup_file, output_path)
     return FileResponse(
         path=output_path,
-        filename=output_path.name,
+        filename=output_path,
         media_type="audio/wav",
         background=background_task,
     )
