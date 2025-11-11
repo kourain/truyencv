@@ -22,10 +22,9 @@ from TTS.tts.models.xtts import Xtts
 APP_TITLE = "viXTTS FastAPI"
 SUMMARY = "REST API for Vietnamese XTTS inference (GPU-enabled)."
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-MODEL_DIR = "models"
-VOICES_DIR = "voices"
-OUTPUT_DIR = "outputs"
+MODEL_DIR = "E:/Code/DATN/TTS/models"
+VOICES_DIR = "E:/Code/DATN/TTS/voices"
+OUTPUT_DIR = "E:/Code/DATN/TTS/outputs"
 LANGUAGE = "vi"
 REQUIRED_MODEL_FILES = {"model.pth", "config.json", "vocab.json"}
 
@@ -41,7 +40,7 @@ def _load_model() -> Xtts:
     config.load_json(f"{MODEL_DIR}/config.json")  # Cấu hình huấn luyện đã lưu của mô hình
     XTTS_MODEL = Xtts.init_from_config(config)
     XTTS_MODEL.load_checkpoint(
-        config, checkpoint_dir="models", use_deepspeed=False
+        config, checkpoint_dir=MODEL_DIR, use_deepspeed=False
     )
     if torch.cuda.is_available():
         XTTS_MODEL.cuda()
