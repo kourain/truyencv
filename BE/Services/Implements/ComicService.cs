@@ -452,7 +452,7 @@ public class ComicService : IComicService
             }
         }
         comic.UpdateFromRequest(comicRequest);
-
+        await _comicHaveCategoryRepository.UpdateAllOfComicAsync(comic.id, comicRequest.category_ids ?? Enumerable.Empty<long>());
         // Cập nhật vào database
         await _comicRepository.UpdateAsync(comic);
 

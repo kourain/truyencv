@@ -82,6 +82,7 @@ public static partial class Extensions
         comic.cover_url = request.cover_url;
         comic.banner_url = request.banner_url;
         comic.chapter_count = (int)request.chap_count;
+        comic.main_category_id = request.main_category_id;
         comic.rate = request.rate;
         comic.status = request.status;
         comic.updated_at = DateTime.UtcNow;
