@@ -24,7 +24,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(upload.router, prefix="/api/files", tags=["files"])
+app.include_router(upload.router, prefix="/api/comic", tags=["comic"])
 
 @app.get("/health")
 async def health_check():
@@ -32,7 +32,7 @@ async def health_check():
     Health check endpoint
     """
     return {"status": "healthy", "message": "Service is running"}
-uvicorn_host = os.getenv("UVICORN_HOST","127.0.0.1")
-uvicorn_port = os.getenv("UVICORN_PORT", "8000")
 if __name__ == "__main__":
+    uvicorn_host = os.getenv("UVICORN_HOST","127.0.0.1")
+    uvicorn_port = os.getenv("UVICORN_PORT", "8000")
     uvicorn.run(app, host=uvicorn_host, port=int(uvicorn_port))

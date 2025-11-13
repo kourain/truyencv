@@ -83,6 +83,14 @@ public class AppDataContext : Microsoft.EntityFrameworkCore.DbContext
         Save();
         return base.SaveChanges();
     }
+    /// <summary>
+    /// Disables soft-delete behavior for this <see cref="AppDataContext"/> instance.
+    /// </summary>
+    /// <remarks>
+    /// Sets the internal flag so that subsequent delete operations will be treated as hard deletes.
+    /// This method mutates the current context and returns it to allow fluent chaining.
+    /// </remarks>
+    /// <returns>The same <see cref="AppDataContext"/> instance with soft-delete turned off.</returns>
     public AppDataContext NotSoftDelete()
     {
         isSoftDelete = false;

@@ -452,12 +452,14 @@ public class ComicService : IComicService
             }
         }
         comic.UpdateFromRequest(comicRequest);
-
+        await _comicHaveCategoryRepository.UpdateAllOfComicAsync(comic.id, comicRequest.category_ids ?? Enumerable.Empty<long>());
         // Cập nhật vào database
-        await _comicRepository.UpdateAsync(comic);
+        await Task.WhenAll(
+            _comicRepository.UpdateAsync(comic),
+            _redisCache.AddOrUpdateInRedisAsync(comic, comic.id)
+        );
 
         // Cập nhật cache
-        await _redisCache.AddOrUpdateInRedisAsync(comic, comic.id);
 
         return comic.ToRespDTO();
     }

@@ -1,13 +1,13 @@
 from typing import Dict, Any
 from pydantic import BaseModel
-from datetime import datetime
+import datetime
 
 class UploadResponse(BaseModel):
     success: bool
     message: str
     data: Dict[str, Any] | None = None
     url: str | None = None
-    created_at: datetime = datetime.utcnow()
+    created_at: datetime.datetime = datetime.datetime.now(datetime.timezone.utc)
 
 class DeleteResponse(BaseModel):
     success: bool

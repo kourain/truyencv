@@ -124,7 +124,7 @@ const AdminComicsPage = () => {
         embedded_from_url: formState.embedded_from_url.trim() || null,
         cover_url: formState.cover_url.trim() || null,
         main_category_id: formState.main_category_id,
-        category_ids: categoryIds.length > 0 ? categoryIds : undefined,
+        category_ids: categoryIds.length > 0 ? categoryIds : [],
         status: formState.status
         // Note: chap_count, rate, slug are NOT sent - backend auto-generates/calculates them
       };
@@ -138,8 +138,15 @@ const AdminComicsPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: () =>
-      updateComic({
+    mutationFn: () => {
+      // Collect all selected category IDs (excluding null values)
+      const categoryIds: number[] = [];
+      if (formState.main_character_id) categoryIds.push(formState.main_character_id);
+      if (formState.world_theme_id) categoryIds.push(formState.world_theme_id);
+      if (formState.class_id) categoryIds.push(formState.class_id);
+      if (formState.view_id) categoryIds.push(formState.view_id);
+
+      return updateComic({
         id: editingComicId!,
         name: formState.name.trim(),
         description: formState.description.trim(),
@@ -147,10 +154,12 @@ const AdminComicsPage = () => {
         embedded_from: formState.embedded_from.trim() || null,
         embedded_from_url: formState.embedded_from_url.trim() || null,
         cover_url: formState.cover_url.trim() || null,
+        main_category_id: formState.main_category_id,
+        category_ids: categoryIds.length > 0 ? categoryIds : [],
         chap_count: formState.chap_count,
         rate: formState.rate,
         status: formState.status
-      }),
+      })},
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-comics"] });
       resetForm();

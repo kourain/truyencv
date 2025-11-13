@@ -79,7 +79,55 @@ public class ComicHaveCategoryRepository : IComicHaveCategoryRepository
         );
         return true;
     }
+    public async Task<int> UpdateAllOfComicAsync(long comicId, IEnumerable<long> newCategoryIds)
+    {
+        var existingEntities = await _dbSet.Where(chc => chc.comic_id == comicId).ToListAsync();
+        var existingCategoryIds = existingEntities.Select(e => e.comic_category_id).ToHashSet();
+        var newCategoryIdSet = newCategoryIds.ToHashSet();
 
+        var toAdd = newCategoryIdSet.Except(existingCategoryIds)
+            .Select(catId => new ComicHaveCategory
+            {
+                comic_id = comicId,
+                comic_category_id = catId
+            }).ToList();
+
+        var toRemove = existingEntities
+            .Where(e => !newCategoryIdSet.Contains(e.comic_category_id))
+            .ToList();
+
+        if (toAdd.Count == 0 && toRemove.Count == 0)
+            return 0;
+
+        _context.NotSoftDelete();
+        if (toAdd.Count > 0)
+            await _dbSet.AddRangeAsync(toAdd);
+        if (toRemove.Count > 0)
+            _dbSet.RemoveRange(toRemove);
+
+        await Task.WhenAll(
+            _context.SaveChangesAsync(),
+            _redisCache.RemoveAsync($"comic:{comicId}:categories"),
+            _redisCache.RemoveAsync($"comic:{comicId}")
+        );
+
+        return toAdd.Count + toRemove.Count;
+    }
+
+    public async Task<int> DeleteAllOfComicAsync(long comicId)
+    {
+        var entities = await _dbSet.Where(chc => chc.comic_id == comicId).ToListAsync();
+        if (entities.Count == 0)
+            return 0;
+        _context.NotSoftDelete();
+        _dbSet.RemoveRange(entities);
+        await Task.WhenAll(
+            _context.SaveChangesAsync(),
+            _redisCache.RemoveAsync($"comic:{comicId}:categories"),
+            _redisCache.RemoveAsync($"comic:{comicId}")
+        );
+        return entities.Count;
+    }
     public async Task<bool> ExistsAsync(long comicId, long categoryId)
     {
         return await _dbSet.AnyAsync(chc =>

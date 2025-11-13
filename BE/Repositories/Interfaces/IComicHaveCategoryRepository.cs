@@ -36,12 +36,14 @@ public interface IComicHaveCategoryRepository
 	/// <param name="categoryId">ID của category</param>
 	/// <returns>True nếu xóa thành công</returns>
 	Task<bool> DeleteAsync(long comicId, long categoryId);
+    Task<int> UpdateAllOfComicAsync(long comicId, IEnumerable<long> newCategoryIds);
+    Task<int> DeleteAllOfComicAsync(long comicId);
 
-	/// <summary>
-	/// Kiểm tra xem comic có thuộc category không
-	/// </summary>
-	/// <param name="comicId">ID của comic</param>
-	/// <param name="categoryId">ID của category</param>
-	/// <returns>True nếu comic thuộc category</returns>
-	Task<bool> ExistsAsync(long comicId, long categoryId);
+    /// <summary>
+    /// Kiểm tra xem comic có thuộc category không
+    /// </summary>
+    /// <param name="comicId">ID của comic</param>
+    /// <param name="categoryId">ID của category</param>
+    /// <returns>True nếu comic thuộc category</returns>
+    Task<bool> ExistsAsync(long comicId, long categoryId);
 }
