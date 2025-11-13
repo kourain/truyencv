@@ -164,18 +164,18 @@ def clean_html_content(html):
     html = '\n'.join(line for line in lines if line.strip())  # Loại bỏ dòng trống
     # return re.sub(r'ch[ưu][ơo]ng\s+\d+\s*[.:\-\)].*\n?', '', html.strip(), flags=re.MULTILINE | re.IGNORECASE).strip()
     return html.strip()
-ads = {}
 cookie = json.loads(open("metruyencv.biz.cookies.json",'r',encoding='utf-8').read())
 import asyncio
 URLS = [
     "https://metruyencv.biz",
-    "https://metruyencv.com"
+    "https://metruyencv.biz"
 ]
 async def scrape(urls:list[str],from_chap:int,step:int=10):
     browser = await launch(headless=False, executablePath='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
     os.makedirs("truyen",exist_ok=True)
 
-    async def run(slug,chap,url=0):
+    async def run(slug:str,chap:int,url=0):
+        slug = slug.strip().replace("#","")
         if os.path.exists(f"truyen/{slug}/chap-{chap}"):
             os.renames(f"truyen/{slug}/chap-{chap}",f"truyen/{slug}/chap-{chap}.txt")
             return
@@ -190,8 +190,9 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
         
         async def block_resources(request):
             # Chặn image, media, font
-            if request.resourceType in ['image', 'media', 'font', 'stylesheet']:
+            if request.resourceType in ['image', 'media']: #, 'font', 'stylesheet']:
                 await request.abort()
+                return
             else:
                 await request.continue_()
         
@@ -227,20 +228,27 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
                         "embedded_from_url": f"{URLS[url]}/truyen/{slug}",
                         "comic_status": f"{await page.evaluate('(element) => element.innerText', span[0])}"
                     },ensure_ascii=False,indent=4))
+                    ads = {}
                     ad_t = await page.querySelector("div#masthead a#topbox-one")
                     if ad_t:
                         slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
-                        ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
+                        img = await ad_t.querySelector('img')
+                        if img:
+                            ads[slug] = await page.evaluate('(element) => element.src', img)
                     ad_t = await page.querySelector("div#middle-one a#topbox-two")
                     if ad_t:
                         slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
-                        ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
+                        img = await ad_t.querySelector('img')
+                        if img:
+                            ads[slug] = await page.evaluate('(element) => element.src', img)
                     ad_t = await page.querySelector("div#middle-two a#topbox-three")
                     if ad_t:
                         slug = (await page.evaluate('(element) => element.href', ad_t)).split('/')[-1]
-                        ads[slug] = await page.evaluate('(element) => element.src', await ad_t.querySelector('img'))
-                    await page.close()
+                        img = await ad_t.querySelector('img')
+                        if img:
+                            ads[slug] = await page.evaluate('(element) => element.src', img)
                     open(f"truyen/ads/{slug}.json",'w',encoding='utf-8').write(json.dumps(ads,ensure_ascii=False,indent=4))
+                    await page.close()
                     return
                 await page.close()
                 return
@@ -277,7 +285,7 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
         task = []
         for i in range(from_chap,from_chap+step):
             task.append(run(url,i))
-            if len(task) == 50:
+            if len(task) == 10:
                 print(f"Processing up to chapter {i}...")
                 await asyncio.gather(*task)
                 task.clear()
@@ -286,4 +294,4 @@ async def scrape(urls:list[str],from_chap:int,step:int=10):
             await asyncio.gather(*task)
     await browser.close()
 list_comic = list(json.load(open("metruyencv.biz.crawl_list.json",'r',encoding='utf-8')))
-asyncio.run(scrape(list_comic,0,41))
+asyncio.run(scrape(list_comic[300:],0,21))
