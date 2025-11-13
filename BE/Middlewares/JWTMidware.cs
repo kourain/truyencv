@@ -1,19 +1,17 @@
-using System.Diagnostics;
-using TruyenCV.Models;
-using Microsoft.EntityFrameworkCore;
 using TruyenCV.Services;
 using System.Text.Json;
 using TruyenCV.Helpers;
-using Serilog;
 using System.Text.RegularExpressions;
 namespace TruyenCV.Middleware
 {
     public class JWTMidware
     {
         private readonly RequestDelegate _next;
-        public JWTMidware(RequestDelegate next)
+        private readonly ILogger<JWTMidware> _logger;
+        public JWTMidware(RequestDelegate next, ILogger<JWTMidware> logger)
         {
             _next = next;
+            _logger = logger;
         }
         public async Task InvokeAsync(HttpContext context, IServiceProvider provider)
         {

@@ -74,9 +74,9 @@ public static partial class Extensions
     {
         comic.name = request.name;
         comic.description = request.description;
-        comic.slug = request.slug;
+        comic.slug = request.name.ToSlug() ?? "";
         comic.author = request.author;
-        comic.author_slug = request.author.ToSlug();
+        comic.author_slug = request.author.ToSlug() ?? "";
         comic.embedded_from = request.embedded_from;
         comic.embedded_from_url = request.embedded_from_url;
         comic.cover_url = request.cover_url;

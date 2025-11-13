@@ -96,7 +96,7 @@ namespace TruyenCV.Helpers
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expireMinutes ?? AccessTokenExpiryMinutes),
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes ?? AccessTokenExpiryMinutes).AddSeconds(20), // cho kết nối internet yếu
                 signingCredentials: creds
             );
 
