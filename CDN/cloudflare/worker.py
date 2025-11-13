@@ -1,5 +1,5 @@
 from workers import WorkerEntrypoint
-from app.main import app
+from main import app
 import asgi
 class Default(WorkerEntrypoint):
     async def fetch(self, request):

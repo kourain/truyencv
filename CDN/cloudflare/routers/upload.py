@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Depends, File
-from app.schemas import UploadResponse, DeleteResponse, ErrorResponse
-from app.r2 import r2_client
+from schemas import UploadResponse, DeleteResponse, ErrorResponse
+from r2 import r2_client
 import os
 from datetime import datetime
 from typing import List

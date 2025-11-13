@@ -8,7 +8,9 @@ dependencies = [
     "webtypy>=0.1.7",
     "markupsafe",
     "fastapi",
-    "dotenv"
+    "dotenv",
+    "boto3>=1.40.72",
+    "urllib3==1.26.20"
 ]
 
 [dependency-groups]
