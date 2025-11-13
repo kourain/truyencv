@@ -22,6 +22,8 @@ interface UpdateComicRequest {
 	embedded_from_url: string | null;
 	cover_url: string | null;
 	chap_count: number;
+  main_category_id?: number; // Optional - defaults to 1001 if not provided
+  category_ids?: number[]; // Optional - additional categories to add to comic
 	rate: number;
 	status: ComicStatus;
 }
