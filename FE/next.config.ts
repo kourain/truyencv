@@ -19,34 +19,51 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_FE_ADMIN: FE_ADMIN,
   },
   redirects: async () => {
+    return [];
+  },
+  rewrites: async () => {
     return [
-      // {
-      //   source: "/:path*",
-      //   has: [
-      //     {
-      //       type: "host",
-      //       value: FE_ADMIN,
-      //     },
-      //   ],
-      //   destination: "/admin/:path*",
-      //   permanent: true
-      // }, {
-      //   source: "/:path*",
-      //   has: [
-      //     {
-      //       type: "host",
-      //       value: FE_USER,
-      //     },
-      //   ],
-      //   destination: "/user/:path*",
-      //   permanent: true
-      // }
+      {
+        source: "/user/profile/info",
+        destination: "/user/profile?section=info",
+      },
+      {
+        source: "/user/profile/history_coin",
+        destination: "/user/profile?section=history_coin",
+      },
+      {
+        source: "/user/profile/history_deposit",
+        destination: "/user/profile?section=history_deposit",
+      },
+      {
+        source: "/user/profile/history_ticket",
+        destination: "/user/profile?section=history_ticket",
+      },
+      {
+        source: "/user/profile/history_read",
+        destination: "/user/profile?section=history_read",
+      },
+      {
+        source: "/user/profile/history_comment",
+        destination: "/user/profile?section=history_comment",
+      },
     ];
   },
   allowedDevOrigins: [
     ...FE_ADMIN.split(","),
     ...FE_USER.split(",")
-  ]
+  ],
+  productionBrowserSourceMaps : false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

@@ -7,7 +7,8 @@ public static class BackgroundServicesRegisterExtensions
 	/// <returns></returns>
 	public static IServiceCollection AddBackgroundServices(this IServiceCollection Services)
 	{
-		Services.AddHostedService<TruyenCV.BackgroundServices.TemplateBackgroundService>();
+        Services.AddHostedService<TruyenCV.BackgroundServices.TemplateBackgroundService>();
+        Services.AddHostedService<TruyenCV.BackgroundServices.ComicEmbedBackgroundService>();
 		return Services;
 	}
 }

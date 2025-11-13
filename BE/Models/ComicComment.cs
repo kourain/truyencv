@@ -29,6 +29,8 @@ public class ComicComment : BaseEntity
 	
 	public int? rate_star { get; set; }
 
+	public bool is_hidden { get; set; } = false;
+
 	[JsonIgnore]
 	[ForeignKey(nameof(comic_id))]
 	public virtual Comic? Comic { get; set; }

@@ -1,10 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import { formatRelativeTime } from "@helpers/format";
-import type { CompletedComic } from "@services/user/home.service";
-
 import EmptyState from "./EmptyState";
 import SectionHeader from "./SectionHeader";
 
@@ -32,7 +31,10 @@ const CompletedCarouselSection = ({ items, isLoading }: CompletedCarouselSection
 );
 
 const CompletedCard = ({ comic }: { comic: CompletedComic }) => (
-  <div className="min-w-[220px] rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
+  <Link
+    href={`/comic/${comic.comic_slug}`}
+    className="min-w-[220px] rounded-3xl border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl"
+  >
     <div className="relative h-36 overflow-hidden rounded-2xl bg-surface-muted/60">
       {comic.cover_url ? (
         <img src={comic.cover_url} alt={comic.comic_title} className="h-full w-full object-cover" loading="lazy" />
@@ -45,7 +47,7 @@ const CompletedCard = ({ comic }: { comic: CompletedComic }) => (
       <p className="text-xs text-surface-foreground/60">{comic.total_chapters} chương</p>
       <p className="text-[11px] text-surface-foreground/50">Hoàn thành {formatRelativeTime(comic.completed_at)}</p>
     </div>
-  </div>
+  </Link>
 );
 
 const CompletedSkeleton = () => (

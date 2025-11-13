@@ -53,8 +53,8 @@ namespace TruyenCV
                         return origin.IndexOf("://") == -1 ? "https://" + origin : origin;
                     }),
                 StringComparer.OrdinalIgnoreCase);
-
-            Log.Fatal("CORS Allowed Origins: " + string.Join(", ", allowedOriginSet));
+            allowedOriginSet.Add("http://localhost:3000");
+            Log.Warning("CORS Allowed Origins: " + string.Join(", ", allowedOriginSet));
             builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(policy =>
@@ -191,18 +191,15 @@ namespace TruyenCV
                 File.WriteAllText(errorLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
                 File.WriteAllText(warnLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
             }
-            else
-            {
-                Log.Logger = new LoggerConfiguration()
-                                .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose,
-                                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-                                .WriteTo.File(errorLogPath, restrictedToMinimumLevel: LogEventLevel.Error)
-                                .WriteTo.Logger(lc =>
-                                    lc.Filter.ByIncludingOnly(evt => evt.Level == LogEventLevel.Warning)
-                                        .WriteTo.File(warnLogPath))
-                                .CreateLogger();
-                builder.Host.UseSerilog();
-            }
+            Log.Logger = new LoggerConfiguration()
+                            .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose,
+                                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+                            .WriteTo.File(errorLogPath, restrictedToMinimumLevel: LogEventLevel.Error)
+                            .WriteTo.Logger(lc =>
+                                lc.Filter.ByIncludingOnly(evt => evt.Level == LogEventLevel.Warning)
+                                    .WriteTo.File(warnLogPath))
+                            .CreateLogger();
+            builder.Host.UseSerilog();
             builder.Services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );

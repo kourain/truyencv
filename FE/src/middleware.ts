@@ -5,6 +5,8 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-url', request.url);
   const hostname = request.headers.get('host');
   if (appEnv.FE_USER.includes(hostname!)) {
     if (/^\/user(\/|$)/.test(url.pathname)) {

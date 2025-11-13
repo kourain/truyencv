@@ -34,7 +34,7 @@ public interface IComicService
 	/// </summary>
 	/// <param name="slug">Slug của comic</param>
 	/// <returns>Thông tin comic hiển thị hoặc null nếu không tìm thấy</returns>
-	Task<ComicResponse?> GetComicDetailBySlugAsync(string slug);
+	Task<ComicDetailResponse?> GetComicDetailBySlugAsync(string slug, long? userId = null);
 
 	/// <summary>
 	/// Tìm kiếm comic
@@ -51,6 +51,18 @@ public interface IComicService
 	/// <param name="author">Tên tác giả</param>
 	/// <returns>Danh sách comic</returns>
 	Task<IEnumerable<ComicResponse>> GetComicsByAuthorAsync(string author);
+
+	/// <summary>
+	/// Lấy danh sách truyện được nhúng bởi một user (embedded_by)
+	/// </summary>
+	/// <param name="embeddedBy">ID user nhúng (long)</param>
+	/// <returns>Danh sách comic</returns>
+	Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedByAsync(long embeddedBy);
+
+	/// <summary>
+	/// Lấy danh sách truyện được nhúng bởi cùng user với truyện có slug
+	/// </summary>
+	Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedBySlugAsync(string slug);
 
 	/// <summary>
 	/// Lấy danh sách comic theo trạng thái
@@ -72,7 +84,7 @@ public interface IComicService
 	/// </summary>
 	/// <param name="comicRequest">Thông tin comic mới</param>
 	/// <returns>Thông tin comic đã tạo</returns>
-	Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest);
+	Task<ComicResponse> CreateComicAsync(CreateComicRequest comicRequest, long embedded_by);
 
 	/// <summary>
 	/// Cập nhật thông tin comic
@@ -88,4 +100,11 @@ public interface IComicService
 	/// <param name="id">ID của comic</param>
 	/// <returns>True nếu xóa thành công, ngược lại là False</returns>
 	Task<bool> DeleteComicAsync(long id);
+
+	/// <summary>
+	/// Lấy dữ liệu tổng hợp cho trang chủ người dùng
+	/// </summary>
+	/// <param name="userId">ID người dùng</param>
+	/// <returns>Dữ liệu trang chủ</returns>
+	Task<UserHomeResponse> GetHomeForUserAsync(long userId);
 }

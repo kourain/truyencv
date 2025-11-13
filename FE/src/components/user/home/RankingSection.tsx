@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { formatNumber } from "@helpers/format";
-import type { RankingComic } from "@services/user/home.service";
 
 import EmptyState from "./EmptyState";
 import SectionHeader from "./SectionHeader";
@@ -33,8 +33,9 @@ const RankingSection = ({
       {isLoading
         ? Array.from({ length: 4 }).map((_, index) => <RankingSkeleton key={index} />)
         : items.map((comic, index) => (
-            <div
+            <Link
               key={comic.comic_id}
+              href={`/comic/${comic.comic_slug}`}
               className="flex items-center justify-between rounded-2xl border border-transparent bg-surface-muted/30 px-4 py-3 transition hover:border-primary"
             >
               <div className="flex items-center gap-4">
@@ -47,7 +48,7 @@ const RankingSection = ({
                 </div>
               </div>
               <span className="text-xs font-medium text-primary-foreground/80">{valueFormatter(comic)}</span>
-            </div>
+            </Link>
           ))}
       {!isLoading && items.length === 0 && <EmptyState message={emptyMessage ?? "Chưa có dữ liệu."} />}
     </div>

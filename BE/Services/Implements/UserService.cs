@@ -7,6 +7,7 @@ using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Serilog;
 
 namespace TruyenCV.Services
 {
@@ -31,11 +32,47 @@ namespace TruyenCV.Services
             return user?.ToRespDTO();
         }
 
-        public async Task<IEnumerable<UserResponse>> GetUsersAsync(int offset, int limit)
+        public async Task<IEnumerable<UserResponse>> GetUsersAsync(int offset, int limit, string? keyword = null)
         {
-            var users = await _userRepository.GetPagedAsync(offset, limit);
-            Serilog.Log.Error("Fetched {Count} users from database", users.Count());
+            offset = Math.Max(offset, 0);
+            limit = Math.Clamp(limit, 1, 100);
+
+            var query = _dbcontext.Users
+                .AsNoTracking()
+                .Where(u => u.deleted_at == null);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var sanitized = SanitizeKeyword(keyword);
+                var pattern = $"%{sanitized}%";
+                var hasNumericId = long.TryParse(keyword, out var numericId);
+
+                query = query.Where(u =>
+                    (hasNumericId && u.id == numericId)
+                    || EF.Functions.ILike(u.email, pattern, "\\")
+                    || EF.Functions.ILike(u.name, pattern, "\\"));
+            }
+
+            query = query
+                .OrderByDescending(u => u.created_at)
+                .ThenBy(u => u.id);
+
+            var users = await query
+                .Skip(offset)
+                .Take(limit)
+                .ToListAsync();
+
+            Serilog.Log.Information("Fetched {Count} users (offset: {Offset}, limit: {Limit}, keyword: {Keyword})", users.Count, offset, limit, keyword);
+
             return users.Select(u => u.ToRespDTO());
+        }
+
+        private static string SanitizeKeyword(string keyword)
+        {
+            return keyword.Trim()
+                .Replace("\\", "\\\\")
+                .Replace("%", "\\%")
+                .Replace("_", "\\_");
         }
 
         public async Task<UserResponse> CreateUserAsync(CreateUserRequest userRequest)
@@ -139,10 +176,12 @@ namespace TruyenCV.Services
         public async Task<UserProfileResponse?> GetProfileAsync(long userId)
         {
             var user = await _dbcontext.Users
-                .AsSplitQuery()
+                .AsSplitQuery().IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .Include(u => u.Roles.Where(role => role.deleted_at == null))
                 .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                .Include(u => u.Subscriptions.Where(subscription => subscription.deleted_at == null))
+                    .ThenInclude(subscription => subscription.Subscription)
                 .FirstOrDefaultAsync();
 
             return user?.ToProfileDTO();
@@ -160,7 +199,7 @@ namespace TruyenCV.Services
                 throw new UserRequestException("Mật khẩu mới phải có tối thiểu 6 ký tự", nameof(newPassword));
             }
 
-            var user = await _dbcontext.Users
+            var user = await _dbcontext.Users.IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .FirstOrDefaultAsync();
 
@@ -190,7 +229,7 @@ namespace TruyenCV.Services
 
         public async Task<UserProfileResponse?> VerifyEmailAsync(long userId)
         {
-            var user = await _dbcontext.Users
+            var user = await _dbcontext.Users.IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null)
                 .Include(u => u.Roles.Where(role => role.deleted_at == null))
                 .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
@@ -217,15 +256,13 @@ namespace TruyenCV.Services
         {
             var now = DateTime.UtcNow;
 
-            return await _dbcontext.Users
-                .AsSplitQuery()
+            var us = await _dbcontext.Users
+                .AsSplitQuery().IgnoreAutoIncludes()
                 .Where(u => u.id == userId && u.deleted_at == null && u.is_banned == false)
-                .Include(u => u.Roles.Where(role => role.deleted_at == null))
-                .Include(u => u.Permissions.Where(permission =>
-                    permission.deleted_at == null &&
-                    permission.revoked_at == null &&
-                    (permission.revoke_until == null || permission.revoke_until < now)))
                 .FirstOrDefaultAsync();
+            us.Roles = await _dbcontext.UserHasRoles.Where(u => u.user_id == userId && u.deleted_at == null && (u.revoked_at == null || u.revoked_at < now)).ToListAsync();
+            us.Permissions = await _dbcontext.UserHasPermissions.Where(u => u.user_id == userId && u.deleted_at == null && (u.revoked_at == null || u.revoked_at < now)).ToListAsync();
+            return us;
         }
     }
 }

@@ -2,10 +2,8 @@
 
 import "server-only";
 
-import { cookies } from "next/headers";
-
-import { authCookieNames } from "@helpers/authTokens";
 import { verifyAccessToken } from "./jwt";
+import { fetchUserProfile } from "@services/user/profile.service";
 
 export const parseJwtToken = async (token: string | null): Promise<ServerAuthState> => {
   if (!token) {
@@ -50,8 +48,29 @@ export const parseJwtToken = async (token: string | null): Promise<ServerAuthSta
     payload: verified.payload
   };
 }
-export const getServerAuthState = async (): Promise<ServerAuthState> => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(authCookieNames.access)?.value ?? null;
-  return await parseJwtToken(token);
+export const getServerAuthState = async (): Promise<{ userProfile: UserProfileResponse, auth: AuthTokensResponse }> => {
+  try {
+    const token = await fetchUserProfile();
+    return {
+      auth: {
+        ...await parseJwtToken(token.access_token),
+        access_token: token.access_token,
+        access_token_minutes: token.access_token_minutes,
+        refresh_token: token.refresh_token,
+        refresh_token_days: token.refresh_token_days
+      },
+      userProfile: token
+    };
+  } catch (error) {
+    console.error("Error fetching server auth state:", error);
+    return {
+      auth: {
+        access_token: "",
+        access_token_minutes: 0,
+        refresh_token: "",
+        refresh_token_days: 0
+      },
+      userProfile: {} as UserProfileResponse
+    };
+  }
 };

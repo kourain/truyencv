@@ -27,6 +27,12 @@ public static partial class Extensions
     }
     public static DTOs.Response.UserProfileResponse ToProfileDTO(this Models.User user)
     {
+        var now = DateTime.UtcNow;
+        var activeSubscription = user.Subscriptions?
+            .Where(subscription => subscription.deleted_at == null && subscription.is_active && (subscription.end_at == null || subscription.end_at > now))
+            .OrderByDescending(subscription => subscription.end_at ?? DateTime.MaxValue)
+            .FirstOrDefault();
+
         return new DTOs.Response.UserProfileResponse
         {
             id = user._id,
@@ -43,6 +49,8 @@ public static partial class Extensions
             read_chapter_count = user.read_chapter_count.ToString(),
             bookmark_count = user.bookmark_count.ToString(),
             coin = user.coin.ToString(),
+            key = user.key.ToString(),
+            active_subscription_name = activeSubscription?.Subscription?.name,
             roles = (user.Roles ?? Enumerable.Empty<Models.UserHasRole>())
                 .Where(role => role.deleted_at == null)
                 .Select(role => role.role_name)

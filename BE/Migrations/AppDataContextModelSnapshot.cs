@@ -32,7 +32,18 @@ namespace TruyenCV.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
 
+                    b.Property<DateTime?>("accept_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("accept_by")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("author")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("author_slug")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -72,6 +83,9 @@ namespace TruyenCV.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<long>("main_category_id")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -83,8 +97,11 @@ namespace TruyenCV.Migrations
                     b.Property<float>("rate")
                         .HasColumnType("real");
 
+                    b.Property<int>("rate_count")
+                        .HasColumnType("integer");
+
                     b.Property<Vector>("search_vector")
-                        .HasColumnType("vector(256)");
+                        .HasColumnType("vector(768)");
 
                     b.Property<string>("slug")
                         .IsRequired()
@@ -99,16 +116,22 @@ namespace TruyenCV.Migrations
 
                     b.HasKey("id");
 
+                    b.HasIndex("accept_by");
+
                     b.HasIndex("embedded_by");
+
+                    b.HasIndex("main_category_id");
 
                     b.HasIndex("slug")
                         .IsUnique();
 
-                    b.ToTable("comics", null, t =>
+                    b.ToTable("comics", t =>
                         {
                             t.HasCheckConstraint("CK_Comic_bookmark_count_Positive", "bookmark_count >= 0");
 
                             t.HasCheckConstraint("CK_Comic_chapter_count_Positive", "chapter_count >= 0");
+
+                            t.HasCheckConstraint("CK_Comic_main_category_id_Valid", "main_category_id < 2000");
                         });
                 });
 
@@ -142,13 +165,13 @@ namespace TruyenCV.Migrations
                     b.HasIndex("name")
                         .IsUnique();
 
-                    b.ToTable("comic_categories", (string)null);
+                    b.ToTable("comic_categories");
 
                     b.HasData(
                         new
                         {
                             id = 1001L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tiên Hiệp",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -156,7 +179,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1002L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Huyền Huyễn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -164,7 +187,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1003L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Khoa Huyễn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -172,7 +195,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1004L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Võng Du",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -180,7 +203,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1005L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Đô Thị",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -188,7 +211,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1006L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Đồng Nhân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -196,7 +219,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1007L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Dã Sử",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -204,7 +227,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1008L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cạnh Kỹ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -212,7 +235,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1009L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Huyền Nghi",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -220,7 +243,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1010L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Kiếm Hiệp",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -228,7 +251,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1011L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Kỳ Ảo",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -236,7 +259,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 1012L,
-                            category_type = 2,
+                            category_type = 1,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Light Novel",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -244,7 +267,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2001L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Điềm Đạm",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -252,7 +275,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2002L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Nhiệt Huyết",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -260,7 +283,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2003L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Vô Sỉ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -268,7 +291,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2004L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thiết Huyết",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -276,7 +299,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2005L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Nhẹ Nhàng",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -284,7 +307,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2006L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cơ Trí",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -292,7 +315,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2007L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Lãnh Khốc",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -300,7 +323,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2008L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Kiêu Ngạo",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -308,7 +331,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2009L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Ngu Ngốc",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -316,7 +339,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 2010L,
-                            category_type = 4,
+                            category_type = 3,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Giảo Hoạt",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -324,7 +347,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3001L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Đông Phương Huyền Huyễn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -332,7 +355,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3002L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Dị Thế Đại Lục",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -340,7 +363,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3003L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Vương Triều Tranh Bá",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -348,7 +371,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3004L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cao Võ Thế Giới",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -356,7 +379,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3005L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tây Phương Kỳ Huyễn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -364,7 +387,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3006L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Hiện Đại Ma Pháp",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -372,7 +395,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3007L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Hắc Ám Huyễn Tưởng",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -380,7 +403,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3008L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Lịch Sử Thần Thoại",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -388,7 +411,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3009L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Võ Hiệp Huyễn Tưởng",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -396,7 +419,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3010L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cổ Võ Tương Lai",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -404,7 +427,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3011L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tu Chân Văn Minh",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -412,7 +435,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3012L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Huyễn Tưởng Tu Tiên",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -420,7 +443,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3013L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Hiện Đại Tu Chân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -428,7 +451,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3014L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thần Thoại Tu Chân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -436,7 +459,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3015L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cổ Điển Tiên Hiệp",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -444,7 +467,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3016L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Viễn Cổ Hồng Hoang",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -452,7 +475,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3017L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Đô Thị Sinh Hoạt",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -460,7 +483,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3018L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Đô Thị Dị Năng",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -468,7 +491,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3019L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thanh Xuân Vườn Trường",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -476,7 +499,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3020L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Ngu Nhạc Minh Tinh",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -484,7 +507,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3021L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thương Chiến Chức Tràng",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -492,7 +515,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3022L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Giá Không Lịch Sử",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -500,7 +523,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3023L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Lịch Sử Quân Sự",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -508,7 +531,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3024L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Dân Gian Truyền Thuyết",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -516,7 +539,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3025L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Lịch Sử Quan Trường",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -524,7 +547,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3026L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Hư Nghĩ Võng Du",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -532,7 +555,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3027L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Du Hí Dị Giới",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -540,7 +563,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3028L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Điện Tử Cạnh Kỹ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -548,7 +571,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3029L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thể Dục Cạnh Kỹ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -556,7 +579,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3030L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cổ Võ Cơ Giáp",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -564,7 +587,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3031L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thế Giới Tương Lai",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -572,7 +595,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3032L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tinh Tế Văn Minh",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -580,7 +603,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3033L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tiến Hóa Biến Dị",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -588,7 +611,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3034L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Mạt Thế Nguy Cơ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -596,7 +619,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3035L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thời Không Xuyên Toa",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -604,7 +627,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3036L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Quỷ Bí Huyền Nghi",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -612,7 +635,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3037L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Kỳ Diệu Thế Giới",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -620,7 +643,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3038L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Trinh Tham Thôi Lý",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -628,7 +651,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3039L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thám Hiểm Sinh Tồn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -636,7 +659,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3040L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cung Vi Trạch Đấu",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -644,7 +667,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3041L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Kinh Thương Chủng Điền",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -652,7 +675,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3042L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tiên Lữ Kỳ Duyên",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -660,7 +683,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3043L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Hào Môn Thế Gia",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -668,7 +691,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3044L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Dị Tộc Luyến Tình",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -676,7 +699,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3045L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Ma Pháp Huyễn Tình",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -684,7 +707,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3046L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tinh Tế Luyến Ca",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -692,7 +715,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3047L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Linh Khí Khôi Phục",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -700,7 +723,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3048L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Chư Thiên Vạn Giới",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -708,7 +731,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3049L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Nguyên Sinh Huyễn Tưởng",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -716,7 +739,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3050L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Yêu Đương Thường Ngày",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -724,7 +747,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3051L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Diễn Sinh Đồng Nhân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -732,7 +755,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 3052L,
-                            category_type = 3,
+                            category_type = 2,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cáo Tiếu Thổ Tào",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -740,7 +763,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4001L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Hệ Thống",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -748,7 +771,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4002L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Lão Gia",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -756,7 +779,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4003L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Bàn Thờ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -764,7 +787,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4004L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Tùy Thân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -772,7 +795,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4005L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Phàm Nhân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -780,7 +803,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4006L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Vô Địch",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -788,7 +811,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4007L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Xuyên Qua",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -796,7 +819,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4008L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Nữ Cường",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -804,7 +827,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4009L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Khế Ước",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -812,7 +835,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4010L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Trọng Sinh",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -820,7 +843,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4011L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Hồng Lâu",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -828,7 +851,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4012L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Học Viện",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -836,7 +859,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4013L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Biến Thân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -844,7 +867,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4014L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cổ Ngu",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -852,7 +875,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4015L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Chuyển Thế",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -860,7 +883,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4016L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Xuyên Sách",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -868,7 +891,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4017L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Đàn Xuyên",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -876,7 +899,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4018L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Phế Tài",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -884,7 +907,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4019L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Dưỡng Thành",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -892,7 +915,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4020L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cơm Mềm",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -900,7 +923,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4021L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Vô Hạn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -908,7 +931,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4022L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Mary Sue",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -916,7 +939,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4023L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Cá Mặn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -924,7 +947,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4024L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Xây Dựng Thế Lực",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -932,7 +955,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4025L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Xuyên Nhanh",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -940,7 +963,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4026L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Nữ Phụ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -948,7 +971,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4027L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Vả Mặt",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -956,7 +979,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4028L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Sảng Văn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -964,7 +987,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4029L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Xuyên Không",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -972,7 +995,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4030L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Ngọt Sủng",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -980,7 +1003,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4031L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Ngự Thú",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -988,7 +1011,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4032L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Điền Viên",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -996,7 +1019,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4033L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Toàn Dân",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -1004,7 +1027,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4034L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Mỹ Thực",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -1012,7 +1035,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4035L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Phản Phái",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -1020,7 +1043,7 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4036L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Sau Màn",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
@@ -1028,9 +1051,33 @@ namespace TruyenCV.Migrations
                         new
                         {
                             id = 4037L,
-                            category_type = 5,
+                            category_type = 4,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
                             name = "Thiên Tài",
+                            updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            id = 4038L,
+                            category_type = 4,
+                            created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            name = "Trò Chơi",
+                            updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            id = 5001L,
+                            category_type = 5,
+                            created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            name = "Góc Nhìn Nam",
+                            updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            id = 5002L,
+                            category_type = 5,
+                            created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            name = "Góc Nhìn Nữ",
                             updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
@@ -1073,7 +1120,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("comic_id", "chapter")
                         .IsUnique();
 
-                    b.ToTable("comic_chapters", (string)null);
+                    b.ToTable("comic_chapters");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.ComicComment", b =>
@@ -1099,6 +1146,9 @@ namespace TruyenCV.Migrations
 
                     b.Property<DateTime?>("deleted_at")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("is_hidden")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("is_rate")
                         .HasColumnType("boolean");
@@ -1128,7 +1178,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("comic_comments", null, t =>
+                    b.ToTable("comic_comments", t =>
                         {
                             t.HasCheckConstraint("CK_comic_comments_rate_star_range", "(rate_star IS NULL) OR (rate_star BETWEEN 1 AND 5)");
                         });
@@ -1148,7 +1198,10 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("comic_id");
 
-                    b.ToTable("comic_have_categories", (string)null);
+                    b.ToTable("comic_have_categories", t =>
+                        {
+                            t.HasCheckConstraint("CK_comic_have_categories_comic_category_id", "comic_category_id > 2000");
+                        });
                 });
 
             modelBuilder.Entity("TruyenCV.Models.ComicRecommend", b =>
@@ -1185,7 +1238,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("comic_id", "month", "year")
                         .IsUnique();
 
-                    b.ToTable("comic_recommends", (string)null);
+                    b.ToTable("comic_recommends");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.ComicReport", b =>
@@ -1235,7 +1288,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("comic_id", "chapter_id", "comment_id");
 
-                    b.ToTable("comic_reports", (string)null);
+                    b.ToTable("comic_reports");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.PaymentHistory", b =>
@@ -1281,7 +1334,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_PaymentHistory_User");
 
-                    b.ToTable("payment_history", (string)null);
+                    b.ToTable("payment_history");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.RefreshToken", b =>
@@ -1321,7 +1374,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex("user_id");
 
-                    b.ToTable("refresh_tokens", (string)null);
+                    b.ToTable("refresh_tokens");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.Subscription", b =>
@@ -1361,6 +1414,9 @@ namespace TruyenCV.Migrations
                     b.Property<long>("price_coin")
                         .HasColumnType("bigint");
 
+                    b.Property<int>("ticket_added")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("updated_at")
                         .HasColumnType("timestamp with time zone");
 
@@ -1369,7 +1425,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("code")
                         .IsUnique();
 
-                    b.ToTable("subscriptions", (string)null);
+                    b.ToTable("subscriptions");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.User", b =>
@@ -1448,7 +1504,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("firebase_uid")
                         .IsUnique();
 
-                    b.ToTable("users", null, t =>
+                    b.ToTable("users", t =>
                         {
                             t.HasCheckConstraint("CK_User_bookmark_count_Positive", "bookmark_count >= 0");
 
@@ -1532,7 +1588,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserComicBookmark");
 
-                    b.ToTable("user_comic_bookmarks", (string)null);
+                    b.ToTable("user_comic_bookmarks");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserComicReadHistory", b =>
@@ -1563,6 +1619,8 @@ namespace TruyenCV.Migrations
 
                     b.HasKey("id");
 
+                    b.HasIndex("chapter_id");
+
                     b.HasIndex("comic_id");
 
                     b.HasIndex("user_id", "comic_id")
@@ -1570,7 +1628,46 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserComicReadHistory");
 
-                    b.ToTable("user_comic_read_history", (string)null);
+                    b.ToTable("user_comic_read_history");
+                });
+
+            modelBuilder.Entity("TruyenCV.Models.UserComicRecommend", b =>
+                {
+                    b.Property<long>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("id"));
+
+                    b.Property<long>("comic_id")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("created_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("deleted_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("month")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("updated_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("user_id")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("comic_id");
+
+                    b.HasIndex("user_id", "month", "year")
+                        .IsUnique();
+
+                    b.ToTable("user_comic_recommends");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserComicUnlockHistory", b =>
@@ -1610,7 +1707,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserComicUnlockHistory");
 
-                    b.ToTable("user_comic_unlock_history", (string)null);
+                    b.ToTable("user_comic_unlock_history");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserHasPermission", b =>
@@ -1651,7 +1748,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserHasPermission");
 
-                    b.ToTable("user_has_permissions", (string)null);
+                    b.ToTable("user_has_permissions");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserHasRole", b =>
@@ -1690,7 +1787,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserHasRole");
 
-                    b.ToTable("user_has_roles", (string)null);
+                    b.ToTable("user_has_roles");
 
                     b.HasData(
                         new
@@ -1764,7 +1861,7 @@ namespace TruyenCV.Migrations
                     b.HasIndex("user_id", "subscription_id")
                         .IsUnique();
 
-                    b.ToTable("user_has_subscriptions", (string)null);
+                    b.ToTable("user_has_subscriptions");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserUseCoinHistory", b =>
@@ -1808,7 +1905,7 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserUseCoinHistory_User");
 
-                    b.ToTable("user_use_coin_history", (string)null);
+                    b.ToTable("user_use_coin_history");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserUseKeyHistory", b =>
@@ -1850,18 +1947,33 @@ namespace TruyenCV.Migrations
 
                     b.HasIndex(new[] { "user_id" }, "IX_UserUseKeyHistory_User");
 
-                    b.ToTable("user_use_key_history", (string)null);
+                    b.ToTable("user_use_key_history");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.Comic", b =>
                 {
+                    b.HasOne("TruyenCV.Models.User", "AcceptByUser")
+                        .WithMany()
+                        .HasForeignKey("accept_by")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TruyenCV.Models.User", "EmbeddedByUser")
                         .WithMany()
                         .HasForeignKey("embedded_by")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("TruyenCV.Models.ComicCategory", "MainCategory")
+                        .WithMany()
+                        .HasForeignKey("main_category_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcceptByUser");
+
                     b.Navigation("EmbeddedByUser");
+
+                    b.Navigation("MainCategory");
                 });
 
             modelBuilder.Entity("TruyenCV.Models.ComicChapter", b =>
@@ -2010,6 +2122,33 @@ namespace TruyenCV.Migrations
                 });
 
             modelBuilder.Entity("TruyenCV.Models.UserComicReadHistory", b =>
+                {
+                    b.HasOne("TruyenCV.Models.ComicChapter", "ComicChapter")
+                        .WithMany()
+                        .HasForeignKey("chapter_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TruyenCV.Models.Comic", "Comic")
+                        .WithMany()
+                        .HasForeignKey("comic_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TruyenCV.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comic");
+
+                    b.Navigation("ComicChapter");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TruyenCV.Models.UserComicRecommend", b =>
                 {
                     b.HasOne("TruyenCV.Models.Comic", "Comic")
                         .WithMany()

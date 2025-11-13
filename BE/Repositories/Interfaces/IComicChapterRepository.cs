@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
@@ -44,4 +45,10 @@ public interface IComicChapterRepository : IRepository<ComicChapter>
 	/// <param name="chapter">Số chapter hiện tại</param>
 	/// <returns>Chapter nếu tìm thấy, null nếu không</returns>
 	Task<ComicChapter?> GetNextChapterAsync(long comicId, int chapter);
+
+	/// <summary>
+	/// Lấy danh sách chapter được cập nhật mới nhất
+	/// </summary>
+	/// <param name="limit">Số lượng chapter cần lấy</param>
+	Task<IEnumerable<ComicChapter>> GetLatestUpdatedAsync(int limit);
 }

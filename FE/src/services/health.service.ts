@@ -23,7 +23,6 @@ export type PingResponse = RawPingResponse & {
     response_time_ms: number;
   };
 };
-
 export const fetchPing = async (config?: AxiosRequestConfig) => {
   const client = getHttpClient();
   const start = typeof performance !== "undefined" ? performance.now() : Date.now();

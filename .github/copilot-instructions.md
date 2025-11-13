@@ -135,7 +135,7 @@ Nghiêm cấm tự ý hardcode.
 - **PERMISSION**: Được định nghĩa trong Const\Permissions.cs
 - Luôn chỉnh sửa trực tiếp các tệp chứ không tạo file mới như CreateNew thay cho Create
 - Phân vùng Areas và các lớp sealed cho các Controller để tổ chức mã nguồn rõ ràng
-- Luôn đọc README.md/readme.md trong các thư mục mà bạn truy cập vào để hiểu các quy ước và mẫu thiết kế cụ thể
+- Luôn đọc README.md/readme.md trong các thư mục, bao gồm cả các thư mục cha có trong đuờng dẫn tới thư mục đích mà bạn truy cập vào để hiểu các quy ước và mẫu thiết kế cụ thể
 - Tìm kiếm tất cả các tệp có khả năng liên quan đến yêu cầu, luôn đọc tất cả các tệp có trong Const/const 
 - Đối với các hàm phức tạp, hãy ghi document
 

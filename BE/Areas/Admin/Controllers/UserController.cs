@@ -43,9 +43,9 @@ namespace TruyenCV.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] int offset = 0, [FromQuery] int limit = 10)
+        public async Task<IActionResult> GetUsers([FromQuery] int offset = 0, [FromQuery] int limit = 10, [FromQuery] string? keyword = null)
         {
-            var users = await _userService.GetUsersAsync(offset, limit);
+            var users = await _userService.GetUsersAsync(offset, limit, keyword);
             return Ok(users);
         }
 
@@ -64,7 +64,7 @@ namespace TruyenCV.Areas.Admin.Controllers
             // Chuyển đổi RefreshToken thành DTO trước khi trả về
             var tokenResponses = tokens.Select(t => new
             {
-                id = t.id,
+                id = t.id.ToString(),
                 token = t.token,
                 expires_at = t.expires_at,
                 is_active = t.is_active,

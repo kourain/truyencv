@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
@@ -41,4 +42,10 @@ public interface IComicCommentRepository : IRepository<ComicComment>
 	/// <param name="commentId">ID của comment</param>
 	/// <returns>Danh sách reply</returns>
 	Task<IEnumerable<ComicComment>> GetRepliesAsync(long commentId);
+
+	/// <summary>
+	/// Lấy danh sách đánh giá mới nhất
+	/// </summary>
+	/// <param name="limit">Số lượng đánh giá cần lấy</param>
+	Task<IEnumerable<ComicComment>> GetLatestRatingReviewsAsync(int limit);
 }

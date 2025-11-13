@@ -26,17 +26,21 @@ public static partial class Extensions
         source = Regex.Replace(source, @"ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ", "o",RegexOptions.IgnoreCase);
         source = Regex.Replace(source, @"ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự", "u",RegexOptions.IgnoreCase);
         source = Regex.Replace(source, @"ý|ỳ|ỷ|ỹ|ỵ", "y",RegexOptions.IgnoreCase);
-        source = Regex.Replace(source, @"đ", "d",RegexOptions.IgnoreCase);
+        source = Regex.Replace(source, @"đ", "d", RegexOptions.IgnoreCase);
         //Xóa các ký tự đặt biệt
-        source = Regex.Replace(source, "`|~|!|@|#|$|%|^|&|*|(|)|+|=|,|.|/|?|>|<|'|\"|:|;|_", "",RegexOptions.IgnoreCase);
+        StringBuilder sb = new StringBuilder();
+        foreach (char c in source.ToLower())
+        {
+            if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == ' ')
+            {
+                sb.Append(c);
+            }
+        }
+        source = sb.ToString();
         //Đổi khoảng trắng thành ký tự gạch ngang
         source = Regex.Replace(source, @" ", "-",RegexOptions.IgnoreCase);
         //Đổi nhiều ký tự gạch ngang liên tiếp thành 1 ký tự gạch ngang
         source = Regex.Replace(source, @"\-+", "-",RegexOptions.IgnoreCase);
-        //Xóa các ký tự gạch ngang ở đầu và cuối
-        source = "@" + source + "@";
-        source = Regex.Replace(source, @"\@\-|\-\@|\@", "",RegexOptions.IgnoreCase);
-
         var slug = source.Trim('-');
         return slug.Length > 100 ? slug.Substring(0, 100) : slug;
     }

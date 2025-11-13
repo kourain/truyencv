@@ -7,6 +7,8 @@ import ToastProvider from "@components/providers/ToastProvider";
 import { getServerAuthState } from "@server/auth";
 
 import "./globals.css";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: {
@@ -17,8 +19,20 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = async ({ children }: { children: ReactNode }) => {
-  const authState = await getServerAuthState();
-
+  let authState = {} as { userProfile: UserProfileResponse; auth: AuthTokensResponse };
+  const headersList = await headers();
+  const header_url = headersList.get('x-url') || "";
+  if (!header_url.includes("/auth/")) {
+    authState = await getServerAuthState();
+    if (authState.userProfile.id === "-1") {
+      if (header_url.startsWith("/admin")) {
+        redirect("/admin/auth/login");
+      }
+      if (header_url.startsWith("/user")) {
+        redirect("/user/auth/login");
+      }
+    }
+  }
   return (
     <html lang="vi">
       <head>

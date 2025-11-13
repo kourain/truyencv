@@ -1,4 +1,4 @@
-export interface CreateUserSubscriptionRequest {
+interface CreateUserSubscriptionRequest {
 	user_id: string;
 	subscription_id: string;
 	start_at?: string | null;
@@ -7,14 +7,14 @@ export interface CreateUserSubscriptionRequest {
 	auto_renew?: boolean;
 }
 
-export interface UpdateUserSubscriptionRequest {
+interface UpdateUserSubscriptionRequest {
 	id: string;
 	end_at?: string | null;
 	is_active: boolean;
 	auto_renew: boolean;
 }
 
-export interface UserSubscriptionResponse {
+interface UserSubscriptionResponse {
 	id: string;
 	user_id: string;
 	subscription_id: string;

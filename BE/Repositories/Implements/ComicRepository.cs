@@ -137,6 +137,17 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 		);
 	}
 
+	public async Task<IEnumerable<Comic>> GetByEmbeddedByAsync(long embeddedBy)
+	{
+		return await _redisCache.GetFromRedisAsync<Comic>(
+			() => _dbSet.AsNoTracking()
+				.Where(c => c.embedded_by == embeddedBy && c.deleted_at == null)
+				.ToListAsync(),
+			$"embedded_by:{embeddedBy}",
+			DefaultCacheMinutes
+		);
+	}
+
 	public async Task<IEnumerable<Comic>> GetByStatusAsync(ComicStatus status)
 	{
 		return await _redisCache.GetFromRedisAsync<Comic>(
