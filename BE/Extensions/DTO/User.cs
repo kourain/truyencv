@@ -45,6 +45,7 @@ public static partial class Extensions
             email_verified_at = user.email_verified_at,
             banned_at = user.banned_at,
             is_banned = user.is_banned,
+            has_firebase_linked = !string.IsNullOrWhiteSpace(user.firebase_uid),
             read_comic_count = user.read_comic_count.ToString(),
             read_chapter_count = user.read_chapter_count.ToString(),
             bookmark_count = user.bookmark_count.ToString(),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Link2Off, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,6 +19,8 @@ import {
   useUserKeyHistoryQuery,
   useUserReadHistoryQuery,
   useUserCommentHistoryQuery,
+  changeEmail,
+  unlinkFirebaseAccount,
 } from "@services/user/profile.service";
 import { formatNumber, formatRelativeTime } from "@helpers/format";
 import { HistoryStatus } from "@const/enum/history-status";
@@ -56,14 +58,16 @@ const EmptyState = ({ message }: { message: string }) => (
   </div>
 );
 
-type MainTabKey = "info" | "payment" | "read" | "comment";
+type MainTabKey = "info" | "payment" | "read" | "comment" | "security";
 type PaymentTabKey = "coin" | "deposit" | "ticket";
+type SecurityTabKey = "email" | "password";
 
 const mainTabs: Array<{ key: MainTabKey; label: string }> = [
   { key: "info", label: "Thông tin" },
   { key: "payment", label: "Lịch sử thanh toán" },
   { key: "read", label: "Lịch sử đọc" },
   { key: "comment", label: "Lịch sử bình luận" },
+  { key: "security", label: "Bảo mật" },
 ];
 
 const paymentTabs: Array<{ key: PaymentTabKey; label: string }> = [
@@ -72,10 +76,20 @@ const paymentTabs: Array<{ key: PaymentTabKey; label: string }> = [
   { key: "ticket", label: "Vé" },
 ];
 
+const securityTabs: Array<{ key: SecurityTabKey; label: string }> = [
+  { key: "email", label: "Email" },
+  { key: "password", label: "Mật khẩu" },
+];
+
 const paymentTabPaths: Record<PaymentTabKey, string> = {
   coin: "/user/profile/history_coin",
   deposit: "/user/profile/history_deposit",
   ticket: "/user/profile/history_ticket",
+};
+
+const securityTabPaths: Record<SecurityTabKey, string> = {
+  email: "/user/profile/security_email",
+  password: "/user/profile/security_password",
 };
 
 const mainTabDefaultPaths: Record<MainTabKey, string> = {
@@ -83,6 +97,7 @@ const mainTabDefaultPaths: Record<MainTabKey, string> = {
   payment: paymentTabPaths.coin,
   read: "/user/profile/history_read",
   comment: "/user/profile/history_comment",
+  security: securityTabPaths.email,
 };
 
 const historyStatusStyles: Record<HistoryStatus, { label: string; className: string }> = {
@@ -101,7 +116,7 @@ const defaultHistoryStatusStyle = {
   className: "bg-surface-muted/70 text-surface-foreground/70",
 };
 
-const resolveTabsFromSection = (section: string | null): { main: MainTabKey; payment?: PaymentTabKey } => {
+const resolveTabsFromSection = (section: string | null): { main: MainTabKey; payment?: PaymentTabKey; security?: SecurityTabKey } => {
   switch (section) {
     case "info":
       return { main: "info", payment: "coin" };
@@ -115,6 +130,10 @@ const resolveTabsFromSection = (section: string | null): { main: MainTabKey; pay
       return { main: "read" };
     case "history_comment":
       return { main: "comment" };
+    case "security_password":
+      return { main: "security", security: "password" };
+    case "security_email":
+      return { main: "security", security: "email" };
     default:
       return { main: "info", payment: "coin" };
   }
@@ -142,6 +161,11 @@ const UserProfilePage = () => {
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [activeMainTab, setActiveMainTab] = useState<MainTabKey>("info");
   const [activePaymentTab, setActivePaymentTab] = useState<PaymentTabKey>("coin");
+  const [activeSecurityTab, setActiveSecurityTab] = useState<SecurityTabKey>("email");
+  const [newEmail, setNewEmail] = useState<string>("");
+  const [confirmEmail, setConfirmEmail] = useState<string>("");
+  const [currentPassword, setCurrentPassword] = useState<string>("");
+  const [emailFormError, setEmailFormError] = useState<string | null>(null);
   const { pushToast } = useToast();
   const coinHistoryQuery = useUserCoinHistoryQuery();
   const paymentHistoryQuery = useUserPaymentHistoryQuery();
@@ -149,10 +173,32 @@ const UserProfilePage = () => {
   const readHistoryQuery = useUserReadHistoryQuery(50);
   const commentHistoryQuery = useUserCommentHistoryQuery();
 
+  const updateProfileCache = (data: UserProfileResponse) => {
+    queryClient.setQueryData(["user-profile"], (prev: (UserProfileResponse & AuthTokensResponse) | undefined) => {
+      if (!prev) {
+        return data as UserProfileResponse & AuthTokensResponse;
+      }
+
+      return {
+        ...prev,
+        ...data,
+      };
+    });
+  };
+
+  const getErrorMessage = (error: unknown, fallbackMessage: string) => {
+    if (typeof error === "object" && error !== null && "response" in error) {
+      const apiError = error as AxiosError<{ message?: string }>;
+      return apiError.response?.data?.message ?? fallbackMessage;
+    }
+
+    return fallbackMessage;
+  };
+
   const verifyEmailMutation = useMutation({
     mutationFn: verifyEmail,
     onSuccess: (data) => {
-      queryClient.setQueryData(["user-profile"], data);
+      updateProfileCache(data);
       setVerifyError(null);
       pushToast({
         title: "Email đã được xác thực",
@@ -161,25 +207,61 @@ const UserProfilePage = () => {
       });
     },
     onError: (error: unknown) => {
-      if (typeof error === "object" && error !== null && "response" in error) {
-        const apiError = error as AxiosError<{ message?: string }>;
-        const message = apiError.response?.data?.message;
-        const fallbackMessage = "Không thể gửi yêu cầu xác thực email. Vui lòng thử lại sau.";
-        setVerifyError(message ?? fallbackMessage);
-        pushToast({
-          title: "Xác thực email thất bại",
-          description: message ?? fallbackMessage,
-          variant: "error",
-        });
-      } else {
-        const fallbackMessage = "Không thể gửi yêu cầu xác thực email. Vui lòng thử lại sau.";
-        setVerifyError(fallbackMessage);
-        pushToast({
-          title: "Xác thực email thất bại",
-          description: fallbackMessage,
-          variant: "error",
-        });
-      }
+      const fallbackMessage = "Không thể gửi yêu cầu xác thực email. Vui lòng thử lại sau.";
+      const message = getErrorMessage(error, fallbackMessage);
+      setVerifyError(message);
+      pushToast({
+        title: "Xác thực email thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+  });
+
+  const changeEmailMutation = useMutation({
+    mutationFn: changeEmail,
+    onSuccess: (data) => {
+      updateProfileCache(data);
+      setEmailFormError(null);
+      setNewEmail("");
+      setConfirmEmail("");
+      setCurrentPassword("");
+      pushToast({
+        title: "Cập nhật email thành công",
+        description: "Vui lòng xác thực lại email mới để hoàn tất.",
+        variant: "success",
+      });
+    },
+    onError: (error: unknown) => {
+      const fallbackMessage = "Không thể cập nhật email. Vui lòng thử lại sau.";
+      const message = getErrorMessage(error, fallbackMessage);
+      setEmailFormError(message);
+      pushToast({
+        title: "Đổi email thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+  });
+
+  const unlinkFirebaseMutation = useMutation({
+    mutationFn: unlinkFirebaseAccount,
+    onSuccess: (data) => {
+      updateProfileCache(data);
+      pushToast({
+        title: "Đã hủy liên kết Firebase",
+        description: "Email cần được xác thực trước khi đăng nhập lại bằng mật khẩu.",
+        variant: "success",
+      });
+    },
+    onError: (error: unknown) => {
+      const fallbackMessage = "Không thể hủy liên kết Firebase. Vui lòng thử lại sau.";
+      const message = getErrorMessage(error, fallbackMessage);
+      pushToast({
+        title: "Hủy liên kết thất bại",
+        description: message,
+        variant: "error",
+      });
     },
   });
 
@@ -190,8 +272,13 @@ const UserProfilePage = () => {
     setActiveMainTab(resolved.main);
     if (resolved.main === "payment") {
       setActivePaymentTab(resolved.payment ?? "coin");
+      setActiveSecurityTab("email");
+    } else if (resolved.main === "security") {
+      setActiveSecurityTab(resolved.security ?? "email");
+      setActivePaymentTab("coin");
     } else {
       setActivePaymentTab("coin");
+      setActiveSecurityTab("email");
     }
   }, [sectionParam]);
 
@@ -204,8 +291,17 @@ const UserProfilePage = () => {
       return;
     }
 
+    if (tab === "security") {
+      const nextSecurityTab = activeSecurityTab ?? "email";
+      setActiveMainTab("security");
+      setActiveSecurityTab(nextSecurityTab);
+      router.push(securityTabPaths[nextSecurityTab]);
+      return;
+    }
+
     setActiveMainTab(tab);
     setActivePaymentTab("coin");
+    setActiveSecurityTab("email");
     router.push(mainTabDefaultPaths[tab]);
   };
 
@@ -213,6 +309,12 @@ const UserProfilePage = () => {
     setActiveMainTab("payment");
     setActivePaymentTab(tab);
     router.push(paymentTabPaths[tab]);
+  };
+
+  const handleSecurityTabChange = (tab: SecurityTabKey) => {
+    setActiveMainTab("security");
+    setActiveSecurityTab(tab);
+    router.push(securityTabPaths[tab]);
   };
 
   const renderCoinHistory = () => {
@@ -404,6 +506,40 @@ const UserProfilePage = () => {
   }
 
   const totalInteraction = Number(profile.read_comic_count) + Number(profile.bookmark_count);
+  const requiresPasswordForEmailChange = !profile.has_firebase_linked;
+  const emailInputsDisabled = changeEmailMutation.isPending;
+  const unlinkFirebaseDisabled = unlinkFirebaseMutation.isPending || !profile.has_firebase_linked;
+
+  const handleEmailChangeSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedNewEmail = newEmail.trim();
+    const trimmedConfirmEmail = confirmEmail.trim();
+
+    if (!trimmedNewEmail) {
+      setEmailFormError("Vui lòng nhập email mới.");
+      return;
+    }
+
+    if (trimmedNewEmail !== trimmedConfirmEmail) {
+      setEmailFormError("Email xác nhận không khớp.");
+      return;
+    }
+
+    const payload: ChangeEmailPayload = { new_email: trimmedNewEmail };
+
+    if (requiresPasswordForEmailChange) {
+      const normalizedPassword = currentPassword.trim();
+      if (!normalizedPassword) {
+        setEmailFormError("Vui lòng nhập mật khẩu hiện tại.");
+        return;
+      }
+
+      payload.current_password = normalizedPassword;
+    }
+
+    setEmailFormError(null);
+    changeEmailMutation.mutate(payload);
+  };
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10">
@@ -443,28 +579,173 @@ const UserProfilePage = () => {
               <p className="text-sm text-surface-foreground/70">
                 Email {profile.email_verified_at ? "đã" : "chưa"} được xác thực. Hãy đảm bảo thông tin liên hệ chính xác để nhận thông báo quan trọng từ TruyenCV.
               </p>
+              <p className="text-xs text-surface-foreground/60">
+                Quản lý email, mật khẩu và liên kết Firebase nhanh chóng tại tab <span className="font-semibold text-primary">Bảo mật</span>.
+              </p>
             </div>
           </section>
 
-          <section className="grid gap-4 lg:grid-cols-2">
-            <EmailVerificationCard
-              isVerified={Boolean(profile.email_verified_at)}
-              isVerifying={verifyEmailMutation.isPending}
-              onVerify={() => {
-                setVerifyError(null);
-                verifyEmailMutation.mutate();
-              }}
-              lastVerifiedAt={profile.email_verified_at}
-            />
-            <div className="lg:col-span-1">
-              <ChangePasswordForm
-                username={profile.name}
-                onSuccess={() => queryClient.invalidateQueries({ queryKey: ["user-profile"] })}
-              />
-            </div>
-            {verifyError && <p className="lg:col-span-2 text-xs font-medium text-rose-400">{verifyError}</p>}
+          <section className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg">
+            <h3 className="text-base font-semibold text-primary-foreground">Lối tắt quản lý bảo mật</h3>
+            <p className="mt-2 text-sm text-surface-foreground/70">
+              Chuyển sang tab <span className="font-semibold text-primary">Bảo mật</span> để xác thực email, cập nhật địa chỉ email, đổi mật khẩu
+              hoặc hủy liên kết Firebase theo nhu cầu của bạn.
+            </p>
           </section>
         </>
+      )}
+
+      {activeMainTab === "security" && (
+        <section className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg">
+          <nav className="mb-6 flex flex-wrap justify-center gap-3">
+            {securityTabs.map((tab) => {
+              const isActive = tab.key === activeSecurityTab;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
+                  }`}
+                  onClick={() => handleSecurityTabChange(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div>
+            {activeSecurityTab === "email" && (
+              <div className="space-y-6">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <EmailVerificationCard
+                    isVerified={Boolean(profile.email_verified_at)}
+                    isVerifying={verifyEmailMutation.isPending}
+                    onVerify={() => {
+                      setVerifyError(null);
+                      verifyEmailMutation.mutate();
+                    }}
+                    lastVerifiedAt={profile.email_verified_at}
+                  />
+
+                  <form className="flex flex-col gap-4 rounded-3xl border border-slate-700/70 bg-slate-900/70 p-6 shadow-xl" onSubmit={handleEmailChangeSubmit}>
+                    <div className="flex items-center gap-2 text-slate-100">
+                      <MailCheck className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Đổi email đăng nhập</h3>
+                    </div>
+
+                    <label className="flex flex-col gap-2 text-xs text-slate-300">
+                      <span>Email mới</span>
+                      <input
+                        type="email"
+                        value={newEmail}
+                        onChange={(event) => setNewEmail(event.target.value)}
+                        disabled={emailInputsDisabled}
+                        className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/40 disabled:opacity-70"
+                        placeholder="name@example.com"
+                        required
+                      />
+                    </label>
+
+                    <label className="flex flex-col gap-2 text-xs text-slate-300">
+                      <span>Xác nhận email mới</span>
+                      <input
+                        type="email"
+                        value={confirmEmail}
+                        onChange={(event) => setConfirmEmail(event.target.value)}
+                        disabled={emailInputsDisabled}
+                        className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/40 disabled:opacity-70"
+                        placeholder="Nhập lại email"
+                        required
+                      />
+                    </label>
+
+                    {requiresPasswordForEmailChange && (
+                      <label className="flex flex-col gap-2 text-xs text-slate-300">
+                        <span>Mật khẩu hiện tại</span>
+                        <input
+                          type="password"
+                          value={currentPassword}
+                          onChange={(event) => setCurrentPassword(event.target.value)}
+                          disabled={emailInputsDisabled}
+                          className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/40 disabled:opacity-70"
+                          placeholder="Nhập mật khẩu để xác nhận"
+                          required
+                        />
+                      </label>
+                    )}
+
+                    {emailFormError && <p className="text-xs font-medium text-rose-400">{emailFormError}</p>}
+
+                    <button
+                      type="submit"
+                      disabled={emailInputsDisabled}
+                      className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {changeEmailMutation.isPending && (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      )}
+                      Cập nhật email
+                    </button>
+                  </form>
+                </div>
+
+                {verifyError && <p className="text-xs font-medium text-rose-400">{verifyError}</p>}
+
+                <div className="flex flex-col gap-4 rounded-3xl border border-surface-muted/70 bg-surface/80 p-6 shadow-lg">
+                  <div className="flex items-center gap-3 text-primary-foreground">
+                    <Link2Off className="h-5 w-5 text-primary" />
+                    <div>
+                      <h3 className="text-base font-semibold">Liên kết Firebase</h3>
+                      <p className="text-xs text-surface-foreground/60">
+                        Trạng thái: {profile.has_firebase_linked ? "Đang liên kết" : "Không liên kết"}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-surface-foreground/70">
+                    Khi hủy liên kết, tài khoản sẽ sử dụng đăng nhập bằng email và mật khẩu. Email cần được xác thực lại sau khi hủy liên kết.
+                  </p>
+                  <div className="flex items-start gap-3 rounded-2xl bg-amber-500/10 p-4 text-xs text-amber-200">
+                    <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                    <p>Hành động này không thể hoàn tác ngay. Vui lòng chắc chắn rằng bạn đã nhớ mật khẩu hiện tại trước khi hủy liên kết.</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={unlinkFirebaseDisabled}
+                    className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition ${
+                      profile.has_firebase_linked
+                        ? "bg-rose-600 text-white hover:bg-rose-500"
+                        : "bg-slate-700 text-slate-300"
+                    } disabled:cursor-not-allowed disabled:opacity-70`}
+                    onClick={() => {
+                      if (!profile.has_firebase_linked || unlinkFirebaseDisabled) {
+                        return;
+                      }
+                      unlinkFirebaseMutation.mutate();
+                    }}
+                  >
+                    {unlinkFirebaseMutation.isPending && (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    )}
+                    {profile.has_firebase_linked ? "Hủy liên kết Firebase" : "Không có liên kết Firebase"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeSecurityTab === "password" && (
+              <div className="mx-auto w-full lg:w-3/4">
+                <ChangePasswordForm
+                  username={profile.name}
+                  onSuccess={() => queryClient.invalidateQueries({ queryKey: ["user-profile"] })}
+                />
+              </div>
+            )}
+          </div>
+        </section>
       )}
 
       {activeMainTab === "payment" && (

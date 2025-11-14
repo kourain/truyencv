@@ -15,6 +15,7 @@ public class UserProfileResponse
     public DateTime? email_verified_at { get; set; }
     public DateTime? banned_at { get; set; }
     public bool is_banned { get; set; }
+    public bool has_firebase_linked { get; set; }
     public string read_comic_count { get; set; } = string.Empty;
     public string read_chapter_count { get; set; } = string.Empty;
     public string bookmark_count { get; set; } = string.Empty;

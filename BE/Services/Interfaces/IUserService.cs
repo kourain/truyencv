@@ -75,6 +75,11 @@ namespace TruyenCV.Services
         Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
 
         /// <summary>
+        /// Đổi email đăng nhập và đặt lại trạng thái xác thực email
+        /// </summary>
+        Task<UserProfileResponse?> ChangeEmailAsync(long userId, string newEmail, string? currentPassword);
+
+        /// <summary>
         /// Lấy thông tin trang cá nhân của người dùng
         /// </summary>
         /// <param name="userId">ID người dùng</param>
@@ -84,6 +89,11 @@ namespace TruyenCV.Services
         /// Xác nhận email cho người dùng
         /// </summary>
         Task<UserProfileResponse?> VerifyEmailAsync(long userId);
+
+        /// <summary>
+        /// Hủy liên kết Firebase và bắt buộc người dùng xác thực lại email
+        /// </summary>
+        Task<UserProfileResponse?> UnlinkFirebaseAsync(long userId);
 
         /// <summary>
         /// Lấy entity người dùng kèm thông tin role và permission đang hiệu lực
