@@ -49,6 +49,18 @@ export const changePassword = async (payload: ChangePasswordPayload): Promise<Ba
   return response.data;
 };
 
+export const changeEmail = async (payload: ChangeEmailPayload): Promise<UserProfileResponse> => {
+  const client = getHttpClient();
+  const response = await client.post<UserProfileResponse>("/user/profile/change-email", payload);
+  return response.data;
+};
+
+export const unlinkFirebaseAccount = async (): Promise<UserProfileResponse> => {
+  const client = getHttpClient();
+  const response = await client.post<UserProfileResponse>("/user/profile/unlink-firebase");
+  return response.data;
+};
+
 export const fetchUserCoinHistory = async (): Promise<UserUseCoinHistoryResponse[]> => {
   const client = getHttpClient();
   const response = await client.get<UserUseCoinHistoryResponse[]>("/User/CoinHistory");

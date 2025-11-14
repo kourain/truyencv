@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
 using TruyenCV.Helpers;
@@ -252,6 +253,75 @@ namespace TruyenCV.Services
             return user.ToProfileDTO();
         }
 
+        public async Task<UserProfileResponse?> ChangeEmailAsync(long userId, string newEmail, string? currentPassword)
+        {
+            var sanitizedEmail = newEmail?.Trim();
+            if (string.IsNullOrWhiteSpace(sanitizedEmail))
+            {
+                throw new UserRequestException("Email mới không được để trống", nameof(newEmail));
+            }
+
+            var emailValidator = new EmailAddressAttribute();
+            if (!emailValidator.IsValid(sanitizedEmail))
+            {
+                throw new UserRequestException("Email mới không hợp lệ", nameof(newEmail));
+            }
+
+            var user = await _dbcontext.Users
+                .IgnoreAutoIncludes()
+                .Where(u => u.id == userId && u.deleted_at == null)
+                .Include(u => u.Roles.Where(role => role.deleted_at == null))
+                .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                .Include(u => u.Subscriptions.Where(subscription => subscription.deleted_at == null))
+                    .ThenInclude(subscription => subscription.Subscription)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (string.Equals(user.email, sanitizedEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UserRequestException("Email mới phải khác email hiện tại", nameof(newEmail));
+            }
+
+            var duplicatedEmail = await _dbcontext.Users.AsNoTracking()
+                .AnyAsync(u => u.id != userId && u.deleted_at == null && EF.Functions.ILike(u.email, sanitizedEmail));
+            if (duplicatedEmail)
+            {
+                throw new UserRequestException("Email đã được sử dụng", nameof(newEmail));
+            }
+
+            var requiresPassword = string.IsNullOrWhiteSpace(user.firebase_uid);
+            if (requiresPassword)
+            {
+                var normalizedCurrentPassword = currentPassword?.Trim();
+                if (string.IsNullOrWhiteSpace(normalizedCurrentPassword))
+                {
+                    throw new UserRequestException("Vui lòng nhập mật khẩu hiện tại", nameof(currentPassword));
+                }
+
+                if (!Bcrypt.VerifyPassword(normalizedCurrentPassword, user.password))
+                {
+                    throw new UserRequestException("Mật khẩu hiện tại không chính xác", nameof(currentPassword));
+                }
+            }
+
+            var cachedOldEmailKey = $"User:one:email:{user.email}";
+            user.email = sanitizedEmail;
+            user.email_verified_at = null;
+            user.updated_at = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+
+            await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
+            await _redisCache.RemoveAsync(cachedOldEmailKey);
+            await _redisCache.RemoveAsync($"User:one:email:{user.email}");
+
+            return user.ToProfileDTO();
+        }
+
         public async Task<User?> GetActiveUserWithAccessAsync(long userId)
         {
             var now = DateTime.UtcNow;
@@ -263,6 +333,39 @@ namespace TruyenCV.Services
             us.Roles = await _dbcontext.UserHasRoles.Where(u => u.user_id == userId && u.deleted_at == null && (u.revoked_at == null || u.revoked_at < now)).ToListAsync();
             us.Permissions = await _dbcontext.UserHasPermissions.Where(u => u.user_id == userId && u.deleted_at == null && (u.revoked_at == null || u.revoked_at < now)).ToListAsync();
             return us;
+        }
+
+        public async Task<UserProfileResponse?> UnlinkFirebaseAsync(long userId)
+        {
+            var user = await _dbcontext.Users
+                .IgnoreAutoIncludes()
+                .Where(u => u.id == userId && u.deleted_at == null)
+                .Include(u => u.Roles.Where(role => role.deleted_at == null))
+                .Include(u => u.Permissions.Where(permission => permission.deleted_at == null))
+                .Include(u => u.Subscriptions.Where(subscription => subscription.deleted_at == null))
+                    .ThenInclude(subscription => subscription.Subscription)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(user.firebase_uid))
+            {
+                throw new UserRequestException("Tài khoản chưa liên kết Firebase", nameof(user.firebase_uid));
+            }
+
+            var emailCacheKey = $"User:one:email:{user.email}";
+            user.firebase_uid = null;
+            user.email_verified_at = null;
+            user.updated_at = DateTime.UtcNow;
+
+            await _dbcontext.SaveChangesAsync();
+            await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
+            await _redisCache.RemoveAsync(emailCacheKey);
+
+            return user.ToProfileDTO();
         }
     }
 }

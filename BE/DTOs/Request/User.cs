@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TruyenCV.DTOs.Request;
 // Request DTOs for creating and updating users
 public class CreateUserRequest
@@ -22,4 +24,11 @@ public class ChangePasswordRequest
 {
 	public required string current_password { get; set; }
 	public required string new_password { get; set; }
+}
+
+public class ChangeEmailRequest
+{
+	[Required, EmailAddress]
+	public required string new_email { get; set; }
+	public string? current_password { get; set; }
 }
