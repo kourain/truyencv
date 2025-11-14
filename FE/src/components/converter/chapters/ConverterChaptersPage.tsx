@@ -1,17 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCcw, Search, Trash2 } from "lucide-react";
+import { Pencil, Plus, RefreshCcw, Search, Trash2 } from "lucide-react";
 
 import { formatRelativeTime } from "@helpers/format";
 import { useConverterChaptersQuery, useDeleteConverterChapterMutation } from "@services/converter";
+import ConverterChapterFormModal from "./ConverterChapterFormModal";
 
 const ConverterChaptersPage = () => {
   const [comicIdInput, setComicIdInput] = useState("");
   const [selectedComicId, setSelectedComicId] = useState<string | undefined>(undefined);
+  const [chapterModal, setChapterModal] = useState<{ mode: "create" | "edit"; chapter?: ComicChapterResponse } | null>(null);
 
   const { data, isLoading, isFetching, refetch } = useConverterChaptersQuery(selectedComicId, { enabled: Boolean(selectedComicId) });
   const deleteMutation = useDeleteConverterChapterMutation();
+
+  const closeModal = () => setChapterModal(null);
+  const handleModalSuccess = async () => {
+    await refetch();
+    closeModal();
+  };
 
   const handleLoadChapters = () => {
     if (!comicIdInput.trim()) {
@@ -53,17 +61,30 @@ const ConverterChaptersPage = () => {
               onChange={(event) => setComicIdInput(event.target.value)}
             />
           </div>
-          <button
-            type="button"
-            className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary/90"
-            onClick={handleLoadChapters}
-          >
-            Tải chương
-          </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow hover:bg-primary/90"
+                onClick={handleLoadChapters}
+              >
+                Tải chương
+              </button>
+              {selectedComicId && (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/40 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+                  onClick={() => setChapterModal({ mode: "create" })}
+                >
+                  <Plus className="h-4 w-4" />
+                  Thêm chương
+                </button>
+              )}
+            </div>
         </div>
       </header>
 
       {selectedComicId ? (
+        <>
         <div className="rounded-2xl border border-surface-muted/60 bg-surface shadow-sm">
           <div className="flex items-center justify-between border-b border-surface-muted/60 px-4 py-3 text-sm text-surface-foreground/70">
             <span>
@@ -117,15 +138,26 @@ const ConverterChaptersPage = () => {
                     </td>
                     <td className="px-4 py-3 text-surface-foreground/60">{formatRelativeTime(chapter.updated_at)}</td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-50"
-                        onClick={() => handleDelete(chapter.id)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Xóa
-                      </button>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 rounded-full border border-surface-muted/80 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:border-primary hover:text-primary"
+                          onClick={() => setChapterModal({ mode: "edit", chapter })}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Sửa
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-50"
+                          onClick={() => handleDelete(chapter.id)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Xóa
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -133,6 +165,15 @@ const ConverterChaptersPage = () => {
             </table>
           </div>
         </div>
+        <ConverterChapterFormModal
+          open={Boolean(chapterModal)}
+          mode={chapterModal?.mode ?? "create"}
+          comicId={selectedComicId}
+          chapter={chapterModal?.chapter}
+          onClose={closeModal}
+          onSuccess={handleModalSuccess}
+        />
+        </>
       ) : (
         <div className="rounded-2xl border border-dashed border-surface-muted/60 bg-surface/40 p-10 text-center text-sm text-surface-foreground/60">
           Nhập ID truyện và nhấn "Tải chương" để xem danh sách chương của bạn.

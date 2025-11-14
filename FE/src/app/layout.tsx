@@ -33,7 +33,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
   let authState = {} as { userProfile: UserProfileResponse; auth: AuthTokensResponse };
   const headersList = await headers();
   const header_url = headersList.get('x-url') || "";
-  if (!header_url.includes("/auth/")) {
+  if (!header_url.includes("/auth/") || !header_url.includes("/privacy-policy") || !header_url.includes("/terms-of-service")) {
     authState = await getServerAuthState();
     if (authState.userProfile.id === "-1") {
       if (header_url.startsWith("/admin")) {

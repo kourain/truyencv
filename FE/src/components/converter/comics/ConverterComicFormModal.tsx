@@ -17,7 +17,7 @@ const DEFAULT_FORM_STATE = {
   embedded_from: "",
   embedded_from_url: "",
   cover_url: "",
-  main_category_id: 1001,
+  main_category_id: 1001 as number | undefined,
   status: ComicStatus.Continuing,
   chap_count: 0,
   rate: 0,
@@ -47,7 +47,7 @@ const ConverterComicFormModal = ({ open, mode, comic, onClose, onSuccess }: Conv
         embedded_from: comic.embedded_from ?? "",
         embedded_from_url: comic.embedded_from_url ?? "",
         cover_url: comic.cover_url ?? "",
-        main_category_id: DEFAULT_FORM_STATE.main_category_id,
+        main_category_id: undefined,
         status: comic.status,
         chap_count: comic.chap_count,
         rate: comic.rate,
@@ -67,7 +67,7 @@ const ConverterComicFormModal = ({ open, mode, comic, onClose, onSuccess }: Conv
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const mainCategory = Number.isNaN(formState.main_category_id) ? undefined : formState.main_category_id;
+    const mainCategory = typeof formState.main_category_id === "number" ? formState.main_category_id : undefined;
 
     const basePayload = {
       name: formState.name.trim(),
@@ -197,9 +197,12 @@ const ConverterComicFormModal = ({ open, mode, comic, onClose, onSuccess }: Conv
                 type="number"
                 min={1001}
                 max={1999}
-                value={Number.isNaN(formState.main_category_id) ? "" : formState.main_category_id}
+                value={formState.main_category_id ?? ""}
                 onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, main_category_id: Number(event.target.value) || 1001 }))
+                  setFormState((prev) => ({
+                    ...prev,
+                    main_category_id: event.target.value ? Number(event.target.value) : undefined,
+                  }))
                 }
                 className="w-full rounded-xl border border-surface-muted/60 bg-surface px-3 py-2"
                 placeholder="1001"
