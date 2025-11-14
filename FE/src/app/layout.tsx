@@ -5,7 +5,6 @@ import QueryProvider from "@components/providers/QueryProvider";
 import AuthProvider from "@components/providers/AuthProvider";
 import ToastProvider from "@components/providers/ToastProvider";
 import { getServerAuthState } from "@server/auth";
-import Footer from "@components/layout/Footer";
 
 import "./globals.css";
 import { redirect } from "next/navigation";
@@ -46,7 +45,6 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
           <ToastProvider>
             <QueryProvider>
               {children}
-              <Footer />
             </QueryProvider>
           </ToastProvider>
         </AuthProvider>

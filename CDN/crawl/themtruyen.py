@@ -16,7 +16,8 @@ from typing import Optional, Dict, List, Any
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
+import dotenv
+dotenv.load_dotenv()
 # Cấu hình logging
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 # Cấu hình
 API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:44344')
 API_TOKEN = os.getenv('API_TOKEN', '')
+API_REFRESH_TOKEN = os.getenv('API_REFRESH_TOKEN', '')
 TRUYEN_DIR = Path(__file__).parent / 'truyen'
 DELAY_BETWEEN_REQUESTS = float(os.getenv('DELAY_BETWEEN_REQUESTS', '0.5'))  # seconds
 MAX_RETRIES = int(os.getenv('MAX_RETRIES', '3'))
@@ -48,9 +50,10 @@ COMIC_STATUS_MAPPING = {
 class ComicUploader:
     """Class xử lý upload truyện và chương lên API"""
     
-    def __init__(self, base_url: str, token: str):
+    def __init__(self, base_url: str, acc_token: str,refresh_token: Optional[str] = None):
         self.base_url = base_url.rstrip('/')
-        self.token = token
+        self.access_token = acc_token
+        self.refresh_token = refresh_token
         self.session = self._create_session()
         
     def _create_session(self) -> requests.Session:
@@ -71,9 +74,10 @@ class ComicUploader:
         
         # Set headers
         session.headers.update({
-            'Authorization': f'Bearer {self.token}',
+            'Authorization': f'Bearer {self.access_token}',
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'X-Refresh-Token': self.refresh_token or ''
         })
         
         return session
@@ -313,7 +317,7 @@ def main():
     logger.info("="*80)
     
     # Tạo uploader instance
-    uploader = ComicUploader(API_BASE_URL, API_TOKEN)
+    uploader = ComicUploader(API_BASE_URL, API_TOKEN, API_REFRESH_TOKEN)
     
     # Lấy danh sách các thư mục truyện
     comic_dirs = [d for d in TRUYEN_DIR.iterdir() if d.is_dir() and d.name != 'ads']
