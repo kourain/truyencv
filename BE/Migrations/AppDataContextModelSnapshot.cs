@@ -1801,6 +1801,15 @@ namespace TruyenCV.Migrations
                         },
                         new
                         {
+                            id = 766206486593409021L,
+                            assigned_by = 1L,
+                            created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            role_name = "Converter",
+                            updated_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            user_id = 766206485104431104L
+                        },
+                        new
+                        {
                             id = 766206486593409024L,
                             assigned_by = 1L,
                             created_at = new DateTime(2025, 9, 23, 0, 0, 0, 0, DateTimeKind.Utc),

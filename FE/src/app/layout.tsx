@@ -5,10 +5,21 @@ import QueryProvider from "@components/providers/QueryProvider";
 import AuthProvider from "@components/providers/AuthProvider";
 import ToastProvider from "@components/providers/ToastProvider";
 import { getServerAuthState } from "@server/auth";
+import Footer from "@components/layout/Footer";
 
 import "./globals.css";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+
+// Layout wrapper component to include footer
+const LayoutWrapper = ({ children }: { children: ReactNode }) => (
+  <div className="flex flex-col min-h-screen">
+    <main className="flex-grow">
+      {children}
+    </main>
+    <Footer />
+  </div>
+);
 
 export const metadata: Metadata = {
   title: {
@@ -22,7 +33,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
   let authState = {} as { userProfile: UserProfileResponse; auth: AuthTokensResponse };
   const headersList = await headers();
   const header_url = headersList.get('x-url') || "";
-  if (!header_url.includes("/auth/")) {
+  if (!header_url.includes("/auth/") || !header_url.includes("/privacy-policy") || !header_url.includes("/terms-of-service")) {
     authState = await getServerAuthState();
     if (authState.userProfile.id === "-1") {
       if (header_url.startsWith("/admin")) {
@@ -40,10 +51,14 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
-      <body>
+      <body className="bg-white">
         <AuthProvider initialState={authState}>
           <ToastProvider>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </QueryProvider>
           </ToastProvider>
         </AuthProvider>
       </body>

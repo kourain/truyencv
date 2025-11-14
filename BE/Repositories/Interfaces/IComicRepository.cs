@@ -21,7 +21,19 @@ public interface IComicRepository : IRepository<Comic>
 	/// <param name="slug">Slug của comic</param>
 	/// <returns>Comic nếu tìm thấy, null nếu không tìm thấy</returns>
 	Task<Comic?> GetBySlugAsync(string slug);
-    Task<IEnumerable<Comic>> GetByEmbeddedByAsync(long embeddedBy);
+
+	/// <summary>
+	/// Lấy danh sách comic do một người dùng nhúng
+	/// </summary>
+	/// <param name="embeddedBy">ID người nhúng</param>
+	/// <param name="offset">Vị trí bắt đầu</param>
+	/// <param name="limit">Số lượng bản ghi</param>
+	Task<IEnumerable<Comic>> GetByEmbeddedByAsync(long embeddedBy, int offset = 0, int limit = 50);
+
+	/// <summary>
+	/// Lấy comic theo id và người nhúng
+	/// </summary>
+	Task<Comic?> GetByIdAndEmbeddedByAsync(long id, long embeddedBy);
 
 	/// <summary>
 	/// Tìm kiếm comic theo từ khóa

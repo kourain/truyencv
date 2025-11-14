@@ -91,7 +91,8 @@ export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
 
   useEffect(() => {
     if (auth?.isAuthenticated && auth.userProfile.roles.includes(config.role)) {
-      router.replace(fallback);
+      window.location.href = fallback;
+      // router.replace(fallback);
     }
   }, [auth, config.role, fallback, router]);
 
@@ -134,7 +135,7 @@ export const LoginContent = ({ variant }: { variant: LoginVariant }) => {
       // auth.updateAuthState(nextAuthState);
       console.log("LoginContent: Login successful, redirecting...");
       console.log("LoginContent: Updated auth state", nextAuthState);
-      router.replace(fallback);
+      window.location.href = fallback;
     },
     onError: async (mutationError: unknown) => {
       await clearAuthTokens();

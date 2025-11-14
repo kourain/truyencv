@@ -63,6 +63,12 @@ public class ComicReportService : IComicReportService
         return await MapReportsAsync(reports);
     }
 
+    public async Task<IEnumerable<ComicReportResponse>> GetReportsByComicOwnerAsync(long userId, int offset, int limit, ReportStatus? status = null)
+    {
+        var reports = await _reportRepository.GetByComicOwnerAsync(userId, offset, limit, status);
+        return await MapReportsAsync(reports);
+    }
+
     public async Task<ComicReportResponse?> UpdateStatusAsync(long id, ReportStatus status)
     {
         var report = await _reportRepository.GetByIdAsync(id);
