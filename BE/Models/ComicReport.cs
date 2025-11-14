@@ -28,17 +28,17 @@ public class ComicReport : BaseEntity
 
     [ForeignKey(nameof(comic_id))]
     [JsonIgnore]
-    public virtual Comic? Comic { get; set; }
+    public virtual Comic? Comic { get; set; } = null;
 
     [ForeignKey(nameof(chapter_id))]
     [JsonIgnore]
-    public virtual ComicChapter? Chapter { get; set; }
+    public virtual ComicChapter? Chapter { get; set; } = null;
 
     [ForeignKey(nameof(comment_id))]
     [JsonIgnore]
-    public virtual ComicComment? Comment { get; set; }
+    public virtual ComicComment? Comment { get; set; } = null;
 
     [ForeignKey(nameof(reporter_id))]
     [JsonIgnore]
-    public virtual User? Reporter { get; set; }
+    public virtual User? Reporter { get; set; } = null;
 }

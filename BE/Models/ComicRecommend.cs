@@ -24,5 +24,5 @@ public class ComicRecommend : BaseEntity
 
     [ForeignKey(nameof(comic_id))]
     [JsonIgnore]
-    public virtual Comic? Comic { get; set; }
+    public virtual Comic? Comic { get; set; } = null;
 }

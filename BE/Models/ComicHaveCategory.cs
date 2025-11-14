@@ -20,8 +20,8 @@ public class ComicHaveCategory
 	public required long comic_category_id { get; set; }
 
 	[JsonIgnore]
-	public virtual Comic? Comic { get; set; }
+	public virtual Comic? Comic { get; set; } = null;
 
 	[JsonIgnore]
-	public virtual ComicCategory? ComicCategory { get; set; }
+	public virtual ComicCategory? ComicCategory { get; set; } = null;
 }

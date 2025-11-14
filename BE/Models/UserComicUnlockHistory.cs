@@ -17,13 +17,13 @@ public class UserComicUnlockHistory : BaseEntity
 
 	[ForeignKey(nameof(user_id))]
 	[JsonIgnore]
-	public virtual User? User { get; set; }
+	public virtual User? User { get; set; } = null;
 
 	[ForeignKey(nameof(comic_id))]
 	[JsonIgnore]
-	public virtual Comic? Comic { get; set; }
+	public virtual Comic? Comic { get; set; } = null;
 
 	[ForeignKey(nameof(comic_chapter_id))]
 	[JsonIgnore]
-	public virtual ComicChapter? ComicChapter { get; set; }
+	public virtual ComicChapter? ComicChapter { get; set; } = null;
 }

@@ -18,11 +18,11 @@ public class UserComicReadHistory : BaseEntity
 
     [JsonIgnore]
     [ForeignKey(nameof(user_id))]
-    public virtual User? User { get; set; }
+    public virtual User? User { get; set; } = null;
 
     [JsonIgnore]
     [ForeignKey(nameof(comic_id))]
-    public virtual Comic? Comic { get; set; }
+    public virtual Comic? Comic { get; set; } = null;
     [ForeignKey(nameof(chapter_id))]
-    public virtual ComicChapter? ComicChapter { get; set; }
+    public virtual ComicChapter? ComicChapter { get; set; } = null;
 }

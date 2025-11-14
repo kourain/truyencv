@@ -16,9 +16,9 @@ public class UserHasRole : BaseEntity
     [Required, ForeignKey(nameof(AssignedBy))]
     public required long assigned_by {get;set;}
     [JsonIgnore]
-    public virtual User? User {get;set;}
+    public virtual User? User {get;set;} = null;
     [JsonIgnore]
-    public virtual User? AssignedBy {get;set;}
+    public virtual User? AssignedBy {get;set;} = null;
 
     public DateTime? revoked_at { get; set; }
 

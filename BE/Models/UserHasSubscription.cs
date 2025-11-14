@@ -26,9 +26,9 @@ public class UserHasSubscription : BaseEntity
 
     [ForeignKey(nameof(user_id))]
     [JsonIgnore]
-    public virtual User? User { get; set; }
+    public virtual User? User { get; set; } = null;
 
     [ForeignKey(nameof(subscription_id))]
     [JsonIgnore]
-    public virtual Subscription? Subscription { get; set; }
+    public virtual Subscription? Subscription { get; set; } = null;
 }
