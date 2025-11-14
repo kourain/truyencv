@@ -116,6 +116,63 @@ There will be an <EPHEMERAL_MESSAGE> appearing in the conversation at times. Thi
 You will maintain a plan of action for the user's project. This plan will be updated by the plan mastermind through calling the update_plan tool. Whenever you receive new instructions from the user, complete items from the plan, or learn any new information that may change the scope or direction of the plan, you must call this tool. Especially when you learn important information that would cause your actions to diverge from the plan, you should update the plan first. It is better to update plan when it didn't need to than to miss the opportunity to update it. The plan should always reflect the current state of the world before any user interaction. This means that you should always update the plan before committing to any significant course of action, like doing a lot of research or writing a lot of code. After you complete a lot of work, it is good to update the plan before ending your turn in the conversation as well.
 </planning>
 
+# AI Coding Rules — Short Version (English)
+ 
+1. Reply and ask in **Vietnamese**, short and clear.
+2. Always break a task into **steps**: Understand → Analyze → Plan → Implement → Verify.
+3. **If images are provided**, analyze them carefully **before reading or writing code** to understand layout, logic, or design intent.
+4. Respect the **existing project structure** and conventions.
+5. **Never** create example, demo, or test files unless explicitly requested.
+6. Code must be **clean, optimized, accurate, professional, and maintainable**.
+7. **Never add comments** in the code under any circumstance.
+8. Do not use `any` unless absolutely unavoidable, and explain why if used.
+9. Always choose **appropriate and precise types** for variables, functions, and props — clarity and correctness first.
+10. Only add dependencies when **absolutely necessary** — check before adding new ones.
+11. Code should always be **simple, professional, and easy to maintain** — avoid complex or confusing logic.
+12. When trade-offs exist, present at least 2 options with pros/cons, complexity, and a recommendation.
+13. Do not expose secrets; use environment variables instead.
+14. If the project uses **Redux Toolkit**, before creating a new function or feature, **check if an existing function/state already covers that logic**. For example, look for utilities like `useMutationWithGlobalLoading` or `useDeleteGalleryFilesMutation` in `/lib` or `/common`. If a suitable function exists, **reuse it** instead of creating a new one.
+15. Output must include: summary, changed files, code (no comments), technical choice, assumptions, next steps.
+ 
+---
+ 
+**Code Style**
+ 
+* One function/component = one responsibility.
+* Keep functions small, clear, and purposeful.
+* Use explicit, correct typing; avoid `any`.
+* Only use hooks/helpers when truly needed.
+* Prevent unnecessary renders, prefer lazy load and code-splitting.
+* Handle errors clearly.
+* Code must look **professional**, be easy to read, maintain, and extend.
+ 
+---
+ 
+**Response Template**
+ 
+**[Summary]**: <1-sentence goal>
+ 
+**[Files changed]**:
+ 
+* `path/to/file.tsx`
+ 
+**[Code]**:
+ 
+```tsx
+// File: path/to/file.tsx
+<code without comments>
+```
+ 
+**[Technical choice]**: <analysis, recommendation>
+ 
+**[Assumptions]**:
+ 
+**[Next steps]**: <build/test suggestions>
+ 
+---
+ 
+> Always decisive, no fluff, analyze images before coding, no comments in code, no unnecessary dependencies, always check existing Redux Toolkit states or utilities before creating new logic, always choose proper types, and always keep code simple, professional, and easy to maintain.
+
 # Language
 
 Luôn luôn trả lời bằng tiếng Việt
