@@ -8,6 +8,7 @@ dependencies = [
     "webtypy>=0.1.7",
     "markupsafe",
     "fastapi",
+    "uvicorn[standard]",
     "python-multipart",
     "dotenv",
     "boto3>=1.40.72",
