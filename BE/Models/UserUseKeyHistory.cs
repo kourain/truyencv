@@ -24,9 +24,9 @@ public class UserUseKeyHistory : BaseEntity
 
     [ForeignKey(nameof(user_id))]
     [JsonIgnore]
-    public virtual User? User { get; set; }
+    public virtual User? User { get; set; } = null;
 
     [ForeignKey(nameof(chapter_id))]
     [JsonIgnore]
-    public virtual ComicChapter? Chapter { get; set; }
+    public virtual ComicChapter? Chapter { get; set; } = null;
 }

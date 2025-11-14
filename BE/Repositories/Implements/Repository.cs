@@ -84,6 +84,6 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
     public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> expression)
     {
-        return await _dbSet.AnyAsync(expression);
+        return await _dbSet.AsNoTracking().AnyAsync(expression);
     }
 }

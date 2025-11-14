@@ -29,5 +29,5 @@ public class Subscription : BaseEntity
     public int ticket_added { get; set; } = 0;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserHasSubscription>? UserSubscriptions { get; set; }
+    public virtual ICollection<UserHasSubscription>? UserSubscriptions { get; set; } = null;
 }

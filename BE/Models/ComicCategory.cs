@@ -17,5 +17,5 @@ public class ComicCategory : BaseEntity
 	public CategoryType category_type { get; set; }
 
 	[JsonIgnore]
-	public virtual ICollection<ComicHaveCategory> ComicHaveCategories { get; set; }
+	public virtual ICollection<ComicHaveCategory> ComicHaveCategories { get; set; } = null;
 }

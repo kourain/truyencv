@@ -36,29 +36,29 @@ public class User : BaseEntity
     [Required, StringLength(15360)] // 15 KB for avatar image in base64
     public string avatar { get; set; } = "default_avatar.png";
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<RefreshToken>? RefreshTokens { get; set; }
+    public virtual ICollection<RefreshToken>? RefreshTokens { get; set; } = null;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserHasPermission>? Permissions { get; set; }
+    public virtual ICollection<UserHasPermission>? Permissions { get; set; } = null;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserHasPermission>? PermissionsAssigned { get; set; }
+    public virtual ICollection<UserHasPermission>? PermissionsAssigned { get; set; } = null;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserHasRole>? Roles { get; set; }
+    public virtual ICollection<UserHasRole>? Roles { get; set; } = null;
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserHasRole>? RolesAssigned { get; set; }
+    public virtual ICollection<UserHasRole>? RolesAssigned { get; set; } = null;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserHasSubscription>? Subscriptions { get; set; }
+    public virtual ICollection<UserHasSubscription>? Subscriptions { get; set; } = null;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<PaymentHistory>? PaymentHistories { get; set; }
+    public virtual ICollection<PaymentHistory>? PaymentHistories { get; set; } = null;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserUseCoinHistory>? CoinHistories { get; set; }
+    public virtual ICollection<UserUseCoinHistory>? CoinHistories { get; set; } = null;
 
     [JsonIgnore, DeleteBehavior(DeleteBehavior.Cascade)]
-    public virtual ICollection<UserUseKeyHistory>? KeyHistories { get; set; }
+    public virtual ICollection<UserUseKeyHistory>? KeyHistories { get; set; } = null;
 
 }
