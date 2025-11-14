@@ -5,13 +5,13 @@ import {
   useUpdateConverterComicMutation,
   useDeleteConverterComicMutation,
   useConverterComicCategoriesQuery,
+  fetchConverterComicCategoriesOfComic,
 } from "@services/converter";
 
 import { FormEvent, useMemo, useState } from "react";
 import { Filter, Pencil, PlusCircle, RefreshCcw, Trash2 } from "lucide-react";
 
 import type { ComicResponse } from "../../../types/comic";
-import { CategoryType } from "@const/enum/category-type";
 import { ComicStatus, ComicStatusLabel } from "@const/enum/comic-status";
 import { formatRelativeTime } from "@helpers/format";
 
@@ -26,6 +26,10 @@ const initialFormState = {
   embedded_from_url: "",
   cover_url: "",
   main_category_id: DEFAULT_MAIN_CATEGORY_ID,
+  main_character_id: null as number | null,
+  world_theme_id: null as number | null,
+  class_id: null as number | null,
+  view_id: null as number | null,
   status: ComicStatus.Continuing,
   chap_count: 0,
   rate: 0,
@@ -63,7 +67,54 @@ const ConverterComicsPage = () => {
   const genreCategories = useMemo(
     () =>
       categories
-        .filter((category) => category.category_type === CategoryType.Genre)
+        .filter((category) => {
+          const categoryId = Number(category.id);
+          return categoryId >= 1001 && categoryId <= 1012;
+        })
+        .sort((a, b) => Number(a.id) - Number(b.id)),
+    [categories],
+  );
+
+  const mainCharacterCategories = useMemo(
+    () =>
+      categories
+        .filter((category) => {
+          const categoryId = Number(category.id);
+          return categoryId >= 2001 && categoryId <= 2010;
+        })
+        .sort((a, b) => Number(a.id) - Number(b.id)),
+    [categories],
+  );
+
+  const worldThemeCategories = useMemo(
+    () =>
+      categories
+        .filter((category) => {
+          const categoryId = Number(category.id);
+          return categoryId >= 3001 && categoryId <= 3052;
+        })
+        .sort((a, b) => Number(a.id) - Number(b.id)),
+    [categories],
+  );
+
+  const classCategories = useMemo(
+    () =>
+      categories
+        .filter((category) => {
+          const categoryId = Number(category.id);
+          return categoryId >= 4001 && categoryId <= 4038;
+        })
+        .sort((a, b) => Number(a.id) - Number(b.id)),
+    [categories],
+  );
+
+  const viewCategories = useMemo(
+    () =>
+      categories
+        .filter((category) => {
+          const categoryId = Number(category.id);
+          return categoryId >= 5001 && categoryId <= 5002;
+        })
         .sort((a, b) => Number(a.id) - Number(b.id)),
     [categories],
   );
@@ -97,6 +148,12 @@ const ConverterComicsPage = () => {
 
     const fallbackMainCategoryId = genreCategories.length ? Number(genreCategories[0].id) : DEFAULT_MAIN_CATEGORY_ID;
     const mainCategoryId = formState.main_category_id ?? fallbackMainCategoryId;
+    const selectedCategoryIds = [
+      formState.main_character_id,
+      formState.world_theme_id,
+      formState.class_id,
+      formState.view_id,
+    ].filter((value): value is number => typeof value === "number" && value > 2000);
 
     const payload = {
       name: formState.name.trim(),
@@ -106,6 +163,7 @@ const ConverterComicsPage = () => {
       embedded_from_url: formState.embedded_from_url.trim() || null,
       cover_url: formState.cover_url.trim() || null,
       main_category_id: mainCategoryId,
+      category_ids: selectedCategoryIds,
       status: formState.status,
     };
 
@@ -135,10 +193,39 @@ const ConverterComicsPage = () => {
     });
   };
 
-  const handleEdit = (comic: ComicResponse) => {
+  const handleEdit = async (comic: ComicResponse) => {
     const fallbackMainCategoryId = genreCategories.length ? Number(genreCategories[0].id) : DEFAULT_MAIN_CATEGORY_ID;
     const matchedCategory = genreCategories.find((category) => category.name === comic.main_category);
     setEditingComicId(comic.id);
+    let mainCharacterId: number | null = null;
+    let worldThemeId: number | null = null;
+    let classId: number | null = null;
+    let viewId: number | null = null;
+
+    try {
+      const existingCategories = await fetchConverterComicCategoriesOfComic(comic.id);
+      existingCategories.forEach((category) => {
+        const categoryId = Number(category.id);
+        if (categoryId >= 2001 && categoryId <= 2010) {
+          mainCharacterId = categoryId;
+          return;
+        }
+        if (categoryId >= 3001 && categoryId <= 3052) {
+          worldThemeId = categoryId;
+          return;
+        }
+        if (categoryId >= 4001 && categoryId <= 4038) {
+          classId = categoryId;
+          return;
+        }
+        if (categoryId >= 5001 && categoryId <= 5002) {
+          viewId = categoryId;
+        }
+      });
+    } catch (error) {
+      console.error("Fetch converter comic categories failed", error);
+    }
+
     setFormState({
       name: comic.name,
       author: comic.author,
@@ -147,6 +234,10 @@ const ConverterComicsPage = () => {
       embedded_from_url: comic.embedded_from_url ?? "",
       cover_url: comic.cover_url ?? "",
       main_category_id: matchedCategory ? Number(matchedCategory.id) : fallbackMainCategoryId,
+      main_character_id: mainCharacterId,
+      world_theme_id: worldThemeId,
+      class_id: classId,
+      view_id: viewId,
       status: comic.status,
       chap_count: comic.chap_count,
       rate: comic.rate,
@@ -353,6 +444,109 @@ const ConverterComicsPage = () => {
                   <option value="">Đang tải...</option>
                 ) : (
                   genreCategories.map((category) => (
+                    <option key={category.id} value={Number(category.id)}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 text-sm">
+              <span className="font-semibold text-primary-foreground">Nhân vật chính</span>
+              <select
+                value={formState.main_character_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    main_character_id: event.target.value ? Number(event.target.value) : null,
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted px-4 py-3"
+                disabled={isCategoryLoading}
+              >
+                <option value="">-- Chọn nhân vật chính --</option>
+                {isCategoryLoading ? (
+                  <option value="">Đang tải...</option>
+                ) : (
+                  mainCharacterCategories.map((category) => (
+                    <option key={category.id} value={Number(category.id)}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-semibold text-primary-foreground">Bối cảnh thế giới</span>
+              <select
+                value={formState.world_theme_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    world_theme_id: event.target.value ? Number(event.target.value) : null,
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted px-4 py-3"
+                disabled={isCategoryLoading}
+              >
+                <option value="">-- Chọn bối cảnh thế giới --</option>
+                {isCategoryLoading ? (
+                  <option value="">Đang tải...</option>
+                ) : (
+                  worldThemeCategories.map((category) => (
+                    <option key={category.id} value={Number(category.id)}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-semibold text-primary-foreground">Trường phái</span>
+              <select
+                value={formState.class_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    class_id: event.target.value ? Number(event.target.value) : null,
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted px-4 py-3"
+                disabled={isCategoryLoading}
+              >
+                <option value="">-- Chọn trường phái --</option>
+                {isCategoryLoading ? (
+                  <option value="">Đang tải...</option>
+                ) : (
+                  classCategories.map((category) => (
+                    <option key={category.id} value={Number(category.id)}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="font-semibold text-primary-foreground">Góc nhìn</span>
+              <select
+                value={formState.view_id ?? ""}
+                onChange={(event) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    view_id: event.target.value ? Number(event.target.value) : null,
+                  }))
+                }
+                className="w-full rounded-xl border border-surface-muted px-4 py-3"
+                disabled={isCategoryLoading}
+              >
+                <option value="">-- Chọn góc nhìn --</option>
+                {isCategoryLoading ? (
+                  <option value="">Đang tải...</option>
+                ) : (
+                  viewCategories.map((category) => (
                     <option key={category.id} value={Number(category.id)}>
                       {category.name}
                     </option>
