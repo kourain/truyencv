@@ -96,6 +96,71 @@ namespace TruyenCV.Areas.User.Controllers
             }
         }
 
+        [HttpPost("change-email")]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            long? userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "Không thể xác định người dùng" });
+            }
+
+            try
+            {
+                var profile = await _userService.ChangeEmailAsync(userId.Value, request.new_email, request.current_password);
+                if (profile == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy người dùng" });
+                }
+
+                return Ok(profile);
+            }
+            catch (UserRequestException ex)
+            {
+                var statusCode = ex.StatusCode == 0 ? StatusCodes.Status400BadRequest : ex.StatusCode;
+                return StatusCode(statusCode, new { message = ex.Message.Trim() });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("unlink-firebase")]
+        public async Task<IActionResult> UnlinkFirebase()
+        {
+            long? userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "Không thể xác định người dùng" });
+            }
+
+            try
+            {
+                var profile = await _userService.UnlinkFirebaseAsync(userId.Value);
+                if (profile == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy người dùng" });
+                }
+
+                return Ok(profile);
+            }
+            catch (UserRequestException ex)
+            {
+                var statusCode = ex.StatusCode == 0 ? StatusCodes.Status400BadRequest : ex.StatusCode;
+                return StatusCode(statusCode, new { message = ex.Message.Trim() });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
+        }
+
         [HttpGet("refresh-tokens")]
         public async Task<IActionResult> GetRefreshTokens()
         {

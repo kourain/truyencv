@@ -9,10 +9,11 @@ import { ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 
 const routeRequiredRoles: Record<string, UserRole[]> = {
   "admin": [UserRole.Admin],
-  "user": [UserRole.User]
+  "user": [UserRole.User],
+  "converter": [UserRole.Converter]
 };
 
-export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode, USER_AUTH_ROUTE_REGEX: RegExp[], routeFor: string }) => {
+export const GuardContent = ({ children, USER_AUTH_ROUTE_REGEX, routeFor }: { children: ReactNode; USER_AUTH_ROUTE_REGEX: RegExp[]; routeFor: keyof typeof routeRequiredRoles; }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);

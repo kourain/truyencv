@@ -56,8 +56,20 @@ public interface IComicService
 	/// Lấy danh sách truyện được nhúng bởi một user (embedded_by)
 	/// </summary>
 	/// <param name="embeddedBy">ID user nhúng (long)</param>
+	/// <param name="offset">Vị trí bắt đầu</param>
+	/// <param name="limit">Số lượng bản ghi</param>
 	/// <returns>Danh sách comic</returns>
-	Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedByAsync(long embeddedBy);
+	Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedByAsync(long embeddedBy, int offset = 0, int limit = 50);
+
+	/// <summary>
+	/// Lấy thông tin comic nếu thuộc sở hữu của người dùng
+	/// </summary>
+	Task<ComicResponse?> GetComicOwnedByAsync(long comicId, long ownerId);
+
+	/// <summary>
+	/// Kiểm tra quyền sở hữu comic
+	/// </summary>
+	Task<bool> IsComicOwnerAsync(long comicId, long ownerId);
 
 	/// <summary>
 	/// Lấy danh sách truyện được nhúng bởi cùng user với truyện có slug

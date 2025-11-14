@@ -304,10 +304,21 @@ public class ComicService : IComicService
         return comics.Select(c => c.ToRespDTO());
     }
 
-    public async Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedByAsync(long embeddedBy)
+    public async Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedByAsync(long embeddedBy, int offset = 0, int limit = 50)
     {
-        var comics = await _comicRepository.GetByEmbeddedByAsync(embeddedBy);
+        var comics = await _comicRepository.GetByEmbeddedByAsync(embeddedBy, offset, limit);
         return comics.Select(c => c.ToRespDTO());
+    }
+
+    public async Task<ComicResponse?> GetComicOwnedByAsync(long comicId, long ownerId)
+    {
+        var comic = await _comicRepository.GetByIdAndEmbeddedByAsync(comicId, ownerId);
+        return comic?.ToRespDTO();
+    }
+
+    public Task<bool> IsComicOwnerAsync(long comicId, long ownerId)
+    {
+        return _comicRepository.ExistsAsync(comic => comic.id == comicId && comic.embedded_by == ownerId && comic.deleted_at == null);
     }
 
     public async Task<IEnumerable<ComicResponse>> GetComicsByEmbeddedBySlugAsync(string slug)

@@ -47,6 +47,14 @@ const nextConfig: NextConfig = {
         source: "/user/profile/history_comment",
         destination: "/user/profile?section=history_comment",
       },
+      {
+        source: "/user/profile/security_email",
+        destination: "/user/profile?section=security_email",
+      },
+      {
+        source: "/user/profile/security_password",
+        destination: "/user/profile?section=security_password",
+      },
     ];
   },
   allowedDevOrigins: [

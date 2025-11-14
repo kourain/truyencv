@@ -2,16 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, ChartBarBig, Layers, LayoutDashboard, MessageSquareText, Users, ShieldCheck, X, PanelLeftOpen, PanelLeftClose, Menu, FileWarning, CreditCard, } from "lucide-react";
+import { BookOpen, ChartBarBig, Layers, LayoutDashboard, MessageSquareText, Users, ShieldCheck, X, PanelLeftOpen, PanelLeftClose, Menu, FileWarning, CreditCard, Coins, Ticket } from "lucide-react";
 import { useState } from "react";
 
-const AUTH_ROUTE_REGEX = /^\/admin\/auth\//;
+type SidebarVariant = "admin" | "converter";
+
 interface navigationItem {
   label: string;
   href: string;
   icon: any;
 }
-const navigationItems: navigationItem[] = [
+interface AdminSidebarProps {
+  variant?: SidebarVariant;
+  navigationItems?: navigationItem[];
+}
+
+const DEFAULT_NAV_ITEMS: Record<SidebarVariant, navigationItem[]> = {
+  admin: [
   {
     label: "Tổng quan",
     href: "/admin",
@@ -56,23 +63,73 @@ const navigationItems: navigationItem[] = [
     label: "Lịch sử thanh toán",
     href: "/admin/payments",
     icon: CreditCard,
-  },
-];
+  }
+  ],
+  converter: [
+    {
+      label: "Tổng quan",
+      href: "/converter",
+      icon: LayoutDashboard,
+    },
+    {
+      label: "Truyện của tôi",
+      href: "/converter/comics",
+      icon: BookOpen,
+    },
+    {
+      label: "Chương",
+      href: "/converter/chapters",
+      icon: ChartBarBig,
+    },
+    {
+      label: "Bình luận",
+      href: "/converter/comments",
+      icon: MessageSquareText,
+    },
+    {
+      label: "Báo cáo",
+      href: "/converter/reports",
+      icon: FileWarning,
+    },
+    {
+      label: "Lịch sử xu",
+      href: "/converter/coin-history",
+      icon: Coins,
+    },
+    {
+      label: "Lịch sử vé",
+      href: "/converter/key-history",
+      icon: Ticket,
+    }
+  ]
+};
 
-const AdminSidebar = () => {
+const ROUTE_BASE: Record<SidebarVariant, string> = {
+  admin: "/admin",
+  converter: "/converter"
+};
+
+const AdminSidebar = (props: AdminSidebarProps) => {
   const pathname = usePathname();
-  if (pathname.match(/login|register|reset-password|verify-email/)) {
+  const variant = props.variant ?? "admin";
+  const basePath = ROUTE_BASE[variant];
+  const hideSidebar = pathname.startsWith(`${basePath}/auth/`) || pathname.match(/login|register|reset-password|verify-email/);
+  if (hideSidebar) {
     return null;
   }
-  else return <AdminSidebarRender />;
+  return <AdminSidebarRender {...props} variant={variant} />;
 };
-const AdminSidebarRender = () => {
+
+const AdminSidebarRender = ({ variant = "admin", navigationItems }: AdminSidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const basePath = ROUTE_BASE[variant];
+  const items = navigationItems ?? DEFAULT_NAV_ITEMS[variant];
 
   const onClose = () => setMobileOpen(false);
-  if (AUTH_ROUTE_REGEX.test(pathname)) {
+  const authRegex = new RegExp(`^${basePath}/auth/`);
+  if (authRegex.test(pathname)) {
     return null;
   }
 
@@ -110,7 +167,7 @@ const AdminSidebarRender = () => {
   }
   const renderNavigationItems = (options?: { onItemClick?: () => void; forceExpanded?: boolean }) => (
     <nav className="flex flex-1 flex-col gap-1">
-      {navigationItems.map((item) => {
+      {items.map((item) => {
         return renderNavigationItem(item, options);
       })}
     </nav>

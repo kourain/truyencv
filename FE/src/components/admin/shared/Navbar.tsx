@@ -11,14 +11,40 @@ import Image from "next/image";
 import { useUserProfileQuery } from "@services/user/profile.service";
 import { formatNumber } from "@helpers/format";
 
-const AdminNavbar = () => {
+type NavbarVariant = "admin" | "converter";
+
+interface AdminNavbarProps {
+  variant?: NavbarVariant;
+}
+
+const NAVBAR_CONFIG: Record<NavbarVariant, { basePath: string; homeHref: string; loginPath: string; profilePath: string; subtitle: string; }> = {
+  admin: {
+    basePath: "/admin",
+    homeHref: "/admin",
+    loginPath: "/admin/auth/login",
+    profilePath: "/admin/profile",
+    subtitle: "Admin Cổng truyện"
+  },
+  converter: {
+    basePath: "/converter",
+    homeHref: "/converter",
+    loginPath: "/converter/auth/login",
+    profilePath: "/converter/profile",
+    subtitle: "Converter Workspace"
+  }
+};
+
+const AdminNavbar = ({ variant = "admin" }: AdminNavbarProps) => {
   const pathname = usePathname();
-  if (pathname.match(/login|register|reset-password|verify-email/)) {
+  const config = NAVBAR_CONFIG[variant];
+  if (pathname.startsWith(`${config.basePath}/auth/`) || pathname.match(/login|register|reset-password|verify-email/)) {
     return null;
   }
-  else return <AdminNavBarRender />;
+  return <AdminNavBarRender variant={variant} />;
 };
-const AdminNavBarRender = () => {
+
+const AdminNavBarRender = ({ variant = "admin" }: AdminNavbarProps) => {
+  const config = NAVBAR_CONFIG[variant];
   const router = useRouter();
   const auth = useAuth();
   const { data: profile, isFetching: isProfileFetching } = useUserProfileQuery({ enabled: auth.isAuthenticated });
@@ -26,20 +52,20 @@ const AdminNavBarRender = () => {
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const handleLogout = useCallback(async () => {
     await clearAuthTokens();
-    window.location.href = "/admin/auth/login";
-  }, []);
+    window.location.href = config.loginPath;
+  }, [config.loginPath]);
   const handleOpenSettings = useCallback(() => {
-    router.push("/admin/profile");
-  }, [router]);
+    router.push(config.profilePath);
+  }, [config.profilePath, router]);
   return (
     <header className="sticky top-0 z-40 border-b border-surface-muted/60 bg-surface/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link href="/admin" className="flex items-center gap-3 text-primary-foreground transition hover:text-primary">
+          <Link href={config.homeHref} className="flex items-center gap-3 text-primary-foreground transition hover:text-primary">
             <Sparkles className="h-8 w-8 text-primary" />
             <div className="flex flex-col leading-tight">
               <span className="text-lg font-semibold">TruyenCV</span>
-              <span className="text-xs uppercase tracking-[0.4em] text-surface-foreground/60">Admin Cổng truyện</span>
+              <span className="text-xs uppercase tracking-[0.4em] text-surface-foreground/60">{config.subtitle}</span>
             </div>
           </Link>
         </div>

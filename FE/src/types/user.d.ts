@@ -93,6 +93,7 @@ interface UserProfileResponse {
 	email_verified_at: string | null;
 	banned_at: string | null;
 	is_banned: boolean;
+	has_firebase_linked: boolean;
 	read_comic_count: string;
 	read_chapter_count: string;
 	bookmark_count: string;
@@ -115,4 +116,9 @@ interface UserComicReadHistoryResponse {
 interface ChangePasswordPayload {
 	current_password: string;
 	new_password: string;
+};
+
+interface ChangeEmailPayload {
+	new_email: string;
+	current_password?: string;
 };
