@@ -11,16 +11,6 @@ import "./globals.css";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
-// Layout wrapper component to include footer
-const LayoutWrapper = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-col min-h-screen">
-    <main className="flex-grow">
-      {children}
-    </main>
-    <Footer />
-  </div>
-);
-
 export const metadata: Metadata = {
   title: {
     default: "TruyenCV",
@@ -55,9 +45,8 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
         <AuthProvider initialState={authState}>
           <ToastProvider>
             <QueryProvider>
-              <LayoutWrapper>
-                {children}
-              </LayoutWrapper>
+              {children}
+              <Footer />
             </QueryProvider>
           </ToastProvider>
         </AuthProvider>
