@@ -1,19 +1,22 @@
 "use client";
-
-import { FormEvent, useMemo, useState } from "react";
-import { Filter, Pencil, PlusCircle, RefreshCcw, Trash2 } from "lucide-react";
-
-import type { ComicResponse } from "../../../types/comic";
-import { ComicStatus, ComicStatusLabel } from "@const/enum/comic-status";
-import { formatRelativeTime } from "@helpers/format";
 import {
   useConverterComicsQuery,
   useCreateConverterComicMutation,
   useUpdateConverterComicMutation,
   useDeleteConverterComicMutation,
+  useConverterComicCategoriesQuery,
 } from "@services/converter";
 
+import { FormEvent, useMemo, useState } from "react";
+import { Filter, Pencil, PlusCircle, RefreshCcw, Trash2 } from "lucide-react";
+
+import type { ComicResponse } from "../../../types/comic";
+import { CategoryType } from "@const/enum/category-type";
+import { ComicStatus, ComicStatusLabel } from "@const/enum/comic-status";
+import { formatRelativeTime } from "@helpers/format";
+
 const DEFAULT_LIMIT = 20;
+const DEFAULT_MAIN_CATEGORY_ID = 1001;
 
 const initialFormState = {
   name: "",
@@ -22,7 +25,7 @@ const initialFormState = {
   embedded_from: "",
   embedded_from_url: "",
   cover_url: "",
-  main_category_id: undefined as number | undefined,
+  main_category_id: DEFAULT_MAIN_CATEGORY_ID,
   status: ComicStatus.Continuing,
   chap_count: 0,
   rate: 0,
@@ -47,6 +50,7 @@ const ConverterComicsPage = () => {
   const createMutation = useCreateConverterComicMutation();
   const updateMutation = useUpdateConverterComicMutation();
   const deleteMutation = useDeleteConverterComicMutation();
+  const { data: categories = [], isLoading: isCategoryLoading } = useConverterComicCategoriesQuery();
 
   const statusOptions = useMemo(
     () =>
@@ -54,6 +58,14 @@ const ConverterComicsPage = () => {
         (a, b) => a - b,
       ),
     [],
+  );
+
+  const genreCategories = useMemo(
+    () =>
+      categories
+        .filter((category) => category.category_type === CategoryType.Genre)
+        .sort((a, b) => Number(a.id) - Number(b.id)),
+    [categories],
   );
 
   const filteredComics = useMemo(() => {
@@ -83,6 +95,9 @@ const ConverterComicsPage = () => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const fallbackMainCategoryId = genreCategories.length ? Number(genreCategories[0].id) : DEFAULT_MAIN_CATEGORY_ID;
+    const mainCategoryId = formState.main_category_id ?? fallbackMainCategoryId;
+
     const payload = {
       name: formState.name.trim(),
       author: formState.author.trim(),
@@ -90,7 +105,7 @@ const ConverterComicsPage = () => {
       embedded_from: formState.embedded_from.trim() || null,
       embedded_from_url: formState.embedded_from_url.trim() || null,
       cover_url: formState.cover_url.trim() || null,
-      main_category_id: formState.main_category_id,
+      main_category_id: mainCategoryId,
       status: formState.status,
     };
 
@@ -121,6 +136,8 @@ const ConverterComicsPage = () => {
   };
 
   const handleEdit = (comic: ComicResponse) => {
+    const fallbackMainCategoryId = genreCategories.length ? Number(genreCategories[0].id) : DEFAULT_MAIN_CATEGORY_ID;
+    const matchedCategory = genreCategories.find((category) => category.name === comic.main_category);
     setEditingComicId(comic.id);
     setFormState({
       name: comic.name,
@@ -129,7 +146,7 @@ const ConverterComicsPage = () => {
       embedded_from: comic.embedded_from ?? "",
       embedded_from_url: comic.embedded_from_url ?? "",
       cover_url: comic.cover_url ?? "",
-      main_category_id: undefined,
+      main_category_id: matchedCategory ? Number(matchedCategory.id) : fallbackMainCategoryId,
       status: comic.status,
       chap_count: comic.chap_count,
       rate: comic.rate,
@@ -320,20 +337,28 @@ const ConverterComicsPage = () => {
               />
             </label>
             <label className="space-y-2 text-sm">
-              <span className="font-semibold text-primary-foreground">Thể loại chính (ID)</span>
-              <input
-                type="number"
-                min={1001}
-                value={formState.main_category_id ?? ""}
+              <span className="font-semibold text-primary-foreground">Thể loại chính</span>
+              <select
+                value={formState.main_category_id}
                 onChange={(event) =>
                   setFormState((prev) => ({
                     ...prev,
-                    main_category_id: event.target.value ? Number(event.target.value) : undefined,
+                    main_category_id: Number(event.target.value),
                   }))
                 }
                 className="w-full rounded-xl border border-surface-muted px-4 py-3"
-                placeholder="1001"
-              />
+                disabled={isCategoryLoading}
+              >
+                {isCategoryLoading ? (
+                  <option value="">Đang tải...</option>
+                ) : (
+                  genreCategories.map((category) => (
+                    <option key={category.id} value={Number(category.id)}>
+                      {category.name}
+                    </option>
+                  ))
+                )}
+              </select>
             </label>
           </div>
 

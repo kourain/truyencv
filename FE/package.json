@@ -24,14 +24,14 @@
     "publish": true
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.11.0",
-    "@tanstack/react-query": "^5.90.5",
-    "axios": "^1.13.0",
+    "@opennextjs/cloudflare": "^1.12.0",
+    "@tanstack/react-query": "^5.90.8",
+    "axios": "^1.13.2",
     "clsx": "^2.1.1",
-    "firebase": "^12.4.0",
+    "firebase": "^12.6.0",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.548.0",
+    "lucide-react": "^0.553.0",
     "next": "^15.5.6",
     "next-themes": "^0.4.6",
     "react": "^19.2.0",
@@ -39,20 +39,20 @@
     "zstd-codec": "^0.1.5"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.16",
+    "@tailwindcss/postcss": "^4.1.17",
     "@types/js-cookie": "^3.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.9.1",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.4",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9.38.0",
+    "eslint": "^9.39.1",
     "eslint-config-next": "^15.5.6",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.16",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
-    "wrangler": "^4.45.0"
+    "wrangler": "^4.48.0"
   }
 }
