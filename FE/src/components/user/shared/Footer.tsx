@@ -15,6 +15,11 @@ export default function Footer() {
           <p className="text-sm text-surface-foreground/70">
             Không gian đọc truyện hiện đại với trải nghiệm thống nhất trên mọi thiết bị.
           </p>
+          <p className="text-sm text-surface-foreground/70">
+            Chú ý: 
+            Đây chỉ là một đề tài đồ án tốt nghiệp của sinh viên chuyên ngành CNTT, dữ liệu trang web chỉ mang mục đích trình diễn, không phải là trang web mang tính thương mại.
+            Bất kỳ vấn đề gì vui lòng liên hệ qua email ht.kourain@gmail.com
+          </p>
         </div>
         <div className="flex flex-wrap gap-6 text-sm text-surface-foreground/70">
           {primaryLinks.map((link) => (
