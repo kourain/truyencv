@@ -9,10 +9,30 @@ Script Python để tự động thêm truyện và chương vào backend API t�
 - Access Token với role `Converter` từ backend API
 - Dữ liệu truyện trong thư mục `truyen/` (đã được crawl bằng script `crawl_comic.py`)
 
-## Cài đặt
+## Cài đặt nhanh
+
+### Cách 1: Sử dụng script tự động (Khuyến nghị)
+
+```bash
+# Giải nén dữ liệu truyện (nếu cần)
+unzip truyen.zip
+
+# Chạy script tự động
+./run_themtruyen.sh
+```
+
+Script sẽ tự động:
+- Kiểm tra Python và cài đặt thư viện cần thiết
+- Kiểm tra thư mục `truyen/` và giải nén nếu cần
+- Hướng dẫn thiết lập API token
+- Chạy script upload
+
+### Cách 2: Cài đặt thủ công
 
 1. Cài đặt thư viện cần thiết:
 ```bash
+pip install -r requirements_themtruyen.txt
+# Hoặc
 pip install requests
 ```
 
@@ -52,8 +72,28 @@ cp .env.example .env
 
 ### Chạy script:
 
+**Chạy toàn bộ truyện:**
 ```bash
 python themtruyen.py
+```
+
+**Chạy thử với một vài truyện (khuyến nghị cho lần đầu):**
+```bash
+# Tạo thư mục test với 1-2 truyện
+mkdir truyen_test
+cp -r truyen/tien-bang truyen_test/
+cp -r truyen/cao-vo-cang-muon-tu-cai-tien truyen_test/
+
+# Chỉnh sửa TRUYEN_DIR trong themtruyen.py hoặc tạo symbolic link
+mv truyen truyen_backup
+ln -s truyen_test truyen
+
+# Chạy script
+python themtruyen.py
+
+# Sau khi test thành công, khôi phục
+rm truyen
+mv truyen_backup truyen
 ```
 
 ### Script sẽ:
@@ -198,3 +238,87 @@ Thất bại: 2
 ### Lỗi "Không tìm thấy thư mục truyen"
 - Chạy script trong thư mục `CDN/crawl/`
 - Hoặc giải nén file `truyen.zip` trước
+
+## Các utility scripts bổ sung
+
+### 1. list_comics.py - Xem danh sách truyện
+
+Liệt kê tất cả truyện có sẵn với thông tin chi tiết:
+
+```bash
+python list_comics.py
+```
+
+Output:
+```
+================================================================================
+DANH SÁCH TRUYỆN (53 truyện)
+================================================================================
+
+  1. Cao Võ Càng Muốn Tu Cái Tiên
+     Slug: cao-vo-cang-muon-tu-cai-tien
+     Tác giả: Đạp Tuyết Chân Nhân
+     Trạng thái: Còn tiếp
+     Số chương: 249
+...
+```
+
+### 2. themtruyen_test.py - Test upload truyện cụ thể
+
+Upload một vài truyện được chỉ định để test:
+
+```bash
+# Upload 1 truyện
+python themtruyen_test.py tien-bang
+
+# Upload nhiều truyện
+python themtruyen_test.py tien-bang cao-vo-cang-muon-tu-cai-tien
+
+# Xem hướng dẫn
+python themtruyen_test.py
+```
+
+### 3. run_themtruyen.sh - Script tự động
+
+Chạy toàn bộ quy trình với kiểm tra tự động:
+
+```bash
+./run_themtruyen.sh
+```
+
+Script sẽ tự động:
+- Kiểm tra và cài đặt dependencies
+- Kiểm tra và giải nén dữ liệu
+- Xác nhận trước khi upload
+- Chạy upload toàn bộ
+
+## Workflow khuyến nghị
+
+1. **Chuẩn bị dữ liệu:**
+   ```bash
+   # Giải nén nếu chưa có thư mục truyen/
+   unzip truyen.zip
+   ```
+
+2. **Xem danh sách truyện:**
+   ```bash
+   python list_comics.py
+   ```
+
+3. **Test với 1-2 truyện trước:**
+   ```bash
+   export API_TOKEN="your-token-here"
+   python themtruyen_test.py tien-bang
+   ```
+
+4. **Nếu test thành công, upload toàn bộ:**
+   ```bash
+   python themtruyen.py
+   # Hoặc
+   ./run_themtruyen.sh
+   ```
+
+5. **Theo dõi log:**
+   ```bash
+   tail -f themtruyen.log
+   ```
