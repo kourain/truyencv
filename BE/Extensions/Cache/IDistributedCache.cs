@@ -7,7 +7,13 @@ using Newtonsoft.Json;
 public static partial class IDistributedCacheExtensions
 {
     private const double DefaultCacheMinutes = 5;
-
+    // public static Comic ToRedisCache(this Comic comic)
+    // {
+    //     return JsonConvert.DeserializeObject<Comic>(JsonConvert.SerializeObject(comic, new JsonSerializerSettings
+    //     {
+    //         ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+    //     }))!;
+    // }
     public static string ToRedisCache<T>(this T obj)
     {
         return JsonConvert.SerializeObject(obj, new JsonSerializerSettings

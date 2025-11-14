@@ -354,7 +354,10 @@ public class ComicService : IComicService
             comicRequest.slug = comicRequest.slug.Trim().ToLower();
         // Kiểm tra slug đã tồn tại chưa
         if (await _comicRepository.ExistsAsync(c => c.slug == comicRequest.slug))
-            comicRequest.slug = $"{comicRequest.slug}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+        {
+            throw new UserRequestException("Slug truyện đã tồn tại. Vui lòng chọn slug khác.");
+            // comicRequest.slug = $"{comicRequest.slug}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+        }
 
         // Validate và set default main_category_id nếu không hợp lệ
         if (comicRequest.main_category_id <= 0 || comicRequest.main_category_id >= 2000)
@@ -368,11 +371,11 @@ public class ComicService : IComicService
         // Ensure rate and chap_count are 0 for new comics (not set by frontend)
         comic.rate = 0;
         comic.chapter_count = 0;
-        var embeddingValues = await _embeddingService.CreateEmbeddingAsync($"{comic.name}, {comic.description}");
-        if (embeddingValues is { Length: > 0 })
-        {
-            comic.search_vector = new Vector(embeddingValues[0]);
-        }
+        // var embeddingValues = await _embeddingService.CreateEmbeddingAsync($"{comic.name}, {comic.description}");
+        // if (embeddingValues is { Length: > 0 })
+        // {
+        //     comic.search_vector = new Vector(embeddingValues[0]);
+        // }
 
         // Thêm comic vào database
         var newComic = await _comicRepository.AddAsync(comic);

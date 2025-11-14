@@ -49,7 +49,7 @@ public class Comic : BaseEntity
     public long main_category_id { get; set; }
     [Required]
     public ComicStatus status { get; set; } = ComicStatus.Continuing;
-
+    [JsonIgnore] // không cache lại điều này
     public Vector? search_vector { get; set; }
 
     public virtual User? EmbeddedByUser { get; set; }

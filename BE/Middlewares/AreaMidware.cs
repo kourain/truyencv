@@ -35,6 +35,9 @@ namespace TruyenCV.Middleware
 				case "User":
 					await _next(context);
 					return;
+                case "Converter":
+                    await _next(context);
+                    return;
 				default:
 					context.Response.StatusCode = StatusCodes.Status404NotFound;
 					return;
