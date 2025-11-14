@@ -22,6 +22,12 @@ export const fetchConverterComicById = async (id: string) => {
   return response.data;
 };
 
+export const fetchConverterComicCategoriesOfComic = async (id: string) => {
+  const client = getHttpClient();
+  const response = await client.get<ComicCategoryResponse[]>(`${resource}/${id}/categories`);
+  return response.data;
+};
+
 export const createConverterComic = async (payload: CreateComicRequest) => {
   const client = getHttpClient();
   const response = await client.post<ComicResponse>(resource, payload);

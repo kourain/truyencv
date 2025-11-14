@@ -12,10 +12,12 @@ namespace TruyenCV.Areas.Converter.Controllers;
 public sealed class ComicController : ControllerBase
 {
     private readonly IComicService _comicService;
+    private readonly IComicHaveCategoryService _comicHaveCategoryService;
 
-    public ComicController(IComicService comicService)
+    public ComicController(IComicService comicService, IComicHaveCategoryService comicHaveCategoryService)
     {
         _comicService = comicService;
+        _comicHaveCategoryService = comicHaveCategoryService;
     }
 
     [HttpGet]
@@ -47,6 +49,25 @@ public sealed class ComicController : ControllerBase
         }
 
         return Ok(comic);
+    }
+
+    [HttpGet("{id:long}/categories")]
+    public async Task<IActionResult> GetCategories(long id)
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new { message = "Không thể xác định người dùng" });
+        }
+
+        var ownsComic = await _comicService.IsComicOwnerAsync(id, userId.Value);
+        if (!ownsComic)
+        {
+            return NotFound(new { message = "Không tìm thấy truyện" });
+        }
+
+        var categories = await _comicHaveCategoryService.GetCategoriesByComicIdAsync(id);
+        return Ok(categories);
     }
 
     [HttpPost]
