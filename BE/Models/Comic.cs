@@ -35,9 +35,9 @@ public class Comic : BaseEntity
     [StringLength(500)]
     public string? banner_url { get; set; }
     [ForeignKey(nameof(EmbeddedByUser))]
-    public long embedded_by { get; set; }
+    public long embedded_by { get; set; } // create by user id
     [ForeignKey(nameof(AcceptByUser))]
-    public long? accept_by { get; set; } = 1; // Admin user id
+    public long? accept_by { get; set; } = 1; // Admin/system user id
     public DateTime? accept_at { get; set; } = DateTime.UtcNow;
     public int chapter_count { get; set; } = 0;
     public int bookmark_count { get; set; } = 0;

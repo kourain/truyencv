@@ -54,6 +54,15 @@ public static class UserSeed
             },
             new UserHasRole
             {
+                id = 766206486593409021L,
+                user_id = baseUser.id,
+                role_name = Roles.Converter,
+                assigned_by = system.id,
+                created_at = defaultDate,
+                updated_at = defaultDate
+            },
+            new UserHasRole
+            {
                 id = 766206486593409024L,
                 user_id = baseUser.id,
                 role_name = Roles.User,

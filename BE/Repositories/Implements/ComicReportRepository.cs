@@ -60,4 +60,21 @@ public class ComicReportRepository : Repository<ComicReport>, IComicReportReposi
             DefaultCacheMinutes
         ) ?? [];
     }
+
+    public async Task<IEnumerable<ComicReport>> GetByComicOwnerAsync(long ownerId, int offset, int limit, ReportStatus? status = null)
+    {
+        offset = Math.Max(offset, 0);
+        limit = Math.Clamp(limit, 1, 100);
+        return await _redisCache.GetFromRedisAsync<ComicReport>(
+            () => _dbSet.AsNoTracking()
+                .Where(r => r.Comic != null && r.Comic.embedded_by == ownerId && (!status.HasValue || r.status == status.Value))
+                .OrderByDescending(r => r.created_at)
+                .ThenByDescending(r => r.id)
+                .Skip(offset)
+                .Take(limit)
+                .ToListAsync(),
+            $"owner:{ownerId}:s{status}:{offset}:{limit}",
+            DefaultCacheMinutes
+        ) ?? [];
+    }
 }
