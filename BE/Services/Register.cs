@@ -37,6 +37,7 @@ public static class ServicesRegisterExtensions
 		Services.AddScoped<TruyenCV.Services.IComicRecommendService, TruyenCV.Services.ComicRecommendService>();
 		Services.AddScoped<TruyenCV.Services.IComicReportService, TruyenCV.Services.ComicReportService>();
 		Services.AddScoped<TruyenCV.Services.IComicReadingService, TruyenCV.Services.ComicReadingService>();
+		Services.AddScoped<TruyenCV.Services.IChapterEnhancementService, TruyenCV.Services.ChapterEnhancementService>();
 		Services.AddScoped<TruyenCV.Services.IFirebaseAuthService, TruyenCV.Services.FirebaseAuthService>();
 		return Services;
 	}

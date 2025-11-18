@@ -12,7 +12,7 @@ from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 from starlette.concurrency import run_in_threadpool
-from underthesea import sent_tokenize
+from underthesea import sent_tokenize,text_normalize
 from unidecode import unidecode
 from vinorm import TTSnorm
 
@@ -59,8 +59,10 @@ def _load_model() -> Xtts:
 
 
 def _normalize_text(text: str) -> str:
+    text = text.replace("·","")
+    open("temp.txt", "w", encoding="utf-8").write(text)
     cleaned = (
-        TTSnorm(text, unknown=False, lower=False, rule=True)
+        text_normalize(text)
         .replace("..", ".")
         .replace("!.", "!")
         .replace("?.", "?")

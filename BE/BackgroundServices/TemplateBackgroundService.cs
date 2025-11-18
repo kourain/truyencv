@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using TruyenCV.Models;
 
 namespace TruyenCV.BackgroundServices
@@ -5,13 +6,13 @@ namespace TruyenCV.BackgroundServices
     public class TemplateBackgroundService : BackgroundService
     {
         private readonly ILogger<TemplateBackgroundService> _logger;
-        private readonly AppDataContext _dataContext = null!;
+        private readonly IServiceProvider _serviceProvider;
         private readonly static object _lock = new();
         private readonly static Queue<Func<Task>> _tasks = new();
         public TemplateBackgroundService(ILogger<TemplateBackgroundService> logger, IServiceProvider serviceProvider)
         {
             _logger = logger;
-            _dataContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDataContext>();
+            _serviceProvider = serviceProvider;
         }
         public static void EnqueueTask(Func<Task> task)
         {
@@ -25,29 +26,18 @@ namespace TruyenCV.BackgroundServices
             Func<Task> task = null;
             while (!stoppingToken.IsCancellationRequested)
             {
-                //
-                while (_tasks.Count > 0)
+                using (var _dataContext = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDataContext>())
                 {
-                    lock (_lock)
+                    var list_cm = await _dataContext.Comics.Where(m => m.deleted_at == null).Select(m => m.id).ToListAsync();
+                    foreach (var cm_id in list_cm)
                     {
-                        if (_tasks.Count > 0)
-                        {
-                            task = _tasks.TryDequeue(out var dequeuedTask) ? dequeuedTask : null;
-                        }
-                    }
-                    if (task != null)
-                    {
-                        try
-                        {
-                            await task();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error executing background task");
-                        }
+                        await _dataContext.Comics
+                            .ExecuteUpdateAsync(m => m.SetProperty(p =>
+                            p.chapter_count,
+                            _dataContext.ComicChapters.Where(chap => chap.comic_id == cm_id && chap.deleted_at == null).Count()));
                     }
                 }
-                await Task.Delay(TimeSpan.FromDays(1), stoppingToken); // Run every day
+                await Task.Delay(TimeSpan.FromDays(7), stoppingToken); // Run every w
             }
         }
     }

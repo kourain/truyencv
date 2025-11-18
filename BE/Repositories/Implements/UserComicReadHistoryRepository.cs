@@ -58,19 +58,19 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
     {
         limit = Math.Clamp(limit, 1, 50);
 
-        return (await _redisCache.GetFromRedisAsync(
+        var query = (await _redisCache.GetFromRedisAsync(
                 () => _dbSet.AsNoTracking()
                 .Include(history => history.Comic)
                 .Where(history => history.deleted_at == null && history.updated_at >= fromUtc && history.Comic != null && history.Comic.deleted_at == null && history.Comic.status != ComicStatus.Banned)
                 .OrderByDescending(history => history.updated_at)
                 .Take(limit)
-                .ToListAsync(), DefaultCacheMinutes))
-            .GroupBy(history => history.comic_id)
+                .ToListAsync(), $"GetTopByUpdatedAtAsync:{fromUtc.ToString()}-{limit}", DefaultCacheMinutes)).GroupBy(history => history.comic_id);
+        return query
             .Select(group => new UserComicReadAggregate(
                 group.Key,
                 group.LongCount(),
                 group.Max(item => item.updated_at),
-                group.First().Comic!))
+                group.FirstOrDefault()?.Comic.ToRespDTO()))
             .OrderByDescending(result => result.reader_count)
             .ThenByDescending(result => result.last_read_at);
     }

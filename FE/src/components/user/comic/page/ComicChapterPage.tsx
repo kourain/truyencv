@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Info } from "lucide-react";
-import { useMutation, UseMutationOptions, useQueryClient } from "@tanstack/react-query";
+import { useMutation, UseMutationOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
 import AdsBanner from "@components/user/comic/AdsBanner";
@@ -15,6 +15,7 @@ import DiscussionsPanel from "../tabs/DiscussionsPanel";
 import { ApiError } from "@helpers/httpClient";
 import { recommendComic } from "@services/user/comic-recommend.service";
 import { useUnlockComicChapterMutation } from "@services/user/comic-unlock.service";
+import { convertChapterToTv, fetchTtsVoices, requestChapterTts } from "@services/user/comic-tools.service";
 
 const tooltipContent = "Mỗi lượt đề cử tiêu tốn 10 coin và bạn chỉ có thể đề cử một lần mỗi tháng.";
 
@@ -32,6 +33,9 @@ const ComicChapterPage = () => {
   const { pushToast } = useToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isUnlockConfirmOpen, setIsUnlockConfirmOpen] = useState(false);
+  const [convertedContent, setConvertedContent] = useState<string | null>(null);
+  const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
+  const [selectedVoice, setSelectedVoice] = useState("");
   const queryClient = useQueryClient();
 
   const slug = useMemo(() => params?.slug ?? "", [params]);
@@ -52,6 +56,80 @@ const ComicChapterPage = () => {
   const comicId = detailData?.comic?.id ?? chapterData?.comic_id;
   const recommendMutation = useRecommendComicMutation();
   const unlockMutation = useUnlockComicChapterMutation();
+  const convertMutation = useMutation<string, ApiError, ConvertMutationVariables>({
+    mutationFn: async (variables) => {
+      const response = await convertChapterToTv(variables);
+      return response.content;
+    },
+    onSuccess: (converted) => {
+      setConvertedContent(converted);
+      pushToast({
+        title: "Đã chuyển đổi",
+        description: "Nội dung chương đã được chuyển sang thuần Việt.",
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message ?? "Không thể chuyển đổi nội dung chương.";
+      pushToast({
+        title: "Chuyển đổi thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+  });
+
+  const ttsMutation = useMutation<Blob, ApiError, TtsMutationVariables>({
+    mutationFn: async (variables) => requestChapterTts(variables),
+    onSuccess: (blob) => {
+      const objectUrl = URL.createObjectURL(blob);
+      setTtsAudioUrl((previousUrl) => {
+        if (previousUrl) {
+          URL.revokeObjectURL(previousUrl);
+        }
+        return objectUrl;
+      });
+      pushToast({
+        title: "Đã tạo audio",
+        description: "Bạn có thể nghe chương ngay bây giờ.",
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message ?? "Không thể tạo giọng đọc cho chương này.";
+      pushToast({
+        title: "Tạo audio thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+  });
+  const { data: voiceList = [], isFetching: isVoiceLoading } = useQuery<string[]>({
+    queryKey: ["user-tts-voices"],
+    queryFn: fetchTtsVoices,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  useEffect(() => {
+    if (!voiceList.length || selectedVoice) {
+      return;
+    }
+    setSelectedVoice(voiceList[0]);
+  }, [voiceList, selectedVoice]);
+
+  useEffect(() => {
+    setConvertedContent(null);
+    setTtsAudioUrl(null);
+  }, [slug, chapterNumber]);
+
+  useEffect(() => {
+    if (!ttsAudioUrl) {
+      return;
+    }
+    return () => {
+      URL.revokeObjectURL(ttsAudioUrl);
+    };
+  }, [ttsAudioUrl]);
 
   const chapterFallbackMeta = useMemo(() => {
     if (!detailData || !chapterNumber) {
@@ -182,6 +260,47 @@ const ComicChapterPage = () => {
     });
   };
 
+  const canUseEnhancements = Boolean(chapterData?.content) && !isChapterLocked;
+  const convertButtonLabel = convertMutation.isPending ? "Đang chuyển đổi..." : "Dịch sang thuần Việt";
+  const ttsButtonLabel = ttsMutation.isPending ? "Đang tạo audio..." : "Đọc chương này";
+  const convertDisabled = !canUseEnhancements || convertMutation.isPending;
+  const ttsDisabled = !canUseEnhancements || !selectedVoice || ttsMutation.isPending;
+
+  const handleConvert = () => {
+    if (!slug || !chapterNumber || !chapterData?.content) {
+      pushToast({
+        title: "Không thể chuyển đổi",
+        description: "Vui lòng tải lại chương trước khi chuyển đổi.",
+        variant: "error",
+      });
+      return;
+    }
+
+    convertMutation.mutate({ slug, chapterNumber, content: chapterData.content });
+  };
+
+  const handleGenerateTts = () => {
+    if (!slug || !chapterNumber || !chapterData?.content) {
+      pushToast({
+        title: "Không thể tạo audio",
+        description: "Vui lòng tải lại chương trước khi đọc.",
+        variant: "error",
+      });
+      return;
+    }
+
+    if (!selectedVoice) {
+      pushToast({
+        title: "Chọn giọng đọc",
+        description: "Vui lòng chọn một giọng đọc trước khi tạo audio.",
+        variant: "error",
+      });
+      return;
+    }
+
+    ttsMutation.mutate({ slug, chapterNumber, content: chapterData.content, reference_audio: selectedVoice });
+  };
+
   if (!slug || !chapterNumber) {
     return null;
   }
@@ -191,10 +310,10 @@ const ComicChapterPage = () => {
   const authorName = chapterData?.author_name ?? detailData?.comic.author_name ?? "";
   const content = chapterData?.content ?? "";
   const previousHref = chapterData?.previous_chapter_number
-    ? `/user/comic/${slug}/chap-${chapterData.previous_chapter_number}`
+    ? `/user/comic/${slug}/chapter/${chapterData.previous_chapter_number}`
     : undefined;
   const nextHref = chapterData?.next_chapter_number
-    ? `/user/comic/${slug}/chap-${chapterData.next_chapter_number}`
+    ? `/user/comic/${slug}/chapter/${chapterData.next_chapter_number}`
     : undefined;
 
   const recommendedTitle = chapterData?.recommended_comic_title ?? detailData?.related_by_author?.[0]?.title;
@@ -228,6 +347,80 @@ const ComicChapterPage = () => {
             <button className="rounded-full border border-primary px-4 py-1 text-primary transition hover:bg-primary/10">
               Đánh dấu bookmark
             </button>
+          </div>
+        </section>
+
+        <section className="grid gap-6 rounded-3xl border border-surface-muted/60 bg-surface px-6 py-6 shadow-sm md:grid-cols-2">
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-primary-foreground">Convert2TV</p>
+              <p className="text-xs text-surface-foreground/70">Chuyển nội dung chương sang thuần Việt dễ đọc.</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleConvert}
+              disabled={convertDisabled}
+              className="rounded-full border border-primary px-5 py-2 text-sm font-medium text-primary transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:border-surface-muted/60 disabled:text-surface-foreground/50"
+            >
+              {convertButtonLabel}
+            </button>
+            {!canUseEnhancements && (
+              <p className="text-xs text-surface-foreground/60">Mở khóa chương để sử dụng tính năng này.</p>
+            )}
+            {convertedContent && (
+              <div className="rounded-2xl border border-surface-muted/70 bg-surface px-4 py-3 text-left">
+                <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-primary">
+                  <span>Phiên bản thuần Việt</span>
+                  <button
+                    type="button"
+                    onClick={() => setConvertedContent(null)}
+                    className="text-surface-foreground/70 transition hover:text-primary"
+                  >
+                    Ẩn
+                  </button>
+                </div>
+                <p className="whitespace-pre-wrap text-sm leading-7 text-surface-foreground/90">{convertedContent}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-primary-foreground">Đọc chương bằng TTS</p>
+              <p className="text-xs text-surface-foreground/70">Chọn giọng đọc yêu thích và nghe chương hiện tại.</p>
+            </div>
+            <div className="flex flex-col gap-2 text-sm">
+              <label htmlFor="tts-voice" className="text-xs uppercase tracking-wide text-surface-foreground/60">Giọng đọc</label>
+              <select
+                id="tts-voice"
+                value={selectedVoice}
+                onChange={(event) => setSelectedVoice(event.target.value)}
+                disabled={isVoiceLoading || voiceList.length === 0}
+                className="rounded-2xl border border-surface-muted bg-surface px-4 py-2 text-sm text-surface-foreground disabled:cursor-not-allowed disabled:text-surface-foreground/50"
+              >
+                {voiceList.length === 0 && <option value="">Chưa có dữ liệu</option>}
+                {voiceList.map((voice) => (
+                  <option key={voice} value={voice}>
+                    {voice}
+                  </option>
+                ))}
+              </select>
+              {isVoiceLoading && <p className="text-xs text-surface-foreground/60">Đang tải danh sách giọng đọc...</p>}
+            </div>
+            <button
+              type="button"
+              onClick={handleGenerateTts}
+              disabled={ttsDisabled}
+              className="rounded-full border border-primary px-5 py-2 text-sm font-medium text-primary transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:border-surface-muted/60 disabled:text-surface-foreground/50"
+            >
+              {ttsButtonLabel}
+            </button>
+            {ttsAudioUrl && (
+              <audio controls className="w-full rounded-2xl border border-surface-muted/60 bg-surface px-3 py-2">
+                <source src={ttsAudioUrl} type="audio/wav" />
+                Trình duyệt của bạn không hỗ trợ audio.
+              </audio>
+            )}
           </div>
         </section>
 
@@ -423,6 +616,16 @@ type NavButtonProps = {
   href?: string;
   label: string;
   disabled?: boolean;
+};
+
+type ConvertMutationVariables = {
+  slug: string;
+  chapterNumber: number;
+  content: string;
+};
+
+type TtsMutationVariables = ConvertMutationVariables & {
+  reference_audio: string;
 };
 
 const NavButton = ({ href, label, disabled = false }: NavButtonProps) => {

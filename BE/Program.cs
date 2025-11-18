@@ -251,6 +251,8 @@ namespace TruyenCV
             builder.Services.AddRepositories();
             // Đăng ký Services
             builder.Services.Configure<EmbeddingOptions>(builder.Configuration.GetSection("Search:ComicVector"));
+            builder.Services.Configure<Convert2TvOptions>(builder.Configuration.GetSection("Convert2TV"));
+            builder.Services.Configure<TtsServiceOptions>(builder.Configuration.GetSection("TTS"));
             builder.Services.AddServices();
 
             if (builder.Environment.IsDevelopment())

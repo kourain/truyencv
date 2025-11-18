@@ -55,3 +55,16 @@ interface UserComicUnlockHistoryResponse {
 	created_at: string;
 	updated_at: string;
 }
+
+interface ConvertChapterToTvResponse {
+	content: string;
+}
+
+interface ConvertChapterToTvRequest {
+	content: string;
+}
+
+interface ChapterTtsRequestPayload {
+	content: string;
+	reference_audio: string;
+}

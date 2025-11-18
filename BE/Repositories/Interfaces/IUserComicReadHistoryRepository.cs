@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TruyenCV.DTOs.Response;
 using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
@@ -35,7 +36,20 @@ public interface IUserComicReadHistoryRepository : IRepository<UserComicReadHist
     /// Lấy tổng số người đã đọc theo danh sách comic
     /// </summary>
     /// <param name="comicIds">Danh sách comic id</param>
-    Task<IDictionary<long, long>> GetReaderCountsAsync(IEnumerable<long> comicIds,int month = 3);
+    Task<IDictionary<long, long>> GetReaderCountsAsync(IEnumerable<long> comicIds, int month = 3);
 }
 
-public record UserComicReadAggregate(long comic_id, long reader_count, DateTime last_read_at, Comic Comic);
+public class UserComicReadAggregate
+{
+    public long comic_id { get; set; }
+    public long reader_count { get; set; }
+    public DateTime last_read_at { get; set; }
+    public ComicResponse Comic { get; set; }
+    public UserComicReadAggregate(long comic_id, long reader_count, DateTime last_read_at, ComicResponse Comic)
+    {
+        this.comic_id = comic_id;
+        this.reader_count = reader_count;
+        this.last_read_at = last_read_at;
+        this.Comic = Comic;
+    }
+}
