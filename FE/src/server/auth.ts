@@ -4,6 +4,7 @@ import "server-only";
 
 import { verifyAccessToken } from "./jwt";
 import { fetchUserProfile } from "@services/user/profile.service";
+import { emptyServerAuthState } from "@const/val";
 
 export const parseJwtToken = async (token: string | null): Promise<ServerAuthState> => {
   if (!token) {
@@ -53,7 +54,6 @@ export const getServerAuthState = async (): Promise<{ userProfile: UserProfileRe
     const token = await fetchUserProfile();
     return {
       auth: {
-        ...await parseJwtToken(token.access_token),
         access_token: token.access_token,
         access_token_minutes: token.access_token_minutes,
         refresh_token: token.refresh_token,
@@ -63,14 +63,6 @@ export const getServerAuthState = async (): Promise<{ userProfile: UserProfileRe
     };
   } catch (error) {
     console.error("Error fetching server auth state:", error);
-    return {
-      auth: {
-        access_token: "",
-        access_token_minutes: 0,
-        refresh_token: "",
-        refresh_token_days: 0
-      },
-      userProfile: {} as UserProfileResponse
-    };
+    return emptyServerAuthState;
   }
 };

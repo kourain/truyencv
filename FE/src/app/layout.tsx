@@ -4,11 +4,11 @@ import { ReactNode } from "react";
 import QueryProvider from "@components/providers/QueryProvider";
 import AuthProvider from "@components/providers/AuthProvider";
 import ToastProvider from "@components/providers/ToastProvider";
-import { getServerAuthState } from "@server/auth";
 
 import "./globals.css";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { emptyServerAuthState } from "@const/val";
 
 export const metadata: Metadata = {
   title: {
@@ -19,18 +19,15 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = async ({ children }: { children: ReactNode }) => {
-  let authState = {} as { userProfile: UserProfileResponse; auth: AuthTokensResponse };
   const headersList = await headers();
-  const header_url = headersList.get('x-url') || "";
-  if (!header_url.includes("/auth/") || !header_url.includes("/privacy-policy") || !header_url.includes("/terms-of-service")) {
-    authState = await getServerAuthState();
-    if (authState.userProfile.id === "-1") {
-      if (header_url.startsWith("/admin")) {
-        redirect("/admin/auth/login");
-      }
-      if (header_url.startsWith("/user")) {
-        redirect("/user/auth/login");
-      }
+  const authStateBase64 = headersList.get("x-auth-state");
+  let authState = emptyServerAuthState as { userProfile: UserProfileResponse; auth: AuthTokensResponse };
+  
+  if (authStateBase64) {
+    try {
+      authState = JSON.parse(Buffer.from(authStateBase64, 'base64').toString('utf-8'));
+    } catch (error) {
+      console.error('Failed to parse auth state:', error);
     }
   }
   return (

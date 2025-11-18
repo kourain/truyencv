@@ -11,12 +11,11 @@ import { clearAuthTokens } from "@helpers/authTokens";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@hooks/useAuth";
 import { redirectToLogin } from "@helpers/httpClient";
-import { useUserProfileQuery } from "@services/user/profile.service";
 import { formatNumber } from "@helpers/format";
 const UserNavbar = () => {
   const router = useRouter();
   const auth = useAuth();
-  const { data: profile, isFetching: isProfileFetching, refetch: refetchProfile } = useUserProfileQuery({ enabled: true });
+  const profile = auth.userProfile;
   const pathname = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(true);
@@ -27,18 +26,9 @@ const UserNavbar = () => {
     await clearAuthTokens();
     window.location.href = "/user/auth/login";
   }, []);
-  useEffect(() => {
-    if (profile) {
-      auth.updateUserProfile(profile);
-      auth.updateAuthState(profile);
-    }
-  }, [profile]);
   const handleOpenSettings = useCallback(() => {
     router.push("/user/profile");
   }, [router]);
-  useEffect(() => {
-    refetchProfile();
-  }, [pathname]);
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -152,7 +142,6 @@ const UserNavbar = () => {
               <div className="border-b border-surface-muted/60 px-4 pb-3 pt-3 text-xs text-surface-foreground/70">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-surface-foreground/60">Ví của bạn</span>
-                  {isProfileFetching && <Loader2 className="h-3.5 w-3.5 animate-spin text-surface-foreground/40" />}
                 </div>
                 <ul className="space-y-1.5">
                   <li className="flex items-center justify-between">
@@ -161,7 +150,7 @@ const UserNavbar = () => {
                       <span>Xu</span>
                     </span>
                     <span className="font-semibold text-primary-foreground">
-                      {profile ? formatNumber(Number(profile.coin ?? 0)) : isProfileFetching ? "..." : "—"}
+                      {profile ? formatNumber(Number(profile.coin ?? 0)) : "—"}
                     </span>
                   </li>
                   <li className="flex items-center justify-between">
@@ -170,7 +159,7 @@ const UserNavbar = () => {
                       <span>Vé</span>
                     </span>
                     <span className="font-semibold text-primary-foreground">
-                      {profile ? formatNumber(Number(profile.key ?? 0)) : isProfileFetching ? "..." : "—"}
+                      {profile ? formatNumber(Number(profile.key ?? 0)) : "—"}
                     </span>
                   </li>
                   <li className="flex items-start justify-between">
@@ -179,7 +168,7 @@ const UserNavbar = () => {
                       <span>Gói hiện tại</span>
                     </span>
                     <span className="text-right font-medium text-primary-foreground">
-                      {profile ? profile.active_subscription_name ?? "Chưa đăng ký" : isProfileFetching ? "..." : "Chưa đăng ký"}
+                      {profile ? profile.active_subscription_name ?? "Chưa đăng ký" : "Chưa đăng ký"}
                     </span>
                   </li>
                 </ul>
