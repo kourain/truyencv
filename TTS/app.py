@@ -31,7 +31,9 @@ REQUIRED_MODEL_FILES = {"model.pth", "config.json", "vocab.json"}
 
 XTTS_MODEL: Xtts | None = None
 
-
+def _clear_gpu_cache() -> None:
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 def _load_model() -> Xtts:
     global XTTS_MODEL
     if XTTS_MODEL is not None:
@@ -154,6 +156,7 @@ def _infer(
     output_name = f"{_filename_from_text(text)}.wav"
     output_path = f"{OUTPUT_DIR}/{output_name}"
     torchaudio.save(str(output_path), audio, 24000)
+    _clear_gpu_cache()
     return output_path
 
 
@@ -168,10 +171,20 @@ def _cleanup_file(path: str) -> None:
 async def app_lifespan(_: FastAPI):
     _load_model()
     yield
-
+    _clear_gpu_cache()
 
 app = FastAPI(title=APP_TITLE, description=SUMMARY, lifespan=app_lifespan)
 
+@app.get("/sounds")
+async def list_sounds() -> list[str]:
+    voices_path = Path(VOICES_DIR)
+    if not voices_path.exists():
+        raise HTTPException(status_code=500, detail="Thư mục voices không tồn tại")
+
+    sound_files = [
+        f.name for f in voices_path.iterdir() if f.is_file() and f.suffix.lower() == ".wav"
+    ]
+    return sound_files
 
 @app.post("/tts")
 async def synthesize(
@@ -209,6 +222,6 @@ async def health_check() -> dict[str, str]:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     loaded = "yes" if XTTS_MODEL is not None else "no"
     return {"status": "ok", "device": device, "model_loaded": loaded}
-
-import uvicorn
-uvicorn.run(app, host="127.0.0.1", port=8000)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
