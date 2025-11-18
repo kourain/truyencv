@@ -1,5 +1,6 @@
 """FastAPI service exposing viXTTS inference based on the reference demo."""
 
+import os
 import string
 from contextlib import asynccontextmanager
 import datetime
@@ -22,10 +23,9 @@ from TTS.tts.models.xtts import Xtts
 APP_TITLE = "viXTTS FastAPI"
 SUMMARY = "REST API for Vietnamese XTTS inference (GPU-enabled)."
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-MODEL_DIR = "models"
-VOICES_DIR = "voices"
-OUTPUT_DIR = "outputs"
+MODEL_DIR = "E:/Code/DATN/TTS/models"
+VOICES_DIR = "E:/Code/DATN/TTS/voices"
+OUTPUT_DIR = "E:/Code/DATN/TTS/outputs"
 LANGUAGE = "vi"
 REQUIRED_MODEL_FILES = {"model.pth", "config.json", "vocab.json"}
 
@@ -41,7 +41,7 @@ def _load_model() -> Xtts:
     config.load_json(f"{MODEL_DIR}/config.json")  # Cấu hình huấn luyện đã lưu của mô hình
     XTTS_MODEL = Xtts.init_from_config(config)
     XTTS_MODEL.load_checkpoint(
-        config, checkpoint_dir="models", use_deepspeed=False
+        config, checkpoint_dir=MODEL_DIR, use_deepspeed=False
     )
     if torch.cuda.is_available():
         XTTS_MODEL.cuda()
@@ -102,7 +102,7 @@ def _infer(
     text: str,
     reference_path: Path,
     normalize_text: bool,
-) -> Path:
+) -> str:
     model = XTTS_MODEL
     if model is None:
         raise RuntimeError("Mô hình chưa được khởi tạo")
@@ -157,9 +157,9 @@ def _infer(
     return output_path
 
 
-def _cleanup_file(path: Path) -> None:
+def _cleanup_file(path: str) -> None:
     try:
-        path.unlink()
+        os.unlink(path)
     except FileNotFoundError:
         pass
 
@@ -182,7 +182,7 @@ async def synthesize(
     if not reference_audio.strip():
         raise HTTPException(status_code=400, detail="Thiếu tên tệp mẫu giọng nói")
 
-    reference_path = VOICES_DIR / reference_audio.strip()
+    reference_path = Path(VOICES_DIR) / reference_audio.strip()
     if not reference_path.suffix:
         reference_path = reference_path.with_suffix(".wav")
     if not reference_path.exists():
@@ -198,7 +198,7 @@ async def synthesize(
     background_task = BackgroundTask(_cleanup_file, output_path)
     return FileResponse(
         path=output_path,
-        filename=output_path.name,
+        filename=output_path,
         media_type="audio/wav",
         background=background_task,
     )
