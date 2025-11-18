@@ -28,6 +28,8 @@ VOICES_DIR = "/home/kourain/truyencv/TTS/voices"
 OUTPUT_DIR = "/home/kourain/truyencv/TTS/outputs"
 LANGUAGE = "vi"
 REQUIRED_MODEL_FILES = {"model.pth", "config.json", "vocab.json"}
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+# torch.cuda.amp.autocast(enabled=False)  # tự động tắt AMP để tránh lỗi OOM với một số GPU cũ eg: my 3050 :()
 
 XTTS_MODEL: Xtts | None = None
 
@@ -89,6 +91,11 @@ def _calculate_keep_len(text: str, lang: str) -> int:
         return 13000 * word_count + 2000 * num_punct
     return -1
 
+def _filename_from_output_name(output_name: str,max_char: int = 50) -> str:
+    snippet = output_name[:max_char].lower().replace(" ", "_")
+    snippet = snippet.translate(str.maketrans("", "", string.punctuation.replace("_", "")))
+    snippet = unidecode(snippet)
+    return f"{snippet or 'tts'}"
 
 def _filename_from_text(text: str, max_char: int = 50) -> str:
     snippet = text[:max_char].lower().replace(" ", "_")
@@ -106,6 +113,7 @@ def _infer(
     text: str,
     reference_path: Path,
     normalize_text: bool,
+    output_name: str | None = None,
 ) -> str:
     model = XTTS_MODEL
     if model is None:
@@ -154,11 +162,12 @@ def _infer(
         wav_chunks.append(audio_tensor)
 
     audio = torch.cat(wav_chunks).unsqueeze(0)
-
-    output_name = f"{_filename_from_text(text)}.wav"
+    if output_name:
+        output_name = f"{_filename_from_output_name(output_name)}.wav"
+    else:
+        output_name = f"{_filename_from_text(text)}.wav"
     output_path = f"{OUTPUT_DIR}/{output_name}"
     torchaudio.save(str(output_path), audio, 24000)
-    _clear_gpu_cache()
     return output_path
 
 
@@ -193,6 +202,7 @@ async def synthesize(
     text: str = Form(..., description="Văn bản cần đọc"),
     normalize: bool = Form(True, description="Chuẩn hóa tiếng Việt trước khi đọc"),
     reference_audio: str = Form(..., description="Tên tệp WAV có sẵn trong thư mục voices"),
+    output_name: str = Form(None, description="Tên tệp đầu ra (không bắt buộc)")
 ):
     if not reference_audio.strip():
         raise HTTPException(status_code=400, detail="Thiếu tên tệp mẫu giọng nói")
@@ -208,6 +218,7 @@ async def synthesize(
         text,
         reference_path,
         normalize,
+        output_name,
     )
 
     background_task = BackgroundTask(_cleanup_file, output_path)
