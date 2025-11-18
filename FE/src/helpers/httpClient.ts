@@ -9,7 +9,7 @@ const defaultConfig: AxiosRequestConfig = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Credentials": "true",
   },
-  timeout: 15000,
+  timeout: 60_000,
   allowAbsoluteUrls: true
 };
 

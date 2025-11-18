@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TruyenCV.DTOs.Request;
 using TruyenCV.Services;
 
 namespace TruyenCV.Areas.User.Controllers;
@@ -12,10 +13,12 @@ public sealed class ComicController : ControllerBase
 {
     private readonly IComicReadingService _comicReadingService;
     private readonly IComicService _comicService;
-    public ComicController(IComicReadingService comicReadingService, IComicService comicService)
+    private readonly IChapterEnhancementService _chapterEnhancementService;
+    public ComicController(IComicReadingService comicReadingService, IComicService comicService, IChapterEnhancementService chapterEnhancementService)
     {
         _comicReadingService = comicReadingService;
         _comicService = comicService;
+        _chapterEnhancementService = chapterEnhancementService;
     }
     [AllowAnonymous]
     [HttpGet("seo/{slug}")]
@@ -76,5 +79,46 @@ public sealed class ComicController : ControllerBase
         // ghi lịch sử
         await _comicReadingService.RecordChapterReadAsync(result.comic_id.ToSnowflakeId(), chapterNumber, userId.Value);
         return Ok(result);
+    }
+
+    [HttpPost("{slug}/chapters/{chapterNumber:int}/convert-tv")]
+    public async Task<IActionResult> ConvertChapterToVietnamese(string slug, int chapterNumber, [FromBody] ConvertChapterRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(slug) || chapterNumber <= 0)
+        {
+            return BadRequest(new { message = "Thông tin chương không hợp lệ" });
+        }
+
+        if (request == null || string.IsNullOrWhiteSpace(request.content))
+        {
+            return BadRequest(new { message = "Nội dung chương không được để trống" });
+        }
+
+        var converted = await _chapterEnhancementService.ConvertToVietnameseAsync(request.content);
+        return Ok(new { content = converted });
+    }
+
+    [HttpPost("{slug}/chapters/{chapterNumber:int}/tts")]
+    public async Task<IActionResult> GenerateChapterAudio(string slug, int chapterNumber, [FromBody] ChapterTtsRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(slug) || chapterNumber <= 0)
+        {
+            return BadRequest(new { message = "Thông tin chương không hợp lệ" });
+        }
+
+        if (request == null || string.IsNullOrWhiteSpace(request.content) || string.IsNullOrWhiteSpace(request.reference_audio))
+        {
+            return BadRequest(new { message = "Thiếu nội dung chương hoặc giọng đọc" });
+        }
+
+        var audio = await _chapterEnhancementService.GenerateTtsAsync(request.content, request.reference_audio);
+        return File(audio.Data, audio.ContentType, audio.FileName);
+    }
+
+    [HttpGet("tts/voices")]
+    public async Task<IActionResult> GetTtsVoices()
+    {
+        var voices = await _chapterEnhancementService.GetAvailableVoicesAsync();
+        return Ok(voices);
     }
 }

@@ -41,3 +41,30 @@ interface ComicChapterReadResponse {
 	year: number;
 	has_recommended: boolean;
 }
+
+interface UnlockComicChapterRequest {
+	comic_id: string;
+	comic_chapter_id: string;
+}
+
+interface UserComicUnlockHistoryResponse {
+	id: string;
+	user_id: string;
+	comic_id: string;
+	comic_chapter_id: string;
+	created_at: string;
+	updated_at: string;
+}
+
+interface ConvertChapterToTvResponse {
+	content: string;
+}
+
+interface ConvertChapterToTvRequest {
+	content: string;
+}
+
+interface ChapterTtsRequestPayload {
+	content: string;
+	reference_audio: string;
+}

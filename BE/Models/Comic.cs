@@ -51,7 +51,6 @@ public class Comic : BaseEntity
     public ComicStatus status { get; set; } = ComicStatus.Continuing;
     [JsonIgnore] // không cache lại điều này
     public Vector? search_vector { get; set; }
-
     public virtual User? EmbeddedByUser { get; set; } = null;
     public virtual User? AcceptByUser { get; set; } = null;
     [JsonIgnore] //, DeleteBehavior(DeleteBehavior.Cascade)]

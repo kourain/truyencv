@@ -7,10 +7,10 @@ public static class MiddlewareRegisterExtensions
 	/// <returns></returns>
 	public static WebApplication AddMiddlewares(this WebApplication app)
 	{
+		app.UseMiddleware<TruyenCV.Middleware.E500Midware>();
 		app.UseMiddleware<TruyenCV.Middleware.JWTMidware>();
         app.UseAuthentication();
         app.UseAuthorization();
-		app.UseMiddleware<TruyenCV.Middleware.E500Midware>();
 		return app;
 	}
 	/// <summary>

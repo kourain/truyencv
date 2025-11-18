@@ -1,8 +1,8 @@
 import { logout } from "@services/auth.service";
 import { Buffer } from "buffer";
 
-const ACCESS_TOKEN_COOKIE = "truyencv_access_token";
-const REFRESH_TOKEN_COOKIE = "truyencv_refresh_token";
+export const ACCESS_TOKEN_COOKIE = "truyencv_access_token";
+export const REFRESH_TOKEN_COOKIE = "truyencv_refresh_token";
 
 const isBrowser = () => typeof window !== "undefined" && typeof document !== "undefined";
 

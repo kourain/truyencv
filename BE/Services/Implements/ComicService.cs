@@ -131,17 +131,16 @@ public class ComicService : IComicService
             return null;
         }
 
-        var chaptersTask = _comicChapterRepository.GetByComicIdAsync(comic.id);
-        var commentsTask = _comicCommentRepository.GetByComicIdAsync(comic.id);
-        var recommendationsTask = _comicRecommendRepository.GetByComicAsync(comic.id, 12);
-        var relatedTask = _comicRepository.GetByAuthorAsync(comic.author);
+        var chaptersTask = await _comicChapterRepository.GetByComicIdAsync(comic.id);
+        var commentsTask = await _comicCommentRepository.GetByComicIdAsync(comic.id);
+        var recommendationsTask = await _comicRecommendRepository.GetByComicAsync(comic.id, 12);
+        var relatedTask = await _comicRepository.GetByAuthorAsync(comic.author);
         var userHistoryTask = userId.HasValue
             ? _readHistoryRepository.GetByUserAndComicAsync(userId.Value, comic.id)
             : Task.FromResult<UserComicReadHistory?>(null);
 
-        await Task.WhenAll(chaptersTask, commentsTask, recommendationsTask, relatedTask, userHistoryTask);
 
-        var chapterList = (await chaptersTask)
+        var chapterList = chaptersTask
             .Where(chapter => chapter.deleted_at == null)
             .OrderByDescending(chapter => chapter.chapter)
             .ThenByDescending(chapter => chapter.id)
@@ -161,7 +160,7 @@ public class ComicService : IComicService
         var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
         var weeklyChapterCount = chapterList.Count(chapter => chapter.updated_at >= sevenDaysAgo);
 
-        var recommendEntries = (await recommendationsTask).ToList();
+        var recommendEntries = recommendationsTask.ToList();
         var currentUtc = DateTime.UtcNow;
         var weeklyRecommendations = (int)Math.Clamp(
             recommendEntries
@@ -170,7 +169,7 @@ public class ComicService : IComicService
             0,
             int.MaxValue);
 
-        var comments = (await commentsTask).ToList();
+        var comments = commentsTask.ToList();
 
         var reviews = comments
             .Where(comment => comment.is_rate && comment.rate_star.HasValue)
@@ -201,7 +200,7 @@ public class ComicService : IComicService
             })
             .ToList();
 
-        var related = (await relatedTask)
+        var related = relatedTask
             .Where(other => other.id != comic.id && other.deleted_at == null && other.slug != comic.slug)
             .OrderByDescending(other => other.updated_at)
             .ThenBy(other => other.id)

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getHttpClient } from "@helpers/httpClient";
+import { ApiError, getHttpClient } from "@helpers/httpClient";
 
 const resource = (slug: string, chapterNumber: string | number) => `/user/comic/${slug}/chapters/${chapterNumber}`;
 
@@ -18,12 +18,12 @@ export const fetchUserComicChapter = async (
 			console.warn("Sử dụng dữ liệu mock cho trang đọc chương", error);
 		}
 
-		return createMockChapter(slug, Number(chapterNumber));
+		throw error as ApiError;
 	}
 };
 
 export const useUserComicChapterQuery = (slug: string, chapterNumber: string | number) => {
-	return useQuery<ComicChapterReadResponse>({
+	return useQuery<ComicChapterReadResponse, ApiError>({
 		queryKey: ["user-comic-chapter", slug, chapterNumber],
 		queryFn: () => fetchUserComicChapter(slug, chapterNumber),
 		enabled: Boolean(slug) && Boolean(chapterNumber),
