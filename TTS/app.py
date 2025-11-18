@@ -23,9 +23,9 @@ from TTS.tts.models.xtts import Xtts
 APP_TITLE = "viXTTS FastAPI"
 SUMMARY = "REST API for Vietnamese XTTS inference (GPU-enabled)."
 
-MODEL_DIR = "E:/Code/DATN/TTS/models"
-VOICES_DIR = "E:/Code/DATN/TTS/voices"
-OUTPUT_DIR = "E:/Code/DATN/TTS/outputs"
+MODEL_DIR = "/home/kourain/truyencv/TTS/models"
+VOICES_DIR = "/home/kourain/truyencv/TTS/voices"
+OUTPUT_DIR = "/home/kourain/truyencv/TTS/outputs"
 LANGUAGE = "vi"
 REQUIRED_MODEL_FILES = {"model.pth", "config.json", "vocab.json"}
 
