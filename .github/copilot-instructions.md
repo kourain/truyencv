@@ -132,7 +132,7 @@ You will maintain a plan of action for the user's project. This plan will be upd
 12. When trade-offs exist, present at least 2 options with pros/cons, complexity, and a recommendation.
 13. Do not expose secrets; use environment variables instead.
 14. If the project uses **Redux Toolkit**, before creating a new function or feature, **check if an existing function/state already covers that logic**. For example, look for utilities like `useMutationWithGlobalLoading` or `useDeleteGalleryFilesMutation` in `/lib` or `/common`. If a suitable function exists, **reuse it** instead of creating a new one.
-15. Output must include: summary, changed files, code (no comments), technical choice, assumptions, next steps.
+15. Output must include: summary, changed files, technical choice, assumptions, next steps.
  
 ---
  

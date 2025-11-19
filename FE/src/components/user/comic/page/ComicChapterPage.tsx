@@ -36,6 +36,7 @@ const ComicChapterPage = () => {
   const [convertedContent, setConvertedContent] = useState<string | null>(null);
   const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
   const [selectedVoice, setSelectedVoice] = useState("");
+  const [activeContentTab, setActiveContentTab] = useState<"original" | "converted">("original");
   const queryClient = useQueryClient();
 
   const slug = useMemo(() => params?.slug ?? "", [params]);
@@ -63,6 +64,7 @@ const ComicChapterPage = () => {
     },
     onSuccess: (converted) => {
       setConvertedContent(converted);
+      setActiveContentTab("converted");
       pushToast({
         title: "Đã chuyển đổi",
         description: "Nội dung chương đã được chuyển sang thuần Việt.",
@@ -120,7 +122,15 @@ const ComicChapterPage = () => {
   useEffect(() => {
     setConvertedContent(null);
     setTtsAudioUrl(null);
+    setActiveContentTab("original");
   }, [slug, chapterNumber]);
+
+  useEffect(() => {
+    if (convertedContent || activeContentTab === "original") {
+      return;
+    }
+    setActiveContentTab("original");
+  }, [convertedContent, activeContentTab]);
 
   useEffect(() => {
     if (!ttsAudioUrl) {
@@ -367,21 +377,6 @@ const ComicChapterPage = () => {
             {!canUseEnhancements && (
               <p className="text-xs text-surface-foreground/60">Mở khóa chương để sử dụng tính năng này.</p>
             )}
-            {convertedContent && (
-              <div className="rounded-2xl border border-surface-muted/70 bg-surface px-4 py-3 text-left">
-                <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-primary">
-                  <span>Phiên bản thuần Việt</span>
-                  <button
-                    type="button"
-                    onClick={() => setConvertedContent(null)}
-                    className="text-surface-foreground/70 transition hover:text-primary"
-                  >
-                    Ẩn
-                  </button>
-                </div>
-                <p className="whitespace-pre-wrap text-sm leading-7 text-surface-foreground/90">{convertedContent}</p>
-              </div>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -434,9 +429,49 @@ const ComicChapterPage = () => {
             isProcessing={unlockMutation.isPending}
           />
         ) : (
-          <article className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-8 text-base leading-7 text-surface-foreground/90 whitespace-pre-wrap">
-            {isLoading ? "Đang tải nội dung chương..." : content}
-          </article>
+          <section className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-6 shadow-sm">
+            <div className="flex flex-wrap gap-3 text-sm font-medium">
+              <button
+                type="button"
+                onClick={() => setActiveContentTab("original")}
+                className={`rounded-full px-4 py-2 transition ${
+                  activeContentTab === "original"
+                    ? "bg-primary text-white"
+                    : "border border-primary text-primary hover:bg-primary/10"
+                }`}
+              >
+                Bản gốc
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!convertedContent) {
+                    return;
+                  }
+                  setActiveContentTab("converted");
+                }}
+                className={`rounded-full px-4 py-2 transition ${
+                  activeContentTab === "converted"
+                    ? "bg-primary text-white"
+                    : convertedContent
+                      ? "border border-primary text-primary hover:bg-primary/10"
+                      : "border border-surface-muted/60 text-surface-foreground/50 cursor-not-allowed"
+                }`}
+                disabled={!convertedContent}
+              >
+                Thuần Việt
+              </button>
+            </div>
+            <article className="mt-4 rounded-2xl border border-surface-muted/60 bg-surface px-4 py-6 text-base leading-7 text-surface-foreground/90 whitespace-pre-wrap">
+              {activeContentTab === "converted" && !convertedContent
+                ? "Chưa có phiên bản thuần Việt. Hãy chọn \"Dịch sang thuần Việt\" để tạo nội dung."
+                : isLoading
+                  ? "Đang tải nội dung chương..."
+                  : activeContentTab === "converted"
+                    ? convertedContent
+                    : content}
+            </article>
+          </section>
         )}
 
         {recommendedTitle && (
