@@ -3,6 +3,8 @@ fastapi
 uvicorn[standard]
 torchcodec==0.7.0+cu128
 nvidia-cuda-runtime-cu12==12.8.90
+nvidia-npp-cu12
+nvidia-cuda-nvrtc-cu12
 underthesea
 vinorm
 python-multipart
