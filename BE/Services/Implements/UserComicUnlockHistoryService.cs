@@ -6,6 +6,7 @@ using TruyenCV.DTOs.Response;
 using TruyenCV.Models;
 using TruyenCV.Repositories;
 using TruyenCV;
+using Pgvector.EntityFrameworkCore;
 
 namespace TruyenCV.Services;
 
@@ -17,14 +18,15 @@ public class UserComicUnlockHistoryService : IUserComicUnlockHistoryService
     private readonly IComicChapterRepository _comicChapterRepository;
     private readonly IUserUseKeyHistoryRepository _userUseKeyHistoryRepository;
     private readonly IDistributedCache _redisCache;
-
+    private readonly AppDataContext _dbcontext;
     public UserComicUnlockHistoryService(
         IUserComicUnlockHistoryRepository unlockRepository,
         IUserRepository userRepository,
         IComicRepository comicRepository,
         IComicChapterRepository comicChapterRepository,
         IUserUseKeyHistoryRepository userUseKeyHistoryRepository,
-        IDistributedCache redisCache)
+        IDistributedCache redisCache,
+        AppDataContext dbcontext)
     {
         _unlockRepository = unlockRepository;
         _userRepository = userRepository;
@@ -32,6 +34,7 @@ public class UserComicUnlockHistoryService : IUserComicUnlockHistoryService
         _comicChapterRepository = comicChapterRepository;
         _userUseKeyHistoryRepository = userUseKeyHistoryRepository;
         _redisCache = redisCache;
+        _dbcontext = dbcontext;
     }
 
     public async Task<IEnumerable<UserComicUnlockHistoryResponse>> GetByUserIdAsync(long userId)
@@ -72,52 +75,71 @@ public class UserComicUnlockHistoryService : IUserComicUnlockHistoryService
     {
         var comicId = request.comic_id.ToSnowflakeId(nameof(request.comic_id));
         var chapterId = request.comic_chapter_id.ToSnowflakeId(nameof(request.comic_chapter_id));
-
-        var user = await EnsureUserExists(userId);
-        await EnsureComicExists(comicId);
-        var chapter = await EnsureChapterBelongsToComicAsync(chapterId, comicId);
-
-        var existing = await _unlockRepository.GetByUserAndChapterAsync(userId, chapterId);
-        if (existing != null)
-        {
-            return existing.ToRespDTO();
-        }
-
-        var requireKey = chapter.key_require > 0 && (!chapter.key_require_until.HasValue || DateTime.UtcNow <= chapter.key_require_until.Value);
-        var keyUsed = 0;
-        if (requireKey)
-        {
-            keyUsed = chapter.key_require;
-            if (user.key < keyUsed)
+        var strategy = _dbcontext.Database.CreateExecutionStrategy();
+        _dbcontext.ChangeTracker.Clear();
+        return await strategy.ExecuteAsync<object?, UserComicUnlockHistoryResponse>(
+            null,
+            async (_, _, cancellationToken) =>
             {
-                throw new UserRequestException("Bạn không đủ chìa khóa để mở khóa chương này");
-            }
+                using (var transaction = await _dbcontext.Database.BeginTransactionAsync(cancellationToken))
+                {
+                    try
+                    {
+                        var user = await _userRepository.GetByIdAsync(userId);
+                        // await EnsureComicExists(comicId);
+                        var chapter = await EnsureChapterBelongsToComicAsync(chapterId, comicId);
 
-            user.key -= keyUsed;
-            user.updated_at = DateTime.UtcNow;
-            await _userRepository.UpdateAsync(user);
+                        var existing = await _unlockRepository.GetByUserAndChapterAsync(userId, chapterId);
+                        if (existing != null)
+                        {
+                            return existing.ToRespDTO();
+                        }
 
-            var keyHistoryRequest = new CreateUserUseKeyHistoryRequest
-            {
-                user_id = user.id.ToString(),
-                key = keyUsed,
-                status = HistoryStatus.Use,
-                chapter_id = chapter.id.ToString(),
-                note = $"Mở khóa chương {chapter.chapter}"
-            };
-            await _userUseKeyHistoryRepository.AddAsync(keyHistoryRequest.ToEntity());
-        }
+                        var requireKey = chapter.key_require > 0 && (!chapter.key_require_until.HasValue || DateTime.UtcNow <= chapter.key_require_until.Value);
+                        var keyUsed = 0;
+                        if (requireKey)
+                        {
+                            keyUsed = chapter.key_require;
+                            if (user.key < keyUsed)
+                            {
+                                throw new UserRequestException("Bạn không đủ chìa khóa để mở khóa chương này");
+                            }
 
-        var unlockRequest = new CreateUserComicUnlockHistoryRequest
-        {
-            user_id = userId.ToString(),
-            comic_id = comicId.ToString(),
-            comic_chapter_id = chapterId.ToString()
-        };
+                            user.key -= keyUsed;
+                            await _userRepository.UpdateAsync(user);
 
-        var created = await _unlockRepository.AddAsync(unlockRequest.ToEntity());
-        await InvalidateCachesAsync(userId, comicId, chapterId);
-        return created.ToRespDTO();
+                            var keyHistoryRequest = new CreateUserUseKeyHistoryRequest
+                            {
+                                user_id = user.id.ToString(),
+                                key = keyUsed,
+                                status = HistoryStatus.Use,
+                                chapter_id = chapter.id.ToString(),
+                                note = $"Mở khóa chương {chapter.chapter}"
+                            };
+                            await _userUseKeyHistoryRepository.AddAsync(keyHistoryRequest.ToEntity());
+                        }
+
+                        var unlockRequest = new CreateUserComicUnlockHistoryRequest
+                        {
+                            user_id = userId.ToString(),
+                            comic_id = comicId.ToString(),
+                            comic_chapter_id = chapterId.ToString()
+                        };
+
+                        var created = await _unlockRepository.AddAsync(unlockRequest.ToEntity());
+                        await InvalidateCachesAsync(userId, comicId, chapterId);
+                        await transaction.CommitAsync(cancellationToken);
+                        return created.ToRespDTO();
+                    }
+                    catch (Exception e)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw new UserRequestException("Mở khóa chương thất bại, vui lòng thử lại sau" + e);
+                    }
+                }
+            },
+            null,
+            default);
     }
 
     public async Task<bool> HasUnlockedChapterAsync(long userId, long chapterId)
