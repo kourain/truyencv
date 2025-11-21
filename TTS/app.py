@@ -48,14 +48,19 @@ def _load_model() -> Xtts:
         config, checkpoint_dir=MODEL_DIR, use_deepspeed=False
     )
     if torch.cuda.is_available():
+        _clear_gpu_cache()
         XTTS_MODEL.cuda()
-
-    XTTS_MODEL.eval()
-
-    if torch.cuda.is_available():
-        XTTS_MODEL.cuda()  # Chuyển mô hình sang GPU để suy luận
+        torch.backends.cuda.matmul.allow_tf32 = True  # Allow TF32 on Ampere
+        torch.backends.cudnn.allow_tf32 = True
+        # torch.backends.cudnn.benchmark = True # Enable cudnn autotuner
+        try:
+            torch.set_float32_matmul_precision("high")
+        except AttributeError:
+            pass # Old pytorch versions
     else:
         raise RuntimeError("Không phát hiện được GPU. Hãy kiểm tra CUDA driver.")
+
+    XTTS_MODEL.eval()
 
     return XTTS_MODEL
 
@@ -141,25 +146,26 @@ def _infer(
     speaker_embedding = conditioning[1]
 
     wav_chunks = []
-    for sentence in sentences:
-        chunk = model.inference(  # type: ignore[call-arg]
-            text=sentence,
-            language=LANGUAGE,
-            gpt_cond_latent=gpt_cond_latent,
-            speaker_embedding=speaker_embedding,
-            temperature=0.3,
-            length_penalty=1.0,
-            repetition_penalty=10.0,
-            top_k=30,
-            top_p=0.85,
-            enable_text_splitting=True,
-        )
+    with torch.inference_mode():
+        for sentence in sentences:
+            chunk = model.inference(  # type: ignore[call-arg]
+                text=sentence,
+                language=LANGUAGE,
+                gpt_cond_latent=gpt_cond_latent,
+                speaker_embedding=speaker_embedding,
+                temperature=0.3,
+                length_penalty=1.0,
+                repetition_penalty=10.0,
+                top_k=30,
+                top_p=0.85,
+                enable_text_splitting=True,
+            )
 
-        keep_len = _calculate_keep_len(sentence, LANGUAGE)
-        audio_tensor = torch.from_numpy(chunk["wav"]).float()
-        if keep_len > 0:
-            audio_tensor = audio_tensor[:keep_len]
-        wav_chunks.append(audio_tensor)
+            keep_len = _calculate_keep_len(sentence, LANGUAGE)
+            audio_tensor = torch.from_numpy(chunk["wav"]).float()
+            if keep_len > 0:
+                audio_tensor = audio_tensor[:keep_len]
+            wav_chunks.append(audio_tensor)
 
     audio = torch.cat(wav_chunks).unsqueeze(0)
     if output_name:
@@ -218,7 +224,7 @@ async def synthesize(
         text,
         reference_path,
         normalize,
-        output_name,
+        f"{output_name}_{reference_audio}",
     )
 
     background_task = BackgroundTask(_cleanup_file, output_path)
