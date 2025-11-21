@@ -8,9 +8,10 @@ public static class MiddlewareRegisterExtensions
 	public static WebApplication AddMiddlewares(this WebApplication app)
 	{
 		app.UseMiddleware<TruyenCV.Middleware.E500Midware>();
-		app.UseMiddleware<TruyenCV.Middleware.JWTMidware>();
+		app.UseMiddleware<TruyenCV.Middleware.JwtBeforeMidware>();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseMiddleware<TruyenCV.Middleware.JwtAfterAuthMidware>();
 		return app;
 	}
 	/// <summary>

@@ -3,10 +3,11 @@
 Thư mục này chứa các service cho việc xử lý logic nghiệp vụ trong ứng dụng.
 
 ## Cấu Trúc
+
 ├── Interfaces      # chứa các interface
 ├──> *.cs
 ├── Implements # Chứa các implementation của các interface
-├──> *.cs
+├──>*.cs
 
 ## Nguyên Tắc Thiết Kế
 
@@ -62,6 +63,39 @@ public class UserController : ControllerBase
 ## Đặc biệt
 
 Nếu sử dụng `assigned_by`, mặc định được cấp bởi System, thông tin được lưu ở Const/System.cs
+
+## Coding
+
+Nếu cần sử dụng transaction đây là ví dụ:
+
+```cs
+
+    public async Task<string> UseTransactionAsync()
+    {
+        var strategy = _dbcontext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<object?, UserComicUnlockHistoryResponse>(
+            null,
+            async (_, _, cancellationToken) =>
+            {
+                using (var transaction = await _dbcontext.Database.BeginTransactionAsync(cancellationToken))
+                {
+                    try
+                    {
+                        //code
+                        await transaction.CommitAsync(cancellationToken);
+                        return "Ok";
+                    }
+                    catch (Exception e)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw new UserRequestException("<lý do thất bại>, vui lòng thử lại sau" + e);
+                    }
+                }
+            },
+            null,
+            default);
+    }
+```
 
 ## Cấm
 

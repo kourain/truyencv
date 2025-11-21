@@ -45,6 +45,7 @@ namespace TruyenCV.Helpers
 
         public static string GenerateAccessToken(
             Models.User user,
+            long refresh_token_id,
             IEnumerable<string> roles,
             IEnumerable<Permissions> permissions,
             string? secretKey = null,
@@ -61,7 +62,8 @@ namespace TruyenCV.Helpers
                 new Claim(JwtRegisteredClaimNames.Iss, issuer ?? JwtHelper.issuer),
                 new Claim(JwtRegisteredClaimNames.Name, user.name),
                 new Claim(JwtRegisteredClaimNames.Email, user.email),
-                new Claim("avatar", user.avatar)
+                new Claim("avatar", user.avatar),
+                new Claim(JwtRegisteredClaimNames.UniqueName,refresh_token_id.ToString()),
             };
 
             // Thêm nhiều role nếu có

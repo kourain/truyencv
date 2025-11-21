@@ -2,16 +2,19 @@ using System.Linq;
 using TruyenCV.Models;
 using TruyenCV.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace TruyenCV.Services
 {
     public class AuthService : IAuthService
     {
         private readonly AppDataContext _context;
+        private readonly IDistributedCache _cache;
 
-        public AuthService(AppDataContext context)
+        public AuthService(AppDataContext context, IDistributedCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public async Task<(string accessToken, string refreshToken)> GenerateTokensAsync(RefreshToken refreshToken)
@@ -25,7 +28,7 @@ namespace TruyenCV.Services
                 .Where(permission => permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow)
                 .Select(permission => permission.permissions);
 
-            var accessToken = JwtHelper.GenerateAccessToken(refreshToken.User, roleNames, permissionValues);
+            var accessToken = JwtHelper.GenerateAccessToken(refreshToken.User, refreshToken.id, roleNames, permissionValues);
 
             // Sinh Refresh Token
             refreshToken.expires_at = DateTime.UtcNow.AddDays(JwtHelper.RefreshTokenExpiryDays);
@@ -47,8 +50,6 @@ namespace TruyenCV.Services
                 .Where(permission => permission.deleted_at == null && permission.revoked_at < DateTime.UtcNow)
                 .Select(permission => permission.permissions);
 
-            var accessToken = JwtHelper.GenerateAccessToken(user, roleNames, permissionValues);
-
             // Sinh Refresh Token
             var refreshTokenValue = JwtHelper.GenerateRefreshToken();
             var refreshToken = new RefreshToken
@@ -57,6 +58,8 @@ namespace TruyenCV.Services
                 user_id = user.id,
                 expires_at = DateTime.UtcNow.AddDays(JwtHelper.RefreshTokenExpiryDays),
             };
+
+            var accessToken = JwtHelper.GenerateAccessToken(user, refreshToken.id, roleNames, permissionValues);
 
             _context.RefreshTokens.Add(refreshToken);
             await _context.SaveChangesAsync();
@@ -67,6 +70,7 @@ namespace TruyenCV.Services
         public async Task<(string accessToken, string refreshToken)?> RefreshTokenAsync(string refreshTokenValue)
         {
             var refreshToken = await _context.RefreshTokens
+                .AsNoTracking()
                 .AsSplitQuery()
                 .Where(rt => rt.token == refreshTokenValue)
                 .Include(rt => rt.User)
@@ -100,7 +104,10 @@ namespace TruyenCV.Services
                 return false;
 
             refreshToken.revoked_at = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            await Task.WhenAll(_cache.SetStringAsync($"JWT_Banned:{refreshToken.id}", refreshToken.id.ToString(), new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(JwtHelper.AccessTokenExpiryMinutes)
+            }), _context.SaveChangesAsync());
             return true;
         }
 
@@ -119,6 +126,10 @@ namespace TruyenCV.Services
             foreach (var token in userTokens)
             {
                 token.revoked_at = DateTime.UtcNow;
+                await _cache.SetStringAsync($"JWT_Banned:{token.id}", token.id.ToString(), new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(JwtHelper.AccessTokenExpiryMinutes)
+                });
             }
 
             if (userTokens.Count > 0)

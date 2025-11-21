@@ -21,4 +21,8 @@ public static partial class Extensions
     {
         return User.FindAll("Permissions").Select(c => c.Value);
     }
+    public static string GetRefreshTokenId(this ClaimsPrincipal User)
+    {
+        return User.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? string.Empty;
+    }
 }

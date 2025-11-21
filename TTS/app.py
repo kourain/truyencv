@@ -9,10 +9,11 @@ from pathlib import Path
 import torch
 import torchaudio
 from fastapi import FastAPI, Form, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from starlette.background import BackgroundTask
 from starlette.concurrency import run_in_threadpool
 from underthesea import sent_tokenize,text_normalize
+import numpy as np
 from unidecode import unidecode
 from vinorm import TTSnorm
 
@@ -48,14 +49,19 @@ def _load_model() -> Xtts:
         config, checkpoint_dir=MODEL_DIR, use_deepspeed=False
     )
     if torch.cuda.is_available():
+        _clear_gpu_cache()
         XTTS_MODEL.cuda()
-
-    XTTS_MODEL.eval()
-
-    if torch.cuda.is_available():
-        XTTS_MODEL.cuda()  # Chuyển mô hình sang GPU để suy luận
+        torch.backends.cuda.matmul.allow_tf32 = True  # Allow TF32 on Ampere
+        torch.backends.cudnn.allow_tf32 = True
+        # torch.backends.cudnn.benchmark = True # Enable cudnn autotuner
+        try:
+            torch.set_float32_matmul_precision("high")
+        except AttributeError:
+            pass # Old pytorch versions
     else:
         raise RuntimeError("Không phát hiện được GPU. Hãy kiểm tra CUDA driver.")
+
+    XTTS_MODEL.eval()
 
     return XTTS_MODEL
 
@@ -141,25 +147,26 @@ def _infer(
     speaker_embedding = conditioning[1]
 
     wav_chunks = []
-    for sentence in sentences:
-        chunk = model.inference(  # type: ignore[call-arg]
-            text=sentence,
-            language=LANGUAGE,
-            gpt_cond_latent=gpt_cond_latent,
-            speaker_embedding=speaker_embedding,
-            temperature=0.3,
-            length_penalty=1.0,
-            repetition_penalty=10.0,
-            top_k=30,
-            top_p=0.85,
-            enable_text_splitting=True,
-        )
+    with torch.inference_mode():
+        for sentence in sentences:
+            chunk = model.inference(  # type: ignore[call-arg]
+                text=sentence,
+                language=LANGUAGE,
+                gpt_cond_latent=gpt_cond_latent,
+                speaker_embedding=speaker_embedding,
+                temperature=0.3,
+                length_penalty=1.0,
+                repetition_penalty=10.0,
+                top_k=30,
+                top_p=0.85,
+                enable_text_splitting=True,
+            )
 
-        keep_len = _calculate_keep_len(sentence, LANGUAGE)
-        audio_tensor = torch.from_numpy(chunk["wav"]).float()
-        if keep_len > 0:
-            audio_tensor = audio_tensor[:keep_len]
-        wav_chunks.append(audio_tensor)
+            keep_len = _calculate_keep_len(sentence, LANGUAGE)
+            audio_tensor = torch.from_numpy(chunk["wav"]).float()
+            if keep_len > 0:
+                audio_tensor = audio_tensor[:keep_len]
+            wav_chunks.append(audio_tensor)
 
     audio = torch.cat(wav_chunks).unsqueeze(0)
     if output_name:
@@ -176,6 +183,69 @@ def _cleanup_file(path: str) -> None:
         os.unlink(path)
     except FileNotFoundError:
         pass
+
+
+def _wav_postprocess(wav: torch.Tensor) -> np.ndarray:
+    if isinstance(wav, list):
+        wav = torch.cat(wav, dim=0)
+    wav_np = wav.clone().detach().cpu().numpy()
+    wav_np = np.clip(wav_np, -1, 1)
+    wav_np = (wav_np * 32767).astype(np.int16)
+    return wav_np
+
+
+async def _stream_infer(
+    text: str,
+    reference_path: Path,
+    normalize_text: bool,
+    chunk_size: int = 20,
+):
+    model = XTTS_MODEL
+    if model is None:
+        raise RuntimeError("Mô hình chưa được khởi tạo")
+
+    if normalize_text:
+        text = _normalize_text(text)
+
+    if not text.strip():
+        raise ValueError("Nội dung văn bản trống sau khi xử lý.")
+
+    gpt_cond_len = int(getattr(model.config, "gpt_cond_len", 0)) or 0
+    max_ref_len = int(getattr(model.config, "max_ref_len", 0)) or 0
+    sound_norm_refs = bool(getattr(model.config, "sound_norm_refs", True))
+
+    conditioning = await run_in_threadpool(
+        model.get_conditioning_latents,
+        audio_path=str(reference_path),
+        gpt_cond_len=gpt_cond_len,
+        max_ref_length=max_ref_len,
+        sound_norm_refs=sound_norm_refs,
+    )
+
+    gpt_cond_latent = conditioning[0]
+    speaker_embedding = conditioning[1]
+
+    def _generate_stream():
+        with torch.inference_mode():
+            streamer = model.inference_stream(
+                text=text,
+                language=LANGUAGE,
+                gpt_cond_latent=gpt_cond_latent,
+                speaker_embedding=speaker_embedding,
+                stream_chunk_size=chunk_size,
+                enable_text_splitting=True,
+                temperature=0.3,
+                length_penalty=1.0,
+                repetition_penalty=10.0,
+                top_k=30,
+                top_p=0.85,
+            )
+
+            for chunk in streamer:
+                processed_chunk = _wav_postprocess(chunk)
+                yield processed_chunk.tobytes()
+
+    return _generate_stream()
 
 
 @asynccontextmanager
@@ -196,6 +266,39 @@ async def list_sounds() -> list[str]:
         f.name for f in voices_path.iterdir() if f.is_file() and f.suffix.lower() == ".wav"
     ]
     return sound_files
+
+@app.post("/tts/stream")
+async def synthesize_stream(
+    text: str = Form(..., description="Văn bản cần đọc"),
+    normalize: bool = Form(True, description="Chuẩn hóa tiếng Việt trước khi đọc"),
+    reference_audio: str = Form(..., description="Tên tệp WAV có sẵn trong thư mục voices"),
+    chunk_size: int = Form(20, description="Kích thước chunk cho streaming"),
+):
+    if not reference_audio.strip():
+        raise HTTPException(status_code=400, detail="Thiếu tên tệp mẫu giọng nói")
+
+    reference_path = Path(VOICES_DIR) / reference_audio.strip()
+    if not reference_path.suffix:
+        reference_path = reference_path.with_suffix(".wav")
+    if not reference_path.exists():
+        raise HTTPException(status_code=400, detail="Không tìm thấy tệp mẫu trong thư mục voices")
+
+    stream_generator = await _stream_infer(
+        text,
+        reference_path,
+        normalize,
+        chunk_size,
+    )
+
+    return StreamingResponse(
+        stream_generator,
+        media_type="audio/wav",
+        headers={
+            "Content-Disposition": f'inline; filename="stream.wav"',
+            "Cache-Control": "no-cache",
+        },
+    )
+
 
 @app.post("/tts")
 async def synthesize(
@@ -218,7 +321,7 @@ async def synthesize(
         text,
         reference_path,
         normalize,
-        output_name,
+        f"{output_name}_{reference_audio}",
     )
 
     background_task = BackgroundTask(_cleanup_file, output_path)
