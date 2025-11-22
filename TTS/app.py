@@ -15,18 +15,16 @@ from starlette.concurrency import run_in_threadpool
 from underthesea import sent_tokenize,text_normalize
 import numpy as np
 from unidecode import unidecode
-from vinorm import TTSnorm
-
+import dotenv
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
-
-
 APP_TITLE = "viXTTS FastAPI"
 SUMMARY = "REST API for Vietnamese XTTS inference (GPU-enabled)."
 
-MODEL_DIR = "/home/kourain/truyencv/TTS/models"
-VOICES_DIR = "/home/kourain/truyencv/TTS/voices"
-OUTPUT_DIR = "/home/kourain/truyencv/TTS/outputs"
+dotenv.load_dotenv()
+MODEL_DIR = os.getenv("MODEL_DIR", "/home/kourain/truyencv/TTS/models")
+VOICES_DIR = os.getenv("VOICES_DIR", "/home/kourain/truyencv/TTS/voices")
+OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/home/kourain/truyencv/TTS/outputs")
 LANGUAGE = "vi"
 REQUIRED_MODEL_FILES = {"model.pth", "config.json", "vocab.json"}
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -294,7 +292,7 @@ async def synthesize_stream(
         stream_generator,
         media_type="audio/wav",
         headers={
-            "Content-Disposition": f'inline; filename="stream.wav"',
+            "Content-Disposition": 'inline; filename="stream.wav"',
             "Cache-Control": "no-cache",
         },
     )
