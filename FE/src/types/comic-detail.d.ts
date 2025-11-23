@@ -33,6 +33,13 @@ interface ComicDetailDiscussion {
   created_at: string;
 }
 
+interface ComicDetailDiscussionResponse {
+  id: string;
+  user_display_name: string;
+  message: string;
+  created_at: string;
+}
+
 interface ComicDetailRelatedComic {
   id: string;
   slug: string;

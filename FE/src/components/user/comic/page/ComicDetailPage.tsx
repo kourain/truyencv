@@ -22,7 +22,7 @@ const ComicDetailPage = () => {
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-10">
-      <HeroSection comic={data?.comic} isLoading={isLoading} />
+      <HeroSection comic={data?.comic} slug={slug} isLoading={isLoading} />
 
       <AdsBanner advertisement={data?.advertisements?.primary} variant="primary" isLoading={isLoading} />
 

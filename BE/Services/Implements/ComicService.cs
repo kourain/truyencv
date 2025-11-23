@@ -24,6 +24,7 @@ public class ComicService : IComicService
     private readonly IComicCommentRepository _comicCommentRepository;
     private readonly IComicHaveCategoryRepository _comicHaveCategoryRepository;
     private readonly IComicCategoryRepository _comicCategoryRepository;
+    private readonly IUserComicUnlockHistoryRepository _comicUnlockHistoryRepository;
 
     public ComicService(
         IComicRepository comicRepository,
@@ -34,7 +35,8 @@ public class ComicService : IComicService
         IComicRecommendRepository comicRecommendRepository,
         IComicCommentRepository comicCommentRepository,
         IComicHaveCategoryRepository comicHaveCategoryRepository,
-        IComicCategoryRepository comicCategoryRepository)
+        IComicCategoryRepository comicCategoryRepository,
+        IUserComicUnlockHistoryRepository comicUnlockHistoryRepository)
     {
         _comicRepository = comicRepository;
         _redisCache = redisCache;
@@ -45,6 +47,7 @@ public class ComicService : IComicService
         _comicCommentRepository = comicCommentRepository;
         _comicHaveCategoryRepository = comicHaveCategoryRepository;
         _comicCategoryRepository = comicCategoryRepository;
+        _comicUnlockHistoryRepository = comicUnlockHistoryRepository;
     }
 
     public async Task<ComicResponse?> GetComicByIdAsync(long id)
@@ -135,11 +138,6 @@ public class ComicService : IComicService
         var commentsTask = await _comicCommentRepository.GetByComicIdAsync(comic.id);
         var recommendationsTask = await _comicRecommendRepository.GetByComicAsync(comic.id, 12);
         var relatedTask = await _comicRepository.GetByAuthorAsync(comic.author);
-        var userHistoryTask = userId.HasValue
-            ? _readHistoryRepository.GetByUserAndComicAsync(userId.Value, comic.id)
-            : Task.FromResult<UserComicReadHistory?>(null);
-
-
         var chapterList = chaptersTask
             .Where(chapter => chapter.deleted_at == null)
             .OrderByDescending(chapter => chapter.chapter)
@@ -215,25 +213,7 @@ public class ComicService : IComicService
             })
             .ToList();
 
-        var userHistory = await userHistoryTask;
-        int? userLastReadChapter = null;
-        if (userHistory != null)
-        {
-            userLastReadChapter = userHistory.ComicChapter?.chapter;
-            if (!userLastReadChapter.HasValue)
-            {
-                var chapterFromCache = chapterList.FirstOrDefault(chapter => chapter.id == userHistory.chapter_id);
-                if (chapterFromCache != null)
-                {
-                    userLastReadChapter = chapterFromCache.chapter;
-                }
-                else
-                {
-                    var chapterEntity = await _comicChapterRepository.GetByIdAsync(userHistory.chapter_id);
-                    userLastReadChapter = chapterEntity?.chapter;
-                }
-            }
-        }
+        var userLastReadChapter = await ResolveUserLastReadChapterAsync(userId, comic.id, chapterList);
 
         var categoryResponses = comic.ComicHaveCategories?
             .Where(relation => relation.ComicCategory != null)
@@ -274,6 +254,73 @@ public class ComicService : IComicService
             reviews = reviews,
             discussions = discussions,
             highlights = highlights
+        };
+    }
+
+    public async Task<ComicChaptersListResponse?> GetComicChaptersBySlugAsync(string slug, long? userId = null)
+    {
+        var normalizedSlug = slug?.Trim().ToLower();
+        if (string.IsNullOrWhiteSpace(normalizedSlug))
+        {
+            throw new UserRequestException("Slug truyện không hợp lệ");
+        }
+
+        var comic = await _comicRepository.GetBySlugAsync(normalizedSlug);
+        if (comic == null || comic.deleted_at != null)
+        {
+            return null;
+        }
+
+        var chapterEntities = (await _comicChapterRepository.GetByComicIdAsync(comic.id))
+            .Where(chapter => chapter.deleted_at == null)
+            .OrderBy(chapter => chapter.chapter)
+            .ThenBy(chapter => chapter.id)
+            .ToList();
+
+        var currentUtc = DateTime.UtcNow;
+        var unlockedChapterIds = new HashSet<long>();
+        if (userId.HasValue)
+        {
+            var unlockHistories = await _comicUnlockHistoryRepository.GetByUserIdAsync(userId.Value) ?? Enumerable.Empty<UserComicUnlockHistory>();
+            unlockedChapterIds = unlockHistories
+                .Where(history => history.comic_id == comic.id)
+                .Select(history => history.comic_chapter_id)
+                .ToHashSet();
+        }
+
+        var chapterResponses = chapterEntities
+            .Select(chapter =>
+            {
+                var requireKey = chapter.key_require > 0 && (!chapter.key_require_until.HasValue || currentUtc <= chapter.key_require_until.Value);
+                var unlocked = requireKey && unlockedChapterIds.Contains(chapter.id);
+                return new ComicChapterListItemResponse
+                {
+                    id = chapter._id,
+                    chapter = chapter.chapter,
+                    title = BuildChapterTitle(chapter.chapter),
+                    updated_at = chapter.updated_at,
+                    is_locked = requireKey,
+                    key_require = chapter.key_require,
+                    is_unlocked = unlocked
+                };
+            })
+            .ToList();
+
+        var userLastReadChapter = await ResolveUserLastReadChapterAsync(userId, comic.id, chapterEntities);
+
+        return new ComicChaptersListResponse
+        {
+            comic = new ComicChapterListComicResponse
+            {
+                id = comic._id,
+                slug = comic.slug,
+                title = comic.name,
+                author_name = comic.author,
+                cover_url = comic.cover_url
+            },
+            chapters = chapterResponses,
+            total_chapters = chapterResponses.Count,
+            user_last_read_chapter = userLastReadChapter
         };
     }
 
@@ -679,6 +726,34 @@ public class ComicService : IComicService
             })
             .Take(limit)
             .ToList();
+    }
+
+    private async Task<int?> ResolveUserLastReadChapterAsync(long? userId, long comicId, IReadOnlyCollection<ComicChapter> cachedChapters)
+    {
+        if (!userId.HasValue)
+        {
+            return null;
+        }
+
+        var history = await _readHistoryRepository.GetByUserAndComicAsync(userId.Value, comicId);
+        if (history == null)
+        {
+            return null;
+        }
+
+        if (history.ComicChapter?.chapter != null)
+        {
+            return history.ComicChapter.chapter;
+        }
+
+        var chapterFromCache = cachedChapters.FirstOrDefault(chapter => chapter.id == history.chapter_id);
+        if (chapterFromCache != null)
+        {
+            return chapterFromCache.chapter;
+        }
+
+        var chapterEntity = await _comicChapterRepository.GetByIdAsync(history.chapter_id);
+        return chapterEntity?.chapter;
     }
 
     private async Task<IReadOnlyList<UserHomeComicUpdateResponse>> BuildLatestUpdatesAsync(int limit)

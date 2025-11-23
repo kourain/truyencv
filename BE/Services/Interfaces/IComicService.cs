@@ -37,6 +37,13 @@ public interface IComicService
 	Task<ComicDetailResponse?> GetComicDetailBySlugAsync(string slug, long? userId = null);
 
 	/// <summary>
+	/// Lấy danh sách chương theo slug truyện
+	/// </summary>
+	/// <param name="slug">Slug của comic</param>
+	/// <param name="userId">ID người dùng để xác định chương đã đọc</param>
+	Task<ComicChaptersListResponse?> GetComicChaptersBySlugAsync(string slug, long? userId = null);
+
+	/// <summary>
 	/// Tìm kiếm comic
 	/// </summary>
 	/// <param name="keyword">Từ khóa tìm kiếm</param>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { BookmarkPlus, BookOpen, ListTree, Star } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -8,10 +9,11 @@ import { formatNumber } from "@helpers/format";
 
 interface HeroSectionProps {
   comic?: ComicDetailResponse["comic"];
+  slug?: string;
   isLoading?: boolean;
 }
 
-const HeroSection = ({ comic, isLoading = false }: HeroSectionProps) => {
+const HeroSection = ({ comic, slug, isLoading = false }: HeroSectionProps) => {
   if (isLoading) {
     return (
       <section className="grid gap-8 rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg lg:grid-cols-[320px_1fr] lg:p-8">
@@ -42,7 +44,7 @@ const HeroSection = ({ comic, isLoading = false }: HeroSectionProps) => {
   // if (!comic) {
   //   return null;
   // }
-  console.log(comic);
+  const chaptersHref = slug ? `/user/comic/${slug}/chapters` : null;
   const ratingDescriptor = `${comic?.rate.toFixed(1)}/5 (${formatNumber(comic?.rate_count || 0)} đánh giá)`;
 
   return (
@@ -112,13 +114,24 @@ const HeroSection = ({ comic, isLoading = false }: HeroSectionProps) => {
             <BookmarkPlus className="h-4 w-4" />
             Đánh dấu
           </button>
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 rounded-full border border-surface-muted/60 bg-surface px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:border-primary/50"
-          >
-            <ListTree className="h-4 w-4" />
-            Mục lục
-          </button>
+          {chaptersHref ? (
+            <Link
+              href={chaptersHref}
+              className="flex items-center justify-center gap-2 rounded-full border border-surface-muted/60 bg-surface px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:border-primary/50"
+            >
+              <ListTree className="h-4 w-4" />
+              Mục lục
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-full border border-surface-muted/60 bg-surface px-5 py-3 text-sm font-semibold text-primary-foreground opacity-60"
+              disabled
+            >
+              <ListTree className="h-4 w-4" />
+              Mục lục
+            </button>
+          )}
         </div>
       </div>
     </section>

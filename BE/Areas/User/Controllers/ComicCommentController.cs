@@ -40,7 +40,7 @@ public sealed class ComicCommentController : ControllerBase
             return Unauthorized(new { message = "Không thể xác định người dùng" });
         }
 
-        // Override user_id from token
+        // Set user_id from token if not provided
         request.user_id = userId.Value.ToString();
 
         try

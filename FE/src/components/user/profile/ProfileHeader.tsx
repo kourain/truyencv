@@ -56,7 +56,7 @@ const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
           {isBanned && (
             <span className="inline-flex items-center gap-1 rounded-full border border-red-500/60 bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-200">
               <Ban className="h-3.5 w-3.5" />
-              Đang bị khóa
+              Tài khoản chưa được xác thực email
             </span>
           )}
         </div>

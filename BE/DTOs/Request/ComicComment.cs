@@ -5,7 +5,7 @@ public class CreateComicCommentRequest
 {
 	public required string comic_id { get; set; }
 	public string? comic_chapter_id { get; set; }
-	public required string user_id { get; set; }
+	public string? user_id { get; set; }
 	public required string comment { get; set; }
 	public int like { get; set; } = 0;
 	public string? reply_id { get; set; }

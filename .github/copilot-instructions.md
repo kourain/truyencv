@@ -1,4 +1,4 @@
-# System Instructions for CMS Base API
+# System Instructions for AI Coding Assistant
 
 The USER will send you requests, which you must always prioritize addressing. Along with each USER request, we will attach additional metadata about their current state, such as what files they have open and where their cursor is.
 This information may or may not be relevant to the coding task, it is up for you to decide.
@@ -133,7 +133,7 @@ You will maintain a plan of action for the user's project. This plan will be upd
 13. Do not expose secrets; use environment variables instead.
 14. If the project uses **Redux Toolkit**, before creating a new function or feature, **check if an existing function/state already covers that logic**. For example, look for utilities like `useMutationWithGlobalLoading` or `useDeleteGalleryFilesMutation` in `/lib` or `/common`. If a suitable function exists, **reuse it** instead of creating a new one.
 15. Output must include: summary, changed files, technical choice, assumptions, next steps.
- 
+16. Đối với tệp .tsx, không viết tất cả mọi thứ vào 1 tệp, hãy phân chia code thành các tệp nhỏ hơn nếu cần thiết.
 ---
  
 **Code Style**
@@ -145,23 +145,12 @@ You will maintain a plan of action for the user's project. This plan will be upd
 * Prevent unnecessary renders, prefer lazy load and code-splitting.
 * Handle errors clearly.
 * Code must look **professional**, be easy to read, maintain, and extend.
- 
+* Do not use Mock Data.
 ---
  
 **Response Template**
  
 **[Summary]**: <1-sentence goal>
- 
-**[Files changed]**:
- 
-* `path/to/file.tsx`
- 
-**[Code]**:
- 
-```tsx
-// File: path/to/file.tsx
-<code without comments>
-```
  
 **[Technical choice]**: <analysis, recommendation>
  
@@ -179,7 +168,7 @@ Luôn luôn trả lời bằng tiếng Việt
 
 # Cấm
 
-Nghiêm cấm tự ý tạo file mới có cùng chức năng với 1 file cũ hoặc là bản nâng cấm của một file cũ, Hãy chỉnh sửa trực tiếp lên file đó.
+Nghiêm cấm tự ý tạo file mới có cùng chức năng với 1 file cũ hoặc là bản nâng cấp của một file cũ, Hãy chỉnh sửa trực tiếp lên file đó.
 Nghiêm cấm tự ý tạo file mới hoặc chỉnh sửa file không thuộc phạm vi của bạn. Chỉ được phép chỉnh sửa các file được giao.
 Nghiêm cấm tự ý tạo file *.md. Hãy hỏi tôi trước khi tạo.
 Nghiêm cấm tự ý hardcode.
@@ -230,15 +219,6 @@ Nghiêm cấm tự ý hardcode.
 Controllers nằm trong `Areas/{Area}/Controllers/{Controller}.cs` CHỈ GỒM 1 TỆP DUY NHẤT:
 ĐỐI VỚI CÁC REQUEST CÓ CÙNG MỘT CHỨC NĂNG VÀ KHÔNG YÊU CẦU QUYỀN HẠN RIÊNG BIỆT, SỬ DỤNG CÙNG 1 CONTROLLER VỚI CÁC HTTP METHODS KHÁC NHAU NẰM TRONG "/Controllers/{Controller}.cs" (không tồn tại trong bất kỳ area nào)
 Luôn sử dụng snake_case cho JSON properties trong DTOs và schema cơ sở dữ liệu.
-Tất cả các lớp controller đều là partial và được tổ chức như sau:
-```
-Areas/Admin/Controllers/UserController.cs
-├── Get         # GET methods
-├── Create      # POST methods
-├── Update      # PUT methods
-├── Patch      # PATCH methods
-└── Delete      # DELETE methods
-```
 Ví dụ với `UserController` trong `Admin` area:
 ```cs
 [ApiController]
@@ -248,12 +228,9 @@ Ví dụ với `UserController` trong `Admin` area:
 	public class UserController : ControllerBase
 	{
 		private readonly Services.IUserService _userService;
-    private readonly IDistributedCache RedisCache;
-
-		public UserController(Services.IUserService userService, IDistributedCache cache)
+		public UserController(Services.IUserService userService)
 		{
 			_userService = userService;
-			RedisCache = cache;
 		}
 
 		[HttpGet]
@@ -309,8 +286,7 @@ dotnet watch        # Development với hot reload
 dotnet run          # Chạy bình thường
 ```
 
-**Dev URLs**: http://localhost:44344, https://localhost:7287
-**Swagger**: Có sẵn trong môi trường development tại `/swagger`
+**BE Dev URLs**: http://localhost:44344
 
 ### Migrations Cơ Sở Dữ Liệu
 
@@ -343,7 +319,6 @@ Luôn sử dụng `namespace TruyenCV;`
 ## Vấn Đề Thường Gặp & Giải Pháp
 
 **Redis DI Issues**: Đảm bảo `IDistributedCache` được đăng ký - fallback về `AddDistributedMemoryCache()`
-**CORS Problems**: Kiểm tra thứ tự middleware - CORS trước UseHttpsRedirection()
 **EF Type Mismatches**: Sử dụng returns kiểu `IEnumerable<T>`, chuyển đổi kiểu rõ ràng cho Redis cache methods
 **Cache Serialization**: Thêm `[JsonIgnore]` vào navigation properties để tránh circular references
 **Json**: Luôn sử dụng snake_case cho JSON properties trong DTOs và schema cơ sở dữ liệu. Luôn sử dụng Newtonsoft.Json thay cho thư viện mặc định System.Text.Json
