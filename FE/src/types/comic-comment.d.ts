@@ -1,7 +1,6 @@
 interface CreateComicCommentRequest {
 	comic_id: string;
 	comic_chapter_id?: string | null;
-	user_id: string;
 	comment: string;
 	like?: number;
 	reply_id?: string | null;

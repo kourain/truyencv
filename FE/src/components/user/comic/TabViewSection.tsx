@@ -8,7 +8,7 @@ import HighlightsPanel from "@components/user/comic/tabs/HighlightsPanel";
 
 interface TabViewSectionProps {
   reviews?: ComicDetailReview[];
-  discussions?: ComicDetailDiscussion[];
+  discussions?: ComicDetailDiscussionResponse[];
   highlights?: string[];
   comicId?: string;
   slug?: string;

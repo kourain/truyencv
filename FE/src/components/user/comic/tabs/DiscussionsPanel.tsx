@@ -3,7 +3,7 @@
 import { formatRelativeTime } from "@helpers/format";
 
 interface DiscussionsPanelProps {
-  discussions?: ComicDetailDiscussion[];
+  discussions?: ComicDetailDiscussionResponse[];
   isLoading?: boolean;
   comicId?: string;
   slug?: string;
@@ -12,16 +12,22 @@ interface DiscussionsPanelProps {
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { createUserComicComment } from "@services/user/comic-comment.service";
+import { useToast } from "@components/providers/ToastProvider";
 
 const DiscussionsPanel = ({ discussions, isLoading = false, comicId, slug }: DiscussionsPanelProps) => {
   const [message, setMessage] = useState("");
   const queryClient = useQueryClient();
+  const Toast = useToast()
   const mutation = useMutation({
-    mutationFn: (payload: Omit<CreateComicCommentRequest, "user_id">) => createUserComicComment(payload),
+    mutationFn: (payload: CreateComicCommentRequest) => createUserComicComment(payload),
     onSuccess: () => {
       // refetch comic detail to get new discussions
       if (slug) queryClient.invalidateQueries({ queryKey: ["user-comic-detail", slug] });
       setMessage("");
+    },
+    onError: (error) => {
+      Toast.pushToast({ title: "Lỗi", description: "Lỗi khi tạo bình luận", variant: "error" });
+      console.log(error);
     },
   });
   if (isLoading) {
@@ -53,7 +59,7 @@ const DiscussionsPanel = ({ discussions, isLoading = false, comicId, slug }: Dis
         <div className="flex justify-end">
           <button
             type="submit"
-            disabled={(mutation as any).isLoading || !message.trim() || !comicId}
+            disabled={mutation.isPending || !message.trim() || !comicId}
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
             Gửi bình luận

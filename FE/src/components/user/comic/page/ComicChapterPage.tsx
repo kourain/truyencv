@@ -343,7 +343,11 @@ const ComicChapterPage = () => {
 
         <section className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-6 shadow-sm">
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-semibold text-primary-foreground">{comicTitle}</h1>
+            <Link href={`/user/comic/${slug}`} className="inline-block">
+              <h1 className="text-2xl font-semibold text-primary-foreground hover:text-primary transition">
+                {comicTitle}
+              </h1>
+            </Link>
             <p className="text-sm text-surface-foreground/70">Tác giả: {authorName || "Đang cập nhật"}</p>
           </div>
 
@@ -353,7 +357,7 @@ const ComicChapterPage = () => {
               Chương {chapterNumber}: {displayChapterTitle}
             </span>
             <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
-            <NavButton href={`/user/comic/${slug}`} label="Mục lục" />
+            <NavButton href={`/user/comic/${slug}/chapters`} label="Mục lục" />
             <button className="rounded-full border border-primary px-4 py-1 text-primary transition hover:bg-primary/10">
               Đánh dấu bookmark
             </button>
@@ -533,7 +537,7 @@ const ComicChapterPage = () => {
           <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
         </section>
 
-        <DiscussionsPanel discussions={detailData?.discussions} isLoading={isLoading} />
+        <DiscussionsPanel discussions={detailData?.discussions} isLoading={isLoading} slug={slug} comicId={comicId}/>
       </main>
 
       {isConfirmOpen && (

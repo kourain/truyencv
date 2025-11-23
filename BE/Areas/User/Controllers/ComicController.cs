@@ -53,6 +53,26 @@ public sealed class ComicController : ControllerBase
         var related = await _comicService.GetComicsByEmbeddedBySlugAsync(slug);
         return Ok(related);
     }
+
+    [HttpGet("{slug}/chapters")]
+    public async Task<IActionResult> GetChapterList(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return BadRequest(new { message = "Slug truyện không hợp lệ" });
+        }
+
+        slug = slug.ToLower();
+        var userId = User.GetUserId();
+        var result = await _comicService.GetComicChaptersBySlugAsync(slug, userId);
+        if (result == null)
+        {
+            return NotFound(new { message = "Không tìm thấy truyện" });
+        }
+
+        return Ok(result);
+    }
+
     [HttpGet("{slug}/chapters/{chapterNumber:int}")]
     public async Task<IActionResult> GetChapter(string slug, int chapterNumber)
     {
