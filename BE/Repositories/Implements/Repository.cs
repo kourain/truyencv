@@ -29,7 +29,14 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
             DefaultCacheMinutes
         ) ?? [];
     }
-
+    public virtual async Task<T?> GetByIdAsync(long id)
+    {
+        return await _redisCache.GetFromRedisAsync<T>(
+            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(e => e.id == id),
+            id,
+            DefaultCacheMinutes
+        );
+    }
     public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
     {
         // Đối với các tìm kiếm động, không sử dụng cache

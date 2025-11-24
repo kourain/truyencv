@@ -25,15 +25,6 @@ public class UserRepository : Repository<User>, IUserRepository
         );
     }
 
-    public async Task<User?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<User>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.id == id),
-            id,
-			DefaultCacheMinutes
-		);
-    }
-
     public async Task<IEnumerable<User>> GetRecentUsersAsync(int limit)
     {
         limit = Math.Clamp(limit, 1, 50);

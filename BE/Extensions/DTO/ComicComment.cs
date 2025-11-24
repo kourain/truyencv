@@ -18,9 +18,7 @@ public static partial class Extensions
 			like = request.like,
 			reply_id = request.reply_id.ToNullableSnowflakeId(nameof(request.reply_id)),
 			is_rate = request.is_rate,
-			rate_star = request.rate_star,
-			created_at = DateTime.UtcNow,
-			updated_at = DateTime.UtcNow
+			rate_star = request.rate_star
 		};
 	}
 
@@ -32,6 +30,8 @@ public static partial class Extensions
 			id = commentEntity._id,
 			comic_id = commentEntity.comic_id.ToString(),
 			comic_chapter_id = commentEntity.comic_chapter_id?.ToString(),
+			comic_name = null,
+			chapter_number = null,
 			user_id = commentEntity.user_id.ToString(),
 			comment = commentEntity.comment,
 			like = commentEntity.like,
@@ -55,6 +55,5 @@ public static partial class Extensions
 		commentEntity.reply_id = request.reply_id.ToNullableSnowflakeId(nameof(request.reply_id));
 		commentEntity.is_rate = request.is_rate;
 		commentEntity.rate_star = request.rate_star;
-		commentEntity.updated_at = DateTime.UtcNow;
 	}
 }

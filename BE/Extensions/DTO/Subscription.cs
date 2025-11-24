@@ -17,9 +17,7 @@ public static partial class Extensions
             price_coin = request.price_coin,
             duration_day = request.duration_day,
             is_active = request.is_active,
-            ticket_added = request.ticket_added,
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
+            ticket_added = request.ticket_added
         };
     }
 
@@ -32,7 +30,6 @@ public static partial class Extensions
         subscription.duration_day = request.duration_day;
         subscription.is_active = request.is_active;
         subscription.ticket_added = request.ticket_added;
-        subscription.updated_at = DateTime.UtcNow;
         return subscription;
     }
 

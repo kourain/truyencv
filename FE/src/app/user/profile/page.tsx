@@ -370,12 +370,19 @@ const UserProfilePage = () => {
       <ul className="space-y-3">
         {entries.map((item) => {
           const meta = historyStatusStyles[item.status as HistoryStatus] ?? defaultHistoryStatusStyle;
+          const unlockDetails = [
+            item.comic_name,
+            item.chapter_number ? `Chương ${item.chapter_number}` : null,
+          ]
+            .filter((value): value is string => Boolean(value))
+            .join(" · ");
           return (
             <li key={item.id} className="flex flex-col gap-2 rounded-2xl border border-surface-muted/60 bg-surface/80 p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-base font-semibold text-primary-foreground">{formatNumber(item.key)} vé</span>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${meta.className}`}>{meta.label}</span>
               </div>
+              {unlockDetails && <p className="text-sm text-surface-foreground/70">{unlockDetails}</p>}
               {item.note && <p className="text-sm text-surface-foreground/70">{item.note}</p>}
               <p className="text-xs text-surface-foreground/50">
                 {formatRelativeTime(item.created_at)} · {formatDateTime(item.created_at)}
@@ -441,9 +448,13 @@ const UserProfilePage = () => {
         {entries.map((item) => (
           <li key={item.id} className="flex flex-col gap-2 rounded-2xl border border-surface-muted/60 bg-surface/80 p-4">
             <div className="flex flex-wrap items-center gap-2 text-sm text-surface-foreground/70">
-              <span className="font-semibold text-primary-foreground">Truyện #{item.comic_id}</span>
+              <span className="font-semibold text-primary-foreground">{item.comic_name ?? `Truyện #${item.comic_id}`}</span>
               <span className="text-surface-foreground/50">·</span>
-              <span>Chương #{item.chapter_id}</span>
+              <span>
+                {item.chapter_number !== null && item.chapter_number !== undefined
+                  ? `Chương ${item.chapter_number}`
+                  : `Chương #${item.chapter_id}`}
+              </span>
             </div>
             <p className="text-xs text-surface-foreground/50">
               {formatRelativeTime(item.read_at)} · {formatDateTime(item.read_at)}
@@ -470,21 +481,29 @@ const UserProfilePage = () => {
 
     return (
       <ul className="space-y-3">
-        {entries.map((item) => (
-          <li key={item.id} className="flex flex-col gap-2 rounded-2xl border border-surface-muted/60 bg-surface/80 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-surface-foreground/70">
-              <span className="font-semibold text-primary-foreground">Truyện #{item.comic_id}</span>
-              {item.comic_chapter_id && <span className="text-xs text-surface-foreground/50">Chương #{item.comic_chapter_id}</span>}
-            </div>
-            <p className="text-sm text-surface-foreground/80">{item.comment}</p>
-            {item.is_rate && item.rate_star !== null && (
-              <p className="text-xs font-medium text-amber-300">Đã đánh giá {item.rate_star}/5 sao</p>
-            )}
-            <p className="text-xs text-surface-foreground/50">
-              {formatRelativeTime(item.created_at)} · {formatDateTime(item.created_at)}
-            </p>
-          </li>
-        ))}
+        {entries.map((item) => {
+          const commentChapterLabel =
+            item.chapter_number !== null && item.chapter_number !== undefined
+              ? `Chương ${item.chapter_number}`
+              : item.comic_chapter_id
+                ? `Chương #${item.comic_chapter_id}`
+                : null;
+          return (
+            <li key={item.id} className="flex flex-col gap-2 rounded-2xl border border-surface-muted/60 bg-surface/80 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-surface-foreground/70">
+                <span className="font-semibold text-primary-foreground">{item.comic_name ?? `Truyện #${item.comic_id}`}</span>
+                {commentChapterLabel && <span className="text-xs text-surface-foreground/50">{commentChapterLabel}</span>}
+              </div>
+              <p className="text-sm text-surface-foreground/80">{item.comment}</p>
+              {item.is_rate && item.rate_star !== null && (
+                <p className="text-xs font-medium text-amber-300">Đã đánh giá {item.rate_star}/5 sao</p>
+              )}
+              <p className="text-xs text-surface-foreground/50">
+                {formatRelativeTime(item.created_at)} · {formatDateTime(item.created_at)}
+              </p>
+            </li>
+          );
+        })}
       </ul>
     );
   };

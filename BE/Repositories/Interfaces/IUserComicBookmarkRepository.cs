@@ -7,10 +7,6 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public interface IUserComicBookmarkRepository : IRepository<UserComicBookmark>
 {
-    /// <summary>
-    /// Lấy bookmark theo id
-    /// </summary>
-    Task<UserComicBookmark?> GetByIdAsync(long id);
 
     /// <summary>
     /// Lấy bookmark theo user và comic

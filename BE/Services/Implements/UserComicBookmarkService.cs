@@ -86,9 +86,8 @@ public class UserComicBookmarkService : IUserComicBookmarkService
 
         var newValue = (int)comic.bookmark_count + delta;
         comic.bookmark_count = (int)Math.Max(0, newValue);
-        comic.updated_at = DateTime.UtcNow;
 
-    await _comicRepository.UpdateAsync(comic);
+        await _comicRepository.UpdateAsync(comic);
     }
 
     private async Task InvalidateCaches(long userId, long comicId)

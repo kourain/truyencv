@@ -11,15 +11,6 @@ public class ComicReportRepository : Repository<ComicReport>, IComicReportReposi
     {
     }
 
-    public async Task<ComicReport?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<ComicReport>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
-            id,
-            DefaultCacheMinutes
-        );
-    }
-
     public async Task<IEnumerable<ComicReport>> GetByStatusAsync(ReportStatus? status, int offset, int limit)
     {
         offset = Math.Max(offset, 0);

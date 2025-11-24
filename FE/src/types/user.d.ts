@@ -109,6 +109,8 @@ interface UserComicReadHistoryResponse {
 	user_id: string;
 	comic_id: string;
 	chapter_id: string;
+	comic_name?: string | null;
+	chapter_number?: number | null;
 	read_at: string;
 	updated_at: string;
 }

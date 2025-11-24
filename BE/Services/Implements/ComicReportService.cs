@@ -119,7 +119,6 @@ public class ComicReportService : IComicReportService
         if (comic.status != ComicStatus.Banned)
         {
             comic.status = ComicStatus.Banned;
-            comic.updated_at = DateTime.UtcNow;
             await _comicRepository.UpdateAsync(comic);
         }
 
@@ -151,7 +150,6 @@ public class ComicReportService : IComicReportService
         if (!comment.is_hidden)
         {
             comment.is_hidden = true;
-            comment.updated_at = DateTime.UtcNow;
             await _commentRepository.UpdateAsync(comment);
         }
 

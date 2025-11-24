@@ -15,9 +15,7 @@ public static partial class Extensions
 			chapter = request.chapter,
 			content = request.content,
 			key_require = request.key_require ?? 1,
-			key_require_until = request.key_require_until,
-			created_at = DateTime.UtcNow,
-			updated_at = DateTime.UtcNow
+			key_require_until = request.key_require_until
 		};
 	}
 
@@ -51,6 +49,5 @@ public static partial class Extensions
 		{
 			chapter.key_require_until = request.key_require_until;
 		}
-		chapter.updated_at = DateTime.UtcNow;
 	}
 }

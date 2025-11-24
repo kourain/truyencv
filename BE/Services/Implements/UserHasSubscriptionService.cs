@@ -18,6 +18,7 @@ public class UserHasSubscriptionService : IUserHasSubscriptionService
     private readonly IUserUseKeyHistoryRepository _userUseKeyHistoryRepository;
     private readonly AppDataContext _dbcontext;
     private readonly IDistributedCache _redisCache;
+    private const double UserCacheMinutes = 5;
 
     public UserHasSubscriptionService(
         IUserHasSubscriptionRepository userHasSubscriptionRepository,
@@ -88,9 +89,21 @@ public class UserHasSubscriptionService : IUserHasSubscriptionService
             if (ticketAdded > 0)
             {
                 var keyAdded = (long)ticketAdded;
+                var utcNow = DateTime.UtcNow;
+                var affectedRows = await _dbcontext.Users
+                    .Where(dbUser => dbUser.id == user.id)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(dbUser => dbUser.key, dbUser => dbUser.key + keyAdded)
+                        .SetProperty(dbUser => dbUser.updated_at, _ => utcNow));
+
+                if (affectedRows == 0)
+                {
+                    throw new UserRequestException("Không thể cập nhật vé cho người dùng");
+                }
+
                 user.key += keyAdded;
-                user.updated_at = DateTime.UtcNow;
-                await _userRepository.UpdateAsync(user);
+                user.updated_at = utcNow;
+                await _redisCache.AddOrUpdateInRedisAsync(user, UserCacheMinutes);
 
                 var historyRequest = new CreateUserUseKeyHistoryRequest
                 {
@@ -99,7 +112,6 @@ public class UserHasSubscriptionService : IUserHasSubscriptionService
                     status = HistoryStatus.Add,
                     note = $"Nhận vé mở từ gói {subscription.name}"
                 };
-
                 await _userUseKeyHistoryRepository.AddAsync(historyRequest.ToEntity());
                 await _redisCache.RemoveFromRedisAsync<UserUseKeyHistory>($"user:{userId}");
             }

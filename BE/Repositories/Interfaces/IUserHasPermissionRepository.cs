@@ -8,11 +8,6 @@ namespace TruyenCV.Repositories;
 public interface IUserHasPermissionRepository : IRepository<UserHasPermission>
 {
     /// <summary>
-    /// Lấy bản ghi theo id
-    /// </summary>
-    Task<UserHasPermission?> GetByIdAsync(long id);
-
-    /// <summary>
     /// Lấy danh sách permission theo user
     /// </summary>
     Task<IEnumerable<UserHasPermission>> GetByUserIdAsync(long userId);

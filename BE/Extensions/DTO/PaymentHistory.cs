@@ -16,9 +16,7 @@ public static partial class Extensions
             amount_money = request.amount_money,
             payment_method = request.payment_method,
             reference_id = request.reference_id,
-            note = request.note,
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
+            note = request.note
         };
     }
 

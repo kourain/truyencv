@@ -147,7 +147,6 @@ namespace TruyenCV.Services
 
                 if (shouldUpdate)
                 {
-                    user.updated_at = now;
                     await Task.WhenAll(
                         _context.SaveChangesAsync(),
                         _redisCache.AddOrUpdateInRedisAsync(user, user.id),

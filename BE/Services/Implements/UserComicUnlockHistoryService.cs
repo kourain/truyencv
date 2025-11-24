@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
@@ -19,6 +20,7 @@ public class UserComicUnlockHistoryService : IUserComicUnlockHistoryService
     private readonly IUserUseKeyHistoryRepository _userUseKeyHistoryRepository;
     private readonly IDistributedCache _redisCache;
     private readonly AppDataContext _dbcontext;
+    private const double UserCacheMinutes = 5;
     public UserComicUnlockHistoryService(
         IUserComicUnlockHistoryRepository unlockRepository,
         IUserRepository userRepository,
@@ -105,8 +107,21 @@ public class UserComicUnlockHistoryService : IUserComicUnlockHistoryService
                                 throw new UserRequestException("Bạn không đủ chìa khóa để mở khóa chương này");
                             }
 
+                            var utcNow = DateTime.UtcNow;
+                            var affectedRows = await _dbcontext.Users
+                                .Where(dbUser => dbUser.id == user.id && dbUser.key >= keyUsed)
+                                .ExecuteUpdateAsync(setters => setters
+                                    .SetProperty(dbUser => dbUser.key, dbUser => dbUser.key - keyUsed)
+                                    .SetProperty(dbUser => dbUser.updated_at, _ => utcNow));
+
+                            if (affectedRows == 0)
+                            {
+                                throw new UserRequestException("Bạn không đủ chìa khóa để mở khóa chương này");
+                            }
+
                             user.key -= keyUsed;
-                            await _userRepository.UpdateAsync(user);
+                            user.updated_at = utcNow;
+                            await _redisCache.AddOrUpdateInRedisAsync(user, UserCacheMinutes);
 
                             var keyHistoryRequest = new CreateUserUseKeyHistoryRequest
                             {

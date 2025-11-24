@@ -16,13 +16,6 @@ public interface IRefreshTokenRepository : IRepository<RefreshToken>
     Task<RefreshToken?> GetByTokenAsync(string token);
     
     /// <summary>
-    /// Lấy refresh token theo id
-    /// </summary>
-    /// <param name="id">ID của refresh token</param>
-    /// <returns>RefreshToken nếu tìm thấy, null nếu không tìm thấy</returns>
-    Task<RefreshToken?> GetByIdAsync(long id);
-    
-    /// <summary>
     /// Lấy tất cả refresh token của user
     /// </summary>
     /// <param name="userId">ID của user</param>

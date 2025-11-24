@@ -15,9 +15,7 @@ public static partial class Extensions
             comment_id = request.comment_id.ToNullableSnowflakeId(nameof(request.comment_id)),
             reporter_id = reporterId,
             reason = request.reason,
-            status = ReportStatus.Pending,
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
+            status = ReportStatus.Pending
         };
     }
 
@@ -46,6 +44,5 @@ public static partial class Extensions
     public static void UpdateStatus(this ComicReport report, ReportStatus status)
     {
         report.status = status;
-        report.updated_at = DateTime.UtcNow;
     }
 }

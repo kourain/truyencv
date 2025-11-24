@@ -13,15 +13,6 @@ public class UserHasRoleRepository : Repository<UserHasRole>, IUserHasRoleReposi
     {
     }
 
-    public async Task<UserHasRole?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<UserHasRole>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
-            id,
-            DefaultCacheMinutes
-        );
-    }
-
     public async Task<IEnumerable<UserHasRole>> GetByUserIdAsync(long userId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserHasRole>(

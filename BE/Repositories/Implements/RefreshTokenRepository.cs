@@ -24,15 +24,6 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
         );
     }
 
-    public async Task<RefreshToken?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<RefreshToken>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
-            id,
-            DefaultCacheMinutes
-        );
-    }
-
     public async Task<IEnumerable<RefreshToken>> GetByUserIdAsync(long userId)
     {
         return await _redisCache.GetFromRedisAsync<RefreshToken>(

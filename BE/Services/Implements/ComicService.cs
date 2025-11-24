@@ -605,7 +605,7 @@ public class ComicService : IComicService
             {
                 id = $"{comic._id}-{variant}",
                 image_url = fallbackImage,
-                href = $"/comic/{comic.slug}",
+                href = $"/user/comic/{comic.slug}",
                 label = label,
                 description = description
             };

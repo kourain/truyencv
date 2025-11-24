@@ -7,12 +7,6 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public interface IComicCategoryRepository : IRepository<ComicCategory>
 {
-	/// <summary>
-	/// Lấy category theo id
-	/// </summary>
-	/// <param name="id">ID của category</param>
-	/// <returns>Category nếu tìm thấy, null nếu không tìm thấy</returns>
-	Task<ComicCategory?> GetByIdAsync(long id);
 
 	/// <summary>
 	/// Lấy category theo tên
