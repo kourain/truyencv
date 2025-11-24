@@ -1,5 +1,8 @@
 #uv
 uv.lock
+*.pyc
+# vscode
+.vscode
 #winsuft
 .plan
 
