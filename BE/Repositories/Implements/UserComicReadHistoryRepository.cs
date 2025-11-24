@@ -17,15 +17,6 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
     {
     }
 
-    public async Task<UserComicReadHistory?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<UserComicReadHistory>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(h => h.id == id && h.deleted_at == null),
-            id,
-            DefaultCacheMinutes
-        );
-    }
-
     public async Task<UserComicReadHistory?> GetByUserAndComicAsync(long userId, long comicId)
     {
         return await _redisCache.GetFromRedisAsync<UserComicReadHistory>(

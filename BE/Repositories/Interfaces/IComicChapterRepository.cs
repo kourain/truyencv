@@ -8,12 +8,6 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public interface IComicChapterRepository : IRepository<ComicChapter>
 {
-	/// <summary>
-	/// Lấy chapter theo id
-	/// </summary>
-	/// <param name="id">ID của chapter</param>
-	/// <returns>Chapter nếu tìm thấy, null nếu không tìm thấy</returns>
-	Task<ComicChapter?> GetByIdAsync(long id);
 
 	/// <summary>
 	/// Lấy danh sách chapter của một comic

@@ -47,7 +47,7 @@ namespace TruyenCV.BackgroundServices
                                 ),
                                 cancellationToken: stoppingToken
                             );
-                            await _dataContext.SaveChangesAsync();
+                            await _dataContext.SaveChangesAsync(stoppingToken);
                         }
                         catch (Exception ex)
                         {
@@ -78,7 +78,7 @@ namespace TruyenCV.BackgroundServices
                     listSlug.ForEach(c => c.slug = c.name.ToSlug());
                     _dataContext.Comics.UpdateRange(listSlug);
                     await _dataContext.SaveChangesAsync(stoppingToken);
-                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); // Run every minute
+                    await Task.Delay(TimeSpan.FromDays(1), stoppingToken); // Run every minute
                 }
             }
         }

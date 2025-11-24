@@ -9,15 +9,6 @@ public class UserComicRecommendRepository : Repository<UserComicRecommend>, IUse
     {
     }
 
-    public async Task<UserComicRecommend?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<UserComicRecommend>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
-            id,
-            DefaultCacheMinutes
-        );
-    }
-
     public async Task<UserComicRecommend?> GetByUserAndPeriodAsync(long userId, int month, int year)
     {
         return await _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.user_id == userId && r.month == month && r.year == year);

@@ -360,3 +360,4 @@ await context.Users
 - không bao giờ cập nhật toàn bộ entity nếu chỉ cần cập nhật một vài trường, hãy chỉ định rõ các trường cần cập nhật bằng cách sử dụng ExecuteUpdateAsync với SetProperty như ví dụ trên.
 - Không bao giờ sử dụng `.ToList()` hoặc `.ToListAsync()` trừ khi thực sự cần thiết để lấy toàn bộ danh sách vào bộ nhớ. Thay vào đó, hãy sử dụng các phương thức như `FirstOrDefaultAsync()`, `SingleOrDefaultAsync()`, `AnyAsync()`, `CountAsync()`, hoặc `ExecuteUpdateAsync()` để thực hiện các thao tác trực tiếp trên database mà không cần tải toàn bộ dữ liệu về.
 - Không bao giờ cập nhật trường update_at,delete_at,create_at thủ công trong code. Hãy để Entity Framework Core tự động quản lý trường này thông qua các thuộc tính cấu hình trong DbContext.
+- Không sử dụng Task.WhenAll để chạy các truy vấn database song song. Thay vào đó, hãy thực hiện tuần tự từng truy vấn để tránh các vấn đề về kết nối và hiệu suất.

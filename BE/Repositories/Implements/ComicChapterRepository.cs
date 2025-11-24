@@ -15,15 +15,6 @@ public class ComicChapterRepository : Repository<ComicChapter>, IComicChapterRep
 	{
 	}
 
-	public async Task<ComicChapter?> GetByIdAsync(long id)
-	{
-		return await _redisCache.GetFromRedisAsync<ComicChapter>(
-			() => _dbSet.AsNoTracking().FirstOrDefaultAsync(c => c.id == id),
-			id,
-			DefaultCacheMinutes
-		);
-	}
-
 	public async Task<IEnumerable<ComicChapter>> GetByComicIdAsync(long comicId)
 	{
 		return await _redisCache.GetFromRedisAsync<ComicChapter>(

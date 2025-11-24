@@ -16,7 +16,7 @@ public interface IRepository<T> where T : BaseEntity
     /// </summary>
     /// <returns>Danh sách entities</returns>
     Task<IEnumerable<T>> GetAllAsync();
-
+    Task<T?> GetByIdAsync(long id);
     /// <summary>
     /// Lấy entities theo điều kiện
     /// </summary>

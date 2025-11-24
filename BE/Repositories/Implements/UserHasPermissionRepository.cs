@@ -14,15 +14,6 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
     {
     }
 
-    public async Task<UserHasPermission?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<UserHasPermission>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(p => p.id == id && p.deleted_at == null),
-            id,
-            DefaultCacheMinutes
-        );
-    }
-
     public async Task<IEnumerable<UserHasPermission>> GetByUserIdAsync(long userId)
     {
         var result = await _redisCache.GetFromRedisAsync<UserHasPermission>(

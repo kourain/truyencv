@@ -11,15 +11,6 @@ public class ComicRecommendRepository : Repository<ComicRecommend>, IComicRecomm
     {
     }
 
-    public async Task<ComicRecommend?> GetByIdAsync(long id)
-    {
-        return await _redisCache.GetFromRedisAsync<ComicRecommend>(
-            () => _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.id == id),
-            id,
-            DefaultCacheMinutes
-        );
-    }
-
     public async Task<ComicRecommend?> GetByComicAndPeriodAsync(long comicId, int month, int year)
     {
         return await _redisCache.GetFromRedisAsync<ComicRecommend>(

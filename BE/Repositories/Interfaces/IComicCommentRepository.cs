@@ -8,12 +8,6 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public interface IComicCommentRepository : IRepository<ComicComment>
 {
-	/// <summary>
-	/// Lấy comment theo id
-	/// </summary>
-	/// <param name="id">ID của comment</param>
-	/// <returns>Comment nếu tìm thấy, null nếu không tìm thấy</returns>
-	Task<ComicComment?> GetByIdAsync(long id);
 
 	/// <summary>
 	/// Lấy danh sách comment của một comic

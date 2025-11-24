@@ -14,13 +14,6 @@ public interface IUserRepository : IRepository<User>
     /// <param name="email">Email của user</param>
     /// <returns>User nếu tìm thấy, null nếu không tìm thấy</returns>
     Task<User?> GetByEmailAsync(string email);
-    
-    /// <summary>
-    /// Lấy user theo id
-    /// </summary>
-    /// <param name="id">ID của user</param>
-    /// <returns>User nếu tìm thấy, null nếu không tìm thấy</returns>
-    Task<User?> GetByIdAsync(long id);
 
     /// <summary>
     /// Lấy danh sách người dùng mới nhất

@@ -10,10 +10,6 @@ namespace TruyenCV.Repositories;
 /// </summary>
 public interface IUserComicReadHistoryRepository : IRepository<UserComicReadHistory>
 {
-    /// <summary>
-    /// Lấy bản ghi theo id
-    /// </summary>
-    Task<UserComicReadHistory?> GetByIdAsync(long id);
 
     /// <summary>
     /// Lấy bản ghi đọc theo user và comic
