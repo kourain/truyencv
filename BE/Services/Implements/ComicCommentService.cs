@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
+using TruyenCV.Models;
 using TruyenCV.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -50,8 +53,57 @@ public class ComicCommentService : IComicCommentService
 
 	public async Task<IEnumerable<ComicCommentResponse>> GetCommentsByUserIdAsync(long userId)
 	{
-		var comments = await _commentRepository.GetByUserIdAsync(userId);
-		return comments.Select(c => c.ToRespDTO());
+		var comments = (await _commentRepository.GetByUserIdAsync(userId)).ToList();
+		if (comments.Count == 0)
+		{
+			return Enumerable.Empty<ComicCommentResponse>();
+		}
+
+		var responses = comments.Select(comment => comment.ToRespDTO()).ToList();
+		var comicIds = comments.Select(comment => comment.comic_id).Distinct().ToList();
+		var comicLookup = new Dictionary<long, string>();
+		if (comicIds.Count > 0)
+		{
+			var comicTasks = comicIds.Select(id => _comicRepository.GetByIdAsync(id));
+			var comicResults = await Task.WhenAll(comicTasks);
+			comicLookup = comicResults
+				.Where(comic => comic != null)
+				.Cast<Comic>()
+				.ToDictionary(comic => comic.id, comic => comic.name);
+		}
+
+		var chapterIds = comments
+			.Select(comment => comment.comic_chapter_id)
+			.Where(chapterId => chapterId.HasValue)
+			.Select(chapterId => chapterId!.Value)
+			.Distinct()
+			.ToList();
+		var chapterLookup = new Dictionary<long, int>();
+		if (chapterIds.Count > 0)
+		{
+			var chapterTasks = chapterIds.Select(id => _chapterRepository.GetByIdAsync(id));
+			var chapterResults = await Task.WhenAll(chapterTasks);
+			chapterLookup = chapterResults
+				.Where(chapter => chapter != null)
+				.Cast<ComicChapter>()
+				.ToDictionary(chapter => chapter.id, chapter => chapter.chapter);
+		}
+
+		for (var index = 0; index < responses.Count; index++)
+		{
+			var response = responses[index];
+			var comment = comments[index];
+			if (comicLookup.TryGetValue(comment.comic_id, out var comicName))
+			{
+				response.comic_name = comicName;
+			}
+			if (comment.comic_chapter_id.HasValue && chapterLookup.TryGetValue(comment.comic_chapter_id.Value, out var chapterNumber))
+			{
+				response.chapter_number = chapterNumber;
+			}
+		}
+
+		return responses;
 	}
 
 	public async Task<IEnumerable<ComicCommentResponse>> GetRepliesAsync(long commentId)

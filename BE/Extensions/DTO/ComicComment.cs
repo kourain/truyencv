@@ -32,6 +32,8 @@ public static partial class Extensions
 			id = commentEntity._id,
 			comic_id = commentEntity.comic_id.ToString(),
 			comic_chapter_id = commentEntity.comic_chapter_id?.ToString(),
+			comic_name = null,
+			chapter_number = null,
 			user_id = commentEntity.user_id.ToString(),
 			comment = commentEntity.comment,
 			like = commentEntity.like,

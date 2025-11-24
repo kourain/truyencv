@@ -30,6 +30,8 @@ public static partial class Extensions
             key = entity.key,
             status = entity.status,
             chapter_id = entity.chapter_id?.ToString(),
+            comic_name = null,
+            chapter_number = null,
             note = entity.note,
             created_at = entity.created_at,
             updated_at = entity.updated_at

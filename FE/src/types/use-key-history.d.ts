@@ -15,6 +15,8 @@ declare global {
 		key: number;
 		status: HistoryStatus;
 		chapter_id: string | null;
+		comic_name?: string | null;
+		chapter_number?: number | null;
 		note: string | null;
 		created_at: string;
 		updated_at: string;

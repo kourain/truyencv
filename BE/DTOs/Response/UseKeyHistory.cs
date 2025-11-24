@@ -9,6 +9,8 @@ public class UserUseKeyHistoryResponse
     public long key { get; set; }
     public HistoryStatus status { get; set; }
     public string? chapter_id { get; set; }
+    public string? comic_name { get; set; }
+    public int? chapter_number { get; set; }
     public string? note { get; set; }
     public DateTime created_at { get; set; }
     public DateTime updated_at { get; set; }

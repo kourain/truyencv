@@ -24,6 +24,8 @@ interface ComicCommentResponse {
 	id: string;
 	comic_id: string;
 	comic_chapter_id: string | null;
+	comic_name?: string | null;
+	chapter_number?: number | null;
 	user_id: string;
 	comment: string;
 	like: number;

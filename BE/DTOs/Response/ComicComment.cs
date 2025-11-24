@@ -5,6 +5,8 @@ public class ComicCommentResponse
 	public string id { get; set; }
 	public string comic_id { get; set; }
 	public string? comic_chapter_id { get; set; }
+	public string? comic_name { get; set; }
+	public int? chapter_number { get; set; }
 	public string user_id { get; set; }
 	public string comment { get; set; }
 	public int like { get; set; }
