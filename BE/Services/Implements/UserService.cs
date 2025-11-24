@@ -220,7 +220,6 @@ namespace TruyenCV.Services
             }
 
             user.password = Bcrypt.HashPassword(newPassword);
-            user.updated_at = DateTime.UtcNow;
 
             await _dbcontext.SaveChangesAsync();
 
@@ -244,7 +243,6 @@ namespace TruyenCV.Services
             if (user.email_verified_at == null)
             {
                 user.email_verified_at = DateTime.UtcNow;
-                user.updated_at = DateTime.UtcNow;
 
                 await _dbcontext.SaveChangesAsync();
                 await _redisCache.AddOrUpdateInRedisAsync(user, user.id);
@@ -311,7 +309,6 @@ namespace TruyenCV.Services
             var cachedOldEmailKey = $"User:one:email:{user.email}";
             user.email = sanitizedEmail;
             user.email_verified_at = null;
-            user.updated_at = DateTime.UtcNow;
 
             await _dbcontext.SaveChangesAsync();
 
@@ -359,7 +356,6 @@ namespace TruyenCV.Services
             var emailCacheKey = $"User:one:email:{user.email}";
             user.firebase_uid = null;
             user.email_verified_at = null;
-            user.updated_at = DateTime.UtcNow;
 
             await _dbcontext.SaveChangesAsync();
             await _redisCache.AddOrUpdateInRedisAsync(user, user.id);

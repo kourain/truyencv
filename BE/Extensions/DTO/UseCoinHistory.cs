@@ -16,9 +16,7 @@ public static partial class Extensions
             status = request.status,
             reason = request.reason,
             reference_id = string.IsNullOrWhiteSpace(request.reference_id) ? null : long.Parse(request.reference_id),
-            reference_type = request.reference_type,
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
+            reference_type = request.reference_type
         };
     }
 

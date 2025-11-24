@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using TruyenCV;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
@@ -19,6 +20,7 @@ public class ComicRecommendService : IComicRecommendService
     private readonly IDistributedCache _redisCache;
 
     private const long RecommendCoinCost = 10;
+    private const double UserCacheMinutes = 5;
 
     public ComicRecommendService(
         IComicRecommendRepository recommendRepository,
@@ -160,14 +162,26 @@ public class ComicRecommendService : IComicRecommendService
             else
             {
                 existing.rcm_count += 1;
-                existing.updated_at = DateTime.UtcNow;
                 await _recommendRepository.UpdateAsync(existing);
             }
 
             await _redisCache.AddOrUpdateInRedisAsync(existing, existing.id);
 
+            var utcNow = DateTime.UtcNow;
+            var updatedRows = await _dbcontext.Users
+                .Where(dbUser => dbUser.id == user.id && dbUser.coin >= RecommendCoinCost)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(dbUser => dbUser.coin, dbUser => dbUser.coin - RecommendCoinCost)
+                    .SetProperty(dbUser => dbUser.updated_at, _ => utcNow));
+
+            if (updatedRows == 0)
+            {
+                throw new UserRequestException("Bạn không đủ xu để đề cử truyện này");
+            }
+
             user.coin -= RecommendCoinCost;
-            await _userRepository.UpdateAsync(user);
+            user.updated_at = utcNow;
+            await _redisCache.AddOrUpdateInRedisAsync(user, UserCacheMinutes);
 
             // Record that this user recommended this comic for this period
             var userRecommend = new UserComicRecommend

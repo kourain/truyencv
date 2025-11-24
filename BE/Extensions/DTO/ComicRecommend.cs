@@ -13,9 +13,7 @@ public static partial class Extensions
             comic_id = request.comic_id.ToSnowflakeId(nameof(request.comic_id)),
             rcm_count = request.rcm_count,
             month = request.month,
-            year = request.year,
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
+            year = request.year
         };
     }
 
@@ -49,7 +47,5 @@ public static partial class Extensions
         {
             recommend.year = request.year.Value;
         }
-
-        recommend.updated_at = DateTime.UtcNow;
     }
 }

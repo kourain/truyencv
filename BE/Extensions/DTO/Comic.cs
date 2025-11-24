@@ -24,9 +24,7 @@ public static partial class Extensions
             main_category_id = request.main_category_id,
             bookmark_count = 0,
             rate = 0, // Always 0 for new comics - auto-calculated from user ratings
-            status = request.status,
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
+            status = request.status
         };
     }
     private static Dictionary<long, string> categoryDict = new Dictionary<long, string>()
@@ -85,6 +83,5 @@ public static partial class Extensions
         comic.main_category_id = request.main_category_id;
         comic.rate = request.rate;
         comic.status = request.status;
-        comic.updated_at = DateTime.UtcNow;
     }
 }
