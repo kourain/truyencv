@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Link2Off, Loader2, MailCheck, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Link2Off, Loader2, LogOut, MailCheck, ShieldCheck } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,9 +21,13 @@ import {
   useUserCommentHistoryQuery,
   changeEmail,
   unlinkFirebaseAccount,
+  useUserActiveSessionsQuery,
+  revokeUserSession,
+  revokeAllUserSessions,
 } from "@services/user/profile.service";
 import { formatNumber, formatRelativeTime } from "@helpers/format";
 import { HistoryStatus } from "@const/enum/history-status";
+import { useAuth } from "@hooks/useAuth";
 
 const ActivityCard = ({ label, value }: { label: string; value: number }) => {
   return (
@@ -60,7 +64,7 @@ const EmptyState = ({ message }: { message: string }) => (
 
 type MainTabKey = "info" | "payment" | "read" | "comment" | "security";
 type PaymentTabKey = "coin" | "deposit" | "ticket";
-type SecurityTabKey = "email" | "password";
+type SecurityTabKey = "email" | "password" | "sessions";
 
 const mainTabs: Array<{ key: MainTabKey; label: string }> = [
   { key: "info", label: "Thông tin" },
@@ -79,6 +83,7 @@ const paymentTabs: Array<{ key: PaymentTabKey; label: string }> = [
 const securityTabs: Array<{ key: SecurityTabKey; label: string }> = [
   { key: "email", label: "Email" },
   { key: "password", label: "Mật khẩu" },
+  { key: "sessions", label: "Lịch sử đăng nhập" },
 ];
 
 const paymentTabPaths: Record<PaymentTabKey, string> = {
@@ -90,6 +95,7 @@ const paymentTabPaths: Record<PaymentTabKey, string> = {
 const securityTabPaths: Record<SecurityTabKey, string> = {
   email: "/user/profile/security_email",
   password: "/user/profile/security_password",
+  sessions: "/user/profile/security_sessions",
 };
 
 const mainTabDefaultPaths: Record<MainTabKey, string> = {
@@ -134,6 +140,8 @@ const resolveTabsFromSection = (section: string | null): { main: MainTabKey; pay
       return { main: "security", security: "password" };
     case "security_email":
       return { main: "security", security: "email" };
+    case "security_sessions":
+      return { main: "security", security: "sessions" };
     default:
       return { main: "info", payment: "coin" };
   }
@@ -153,7 +161,15 @@ const formatCurrency = (value: number) => {
   return formatNumber(value, { style: "currency", currency: "VND" });
 };
 
+const maskToken = (token: string) => {
+  if (token.length <= 10) {
+    return token;
+  }
+  return `${token.slice(0, 4)}...${token.slice(-4)}`;
+};
+
 const UserProfilePage = () => {
+  const auth = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -166,12 +182,15 @@ const UserProfilePage = () => {
   const [confirmEmail, setConfirmEmail] = useState<string>("");
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [emailFormError, setEmailFormError] = useState<string | null>(null);
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
   const { pushToast } = useToast();
   const coinHistoryQuery = useUserCoinHistoryQuery();
   const paymentHistoryQuery = useUserPaymentHistoryQuery();
   const keyHistoryQuery = useUserKeyHistoryQuery();
   const readHistoryQuery = useUserReadHistoryQuery(50);
   const commentHistoryQuery = useUserCommentHistoryQuery();
+  const isSessionsTabActive = activeMainTab === "security" && activeSecurityTab === "sessions";
+  const activeSessionsQuery = useUserActiveSessionsQuery({ enabled: isSessionsTabActive });
 
   const updateProfileCache = (data: UserProfileResponse) => {
     queryClient.setQueryData(["user-profile"], (prev: (UserProfileResponse & AuthTokensResponse) | undefined) => {
@@ -259,6 +278,54 @@ const UserProfilePage = () => {
       const message = getErrorMessage(error, fallbackMessage);
       pushToast({
         title: "Hủy liên kết thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+  });
+
+  const revokeSessionMutation = useMutation({
+    mutationFn: (sessionId: string) => revokeUserSession(sessionId),
+    onMutate: (sessionId: string) => {
+      setRevokingSessionId(sessionId);
+    },
+    onSuccess: () => {
+      pushToast({
+        title: "Đã hủy phiên đăng nhập",
+        description: "Phiên đã được vô hiệu hóa ngay lập tức.",
+        variant: "success",
+      });
+      activeSessionsQuery.refetch();
+    },
+    onError: (error: unknown) => {
+      const fallbackMessage = "Không thể hủy phiên đăng nhập. Vui lòng thử lại sau.";
+      const message = getErrorMessage(error, fallbackMessage);
+      pushToast({
+        title: "Hủy phiên thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+    onSettled: () => {
+      setRevokingSessionId(null);
+    },
+  });
+
+  const revokeAllSessionsMutation = useMutation({
+    mutationFn: revokeAllUserSessions,
+    onSuccess: () => {
+      pushToast({
+        title: "Đã hủy tất cả phiên",
+        description: "Mọi phiên đăng nhập đang hoạt động đã bị vô hiệu hóa.",
+        variant: "success",
+      });
+      activeSessionsQuery.refetch();
+    },
+    onError: (error: unknown) => {
+      const fallbackMessage = "Không thể hủy tất cả phiên. Vui lòng thử lại sau.";
+      const message = getErrorMessage(error, fallbackMessage);
+      pushToast({
+        title: "Hủy phiên thất bại",
         description: message,
         variant: "error",
       });
@@ -501,6 +568,70 @@ const UserProfilePage = () => {
               <p className="text-xs text-surface-foreground/50">
                 {formatRelativeTime(item.created_at)} · {formatDateTime(item.created_at)}
               </p>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
+  const renderActiveSessions = () => {
+    if (!isSessionsTabActive) {
+      return null;
+    }
+
+    if (activeSessionsQuery.isLoading) {
+      return <LoadingState />;
+    }
+
+    if (activeSessionsQuery.isError) {
+      return <InlineError message="Không thể tải danh sách phiên đăng nhập." />;
+    }
+
+    const sessions = activeSessionsQuery.data ?? [];
+    if (sessions.length === 0) {
+      return <EmptyState message="Không có phiên đăng nhập nào đang hoạt động." />;
+    }
+
+    return (
+      <ul className="space-y-3">
+        {sessions.map((session) => {
+          const currentRefreshToken = auth.refresh_token ?? "";
+          const isCurrentSession = Boolean(currentRefreshToken) && session.token === currentRefreshToken;
+          const isRevoking = (!isCurrentSession && revokingSessionId === session.id) || revokeAllSessionsMutation.isPending;
+          return (
+            <li key={session.id} className="flex flex-col gap-3 rounded-2xl border border-surface-muted/60 bg-surface/80 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-primary-foreground">Phiên #{session.id}</p>
+                    {isCurrentSession && <span className="rounded-full bg-emerald-500/15 px-3 py-0.5 text-xs font-semibold text-emerald-200">Phiên hiện tại</span>}
+                  </div>
+                  <p className="text-xs text-surface-foreground/60">Token: {maskToken(session.token)}</p>
+                </div>
+                <button
+                  type="button"
+                  disabled={isRevoking || isCurrentSession}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
+                    isCurrentSession ? "border border-surface-muted/60 text-surface-foreground/60" : "border border-rose-500/60 text-rose-200 hover:bg-rose-500/10"
+                  }`}
+                  onClick={() => {
+                    if (isCurrentSession) {
+                      return;
+                    }
+                    revokeSessionMutation.mutate(session.id);
+                  }}
+                >
+                  {isRevoking && <span className="h-3 w-3 animate-spin rounded-full border border-rose-200 border-t-transparent" />}
+                  {isCurrentSession ? "Đang sử dụng" : "Hủy phiên"}
+                </button>
+              </div>
+              <div className="grid gap-2 text-xs text-surface-foreground/70 md:grid-cols-2">
+                <p>Khởi tạo: {formatDateTime(session.created_at)}</p>
+                <p>Hết hạn: {formatDateTime(session.expires_at)}</p>
+                <p className="text-surface-foreground/50">{formatRelativeTime(session.created_at)} tạo</p>
+                <p className="text-surface-foreground/50">{formatRelativeTime(session.expires_at)} hết hạn</p>
+              </div>
             </li>
           );
         })}
@@ -761,6 +892,48 @@ const UserProfilePage = () => {
                   username={profile.name}
                   onSuccess={() => queryClient.invalidateQueries({ queryKey: ["user-profile"] })}
                 />
+              </div>
+            )}
+
+            {activeSecurityTab === "sessions" && (
+              <div className="space-y-6">
+                <div className="flex flex-col gap-4 rounded-3xl border border-surface-muted/70 bg-surface/80 p-6 shadow-lg md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-3 text-primary-foreground">
+                    <LogOut className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold">Phiên đăng nhập đang hoạt động</p>
+                      <p className="text-xs text-surface-foreground/60">
+                        {activeSessionsQuery.data?.length ?? 0} phiên hợp lệ. Hãy hủy các thiết bị không còn sử dụng.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      className="rounded-full border border-surface-muted/60 px-4 py-2 text-xs font-semibold text-surface-foreground/70 transition hover:border-primary/40 hover:text-primary"
+                      onClick={() => activeSessionsQuery.refetch()}
+                      disabled={activeSessionsQuery.isFetching}
+                    >
+                      {activeSessionsQuery.isFetching && (
+                        <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+                      )}
+                      Tải lại
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-70"
+                      disabled={(activeSessionsQuery.data?.length ?? 0) === 0 || revokeAllSessionsMutation.isPending}
+                      onClick={() => revokeAllSessionsMutation.mutate()}
+                    >
+                      {revokeAllSessionsMutation.isPending && (
+                        <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
+                      )}
+                      Hủy tất cả phiên
+                    </button>
+                  </div>
+                </div>
+
+                {renderActiveSessions()}
               </div>
             )}
           </div>
