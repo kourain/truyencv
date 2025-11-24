@@ -12,16 +12,13 @@ public static partial class Extensions
         {
             user_id = userId,
             comic_id = request.comic_id.ToSnowflakeId(nameof(request.comic_id)),
-            chapter_id = request.chapter_id.ToSnowflakeId(nameof(request.chapter_id)),
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
+            chapter_id = request.chapter_id.ToSnowflakeId(nameof(request.chapter_id))
         };
     }
 
     public static void UpdateFromRequest(this UserComicReadHistory entity, UpsertUserComicReadHistoryRequest request)
     {
         entity.chapter_id = request.chapter_id.ToSnowflakeId(nameof(request.chapter_id));
-        entity.updated_at = DateTime.UtcNow;
     }
 
     public static UserComicReadHistoryResponse ToRespDTO(this UserComicReadHistory entity)
@@ -32,6 +29,8 @@ public static partial class Extensions
             user_id = entity.user_id.ToString(),
             comic_id = entity.comic_id.ToString(),
             chapter_id = entity.chapter_id.ToString(),
+            comic_name = entity.Comic?.name,
+            chapter_number = entity.ComicChapter?.chapter,
             read_at = entity.read_at,
             updated_at = entity.updated_at
         };

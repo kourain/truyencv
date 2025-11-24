@@ -47,23 +47,20 @@ public class UserUseKeyHistoryService : IUserUseKeyHistoryService
             return responses;
         }
 
-        var chapterTasks = chapterIds.Select(id => _comicChapterRepository.GetByIdAsync(id));
-        var chapterResults = await Task.WhenAll(chapterTasks);
-        var chapters = chapterResults.Where(chapter => chapter != null).Cast<ComicChapter>().ToList();
+        var chapterResults = await chapterIds.SelectAsync(id => _comicChapterRepository.GetByIdAsync(id));
 
-        if (chapters.Count == 0)
+        if (chapterResults.Count() == 0)
         {
             return responses;
         }
 
-        var chapterLookup = chapters.ToDictionary(chapter => chapter.id, chapter => chapter);
-        var comicIds = chapters.Select(chapter => chapter.comic_id).Distinct().ToList();
+        var chapterLookup = chapterResults.ToDictionary(chapter => chapter.id, chapter => chapter);
+        var comicIds = chapterResults.Select(chapter => chapter.comic_id).Distinct().ToList();
         var comicLookup = new Dictionary<long, string>();
 
         if (comicIds.Count > 0)
         {
-            var comicTasks = comicIds.Select(id => _comicRepository.GetByIdAsync(id));
-            var comicResults = await Task.WhenAll(comicTasks);
+            var comicResults = await comicIds.SelectAsync(id => _comicRepository.GetByIdAsync(id));
             comicLookup = comicResults
                 .Where(comic => comic != null)
                 .Cast<Comic>()

@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"name": ".github",
+			"path": "../../.github"
+		},
+		{
+			"name": "BE",
+			"path": "../../BE"
+		},
+		{
+			"name": "CDN",
+			"path": ".."
+		},
+		{
+			"name": "FE",
+			"path": "../../FE"
+		},
+		{
+			"name": "Microservices",
+			"path": "../../Microservices"
+		},
+		{
+			"name": "Service-manager",
+			"path": "../../Service-manager"
+		}
+	]
+}

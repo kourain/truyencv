@@ -6,6 +6,8 @@ public class UserComicReadHistoryResponse
     public string user_id { get; set; }
     public string comic_id { get; set; }
     public string chapter_id { get; set; }
+    public string? comic_name { get; set; }
+    public int? chapter_number { get; set; }
     public DateTime read_at { get; set; }
     public DateTime updated_at { get; set; }
 }

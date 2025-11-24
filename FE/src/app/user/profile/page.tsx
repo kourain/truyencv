@@ -448,9 +448,13 @@ const UserProfilePage = () => {
         {entries.map((item) => (
           <li key={item.id} className="flex flex-col gap-2 rounded-2xl border border-surface-muted/60 bg-surface/80 p-4">
             <div className="flex flex-wrap items-center gap-2 text-sm text-surface-foreground/70">
-              <span className="font-semibold text-primary-foreground">Truyện #{item.comic_id}</span>
+              <span className="font-semibold text-primary-foreground">{item.comic_name ?? `Truyện #${item.comic_id}`}</span>
               <span className="text-surface-foreground/50">·</span>
-              <span>Chương #{item.chapter_id}</span>
+              <span>
+                {item.chapter_number !== null && item.chapter_number !== undefined
+                  ? `Chương ${item.chapter_number}`
+                  : `Chương #${item.chapter_id}`}
+              </span>
             </div>
             <p className="text-xs text-surface-foreground/50">
               {formatRelativeTime(item.read_at)} · {formatDateTime(item.read_at)}
