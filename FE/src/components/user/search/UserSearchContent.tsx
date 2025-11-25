@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { BookOpen, CalendarClock, Filter, Search as SearchIcon, Star, Tag } from "lucide-react";
@@ -88,7 +89,7 @@ export const UserSearchContent = () => {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {isLoading
               ? Array.from({ length: 6 }).map((_, index) => <SearchSkeletonCard key={index} />)
-              : results.map((comic) => <SearchResultCard key={comic.comic_id} comic={comic} />)}
+              : results.map((comic) => <SearchResultCard key={comic.id} comic={comic} />)}
           </div>
           {!isLoading && results.length === 0 && <EmptyState message="Không tìm thấy truyện trùng khớp với từ khóa." />}
         </section>
@@ -112,11 +113,10 @@ export const UserSearchContent = () => {
                   key={item.key}
                   type="button"
                   disabled={item.disabled}
-                  className={`rounded-md px-3 py-1.5 text-sm transition ${
-                    item.active
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-surface-muted/60 hover:border-primary"
-                  }`}
+                  className={`rounded-md px-3 py-1.5 text-sm transition ${item.active
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-surface-muted/60 hover:border-primary"
+                    }`}
                   onClick={() => item.page && handleChangePage(item.page)}
                 >
                   {item.label}
@@ -143,51 +143,51 @@ export const UserSearchContent = () => {
 };
 
 const SearchResultCard = ({ comic }: { comic: SearchComicResult }) => (
-  <article className="flex h-full flex-col gap-3 rounded-lg border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
-    <div className="flex gap-3">
-      <div className="relative h-32 w-24 overflow-hidden rounded-md bg-surface-muted/60">
-        {comic.cover_url ? (
-          <img src={comic.cover_url} alt={comic.comic_title} className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-surface-foreground/60">No cover</div>
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-2">
-        <div>
-          <h3 className="text-base font-semibold text-primary-foreground">{comic.comic_title}</h3>
-          {comic.author_name && <p className="text-xs text-surface-foreground/60">Tác giả: {comic.author_name}</p>}
+  <Link href={`/user/comic/${comic.slug}`} className="block">
+    <article className="flex h-full flex-col gap-3 rounded-lg border border-surface-muted/60 bg-surface/80 p-4 shadow-lg transition hover:-translate-y-1 hover:border-primary hover:shadow-2xl">
+      <div className="flex gap-3">
+        <div className="relative h-32 w-24 flex-shrink-0 overflow-hidden rounded-md bg-surface-muted/60">
+          {comic.cover_url ? (
+            <img src={comic.cover_url} alt={comic.name} className="h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-xs text-surface-foreground/60">No cover</div>
+          )}
         </div>
-        {comic.short_description && (
-          <p className="text-xs leading-relaxed text-surface-foreground/70">{comic.short_description}</p>
-        )}
-        {comic.genres && comic.genres.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-surface-foreground/60">
-            <Tag className="h-3 w-3" />
-            {comic.genres.map((genre) => (
-              <span key={genre} className="rounded-md bg-surface-muted/60 px-2 py-1">
-                {genre}
-              </span>
-            ))}
+        <div className="flex flex-1 flex-col gap-2">
+          <div>
+            <h3 className="text-base font-semibold text-primary-foreground line-clamp-2">{comic.name}</h3>
+            {comic.author && <p className="text-xs text-surface-foreground/60">Tác giả: {comic.author}</p>}
           </div>
+          {comic.description && (
+            <p className="text-xs leading-relaxed text-surface-foreground/70 line-clamp-2">{comic.description}</p>
+          )}
+          {comic.main_category && (
+            <div className="flex items-center gap-2 text-[11px] text-surface-foreground/60">
+              <Tag className="h-3 w-3" />
+              <span className="rounded-md bg-surface-muted/60 px-2 py-1">
+                {comic.main_category}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center justify-between text-xs text-surface-foreground/60">
+        <span className="flex items-center gap-1">
+          <BookOpen className="h-3.5 w-3.5" /> {comic.chap_count} chương
+        </span>
+        {comic.updated_at && (
+          <span className="flex items-center gap-1">
+            <CalendarClock className="h-3.5 w-3.5" /> {formatRelativeTime(comic.updated_at)}
+          </span>
+        )}
+        {comic.rate > 0 && (
+          <span className="flex items-center gap-1 text-primary">
+            <Star className="h-3.5 w-3.5" /> {comic.rate.toFixed(1)}
+          </span>
         )}
       </div>
-    </div>
-    <div className="flex items-center justify-between text-xs text-surface-foreground/60">
-      <span className="flex items-center gap-1">
-        <BookOpen className="h-3.5 w-3.5" /> {comic.latest_chapter ?? comic.total_chapters} chương
-      </span>
-      {comic.updated_at && (
-        <span className="flex items-center gap-1">
-          <CalendarClock className="h-3.5 w-3.5" /> {formatRelativeTime(comic.updated_at)}
-        </span>
-      )}
-      {comic.rating && (
-        <span className="flex items-center gap-1 text-primary">
-          <Star className="h-3.5 w-3.5" /> {comic.rating.toFixed(1)}
-        </span>
-      )}
-    </div>
-  </article>
+    </article>
+  </Link>
 );
 
 const SearchSkeletonCard = () => (
