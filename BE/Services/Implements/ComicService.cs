@@ -324,7 +324,7 @@ public class ComicService : IComicService
         };
     }
 
-    public async Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword, int limit, double minScore)
+    public async Task<IEnumerable<SearchComicResponse>> SearchComicsAsync(string keyword, int limit, double minScore)
     {
         var normalizedKeyword = keyword?.Trim();
         if (string.IsNullOrWhiteSpace(normalizedKeyword))
@@ -340,8 +340,8 @@ public class ComicService : IComicService
             queryVector = new Vector(embeddingValues[0]);
         }
 
-        var comics = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
-        return comics.Select(c => c.ToRespDTO());
+        var results = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
+        return results.Select(r => r.ToSearchRespDTO());
     }
 
     public async Task<IEnumerable<ComicResponse>> GetComicsByAuthorAsync(string author)

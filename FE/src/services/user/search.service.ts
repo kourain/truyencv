@@ -12,8 +12,8 @@ export type SearchComicResult = {
   main_category?: string;
   chap_count: number;
   rate: number;
-  updated_at: string;
-  status: string;
+  rate_count: number;
+  match_score: number; // 0.0 - 1.0, similarity score
 };
 
 export type SearchComicResponse = {
@@ -72,9 +72,9 @@ const buildMockSearchData = (keyword: string, page: number, pageSize: number): S
       description: "Câu chuyện kỳ ảo với nhịp độ nhanh, nhân vật cá tính và những biến chuyển bất ngờ.",
       main_category: index % 3 === 0 ? "Tiên Hiệp" : index % 3 === 1 ? "Huyền Huyễn" : "Kỳ Ảo",
       chap_count: 120 + index,
-      rate: 3.5 + (index % 5) * 0.3,
-      updated_at: new Date(Date.now() - index * 3600 * 1000).toISOString(),
-      status: index % 3 === 0 ? "Continuing" : "Completed",
+      rate: parseFloat((3.5 + (index % 5) * 0.3).toFixed(1)),
+      rate_count: 100 + index * 10,
+      match_score: parseFloat((0.95 - index * 0.05).toFixed(2)),
     } satisfies SearchComicResult;
   });
 

@@ -50,7 +50,7 @@ public interface IComicService
 	/// <param name="limit">Giới hạn số kết quả trả về</param>
 	/// <param name="minScore">Ngưỡng điểm tương đồng (0-1)</param>
 	/// <returns>Danh sách comic</returns>
-	Task<IEnumerable<ComicResponse>> SearchComicsAsync(string keyword, int limit = EmbeddingDefaults.MaxResults, double minScore = EmbeddingDefaults.MinScore);
+	Task<IEnumerable<SearchComicResponse>> SearchComicsAsync(string keyword, int limit = EmbeddingDefaults.MaxResults, double minScore = EmbeddingDefaults.MinScore);
 
 	/// <summary>
 	/// Lấy danh sách comic theo tác giả

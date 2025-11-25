@@ -5,10 +5,10 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { BookOpen, CalendarClock, Filter, Search as SearchIcon, Star, Tag } from "lucide-react";
+import { BookOpen, Filter, Search as SearchIcon, Star, Tag } from "lucide-react";
 
 import EmptyState from "@components/user/home/EmptyState";
-import { formatNumber, formatRelativeTime } from "@helpers/format";
+import { formatNumber } from "@helpers/format";
 import { useComicSearchQuery, type SearchComicResult } from "@services/user/search.service";
 
 const DEFAULT_PAGE_SIZE = 12;
@@ -171,20 +171,22 @@ const SearchResultCard = ({ comic }: { comic: SearchComicResult }) => (
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between text-xs text-surface-foreground/60">
+      <div className="flex items-center justify-between gap-2 text-xs text-surface-foreground/60">
         <span className="flex items-center gap-1">
           <BookOpen className="h-3.5 w-3.5" /> {comic.chap_count} chương
         </span>
-        {comic.updated_at && (
-          <span className="flex items-center gap-1">
-            <CalendarClock className="h-3.5 w-3.5" /> {formatRelativeTime(comic.updated_at)}
+
+        <span className="flex items-center gap-1">
+          <Star className={`h-3.5 w-3.5 ${comic.rate > 0 ? 'text-primary' : 'text-surface-foreground/40'}`} />
+          <span className={comic.rate > 0 ? 'text-primary' : 'text-surface-foreground/60'}>
+            {comic.rate.toFixed(1)} ({formatNumber(comic.rate_count)})
           </span>
-        )}
-        {comic.rate > 0 && (
-          <span className="flex items-center gap-1 text-primary">
-            <Star className="h-3.5 w-3.5" /> {comic.rate.toFixed(1)}
-          </span>
-        )}
+        </span>
+
+        <span className="flex items-center gap-1 text-primary">
+          <Tag className="h-3.5 w-3.5" />
+          {(comic.match_score * 100).toFixed(0)}%
+        </span>
       </div>
     </article>
   </Link>
