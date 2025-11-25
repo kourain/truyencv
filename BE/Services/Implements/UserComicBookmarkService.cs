@@ -128,6 +128,14 @@ public class UserComicBookmarkService : IUserComicBookmarkService
         }
 
         await _bookmarkRepository.DeleteAsync(bookmark, false);
+        
+        // Giảm user's bookmark_count
+        await _dbContext.Users
+            .Where(u => u.id == userId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(
+                p => p.bookmark_count,
+                p => Math.Max(0, p.bookmark_count - 1)));
+        
         await UpdateComicBookmarkCount(comicId, -1);
         await InvalidateCaches(userId, comicId);
 
@@ -136,16 +144,16 @@ public class UserComicBookmarkService : IUserComicBookmarkService
 
     private async Task UpdateComicBookmarkCount(long comicId, int delta)
     {
-        var comic = await _comicRepository.GetByIdAsync(comicId);
-        if (comic == null)
-        {
-            return;
-        }
-
-        var newValue = (int)comic.bookmark_count + delta;
-        comic.bookmark_count = (int)Math.Max(0, newValue);
-
-        await _comicRepository.UpdateAsync(comic);
+        // Dùng ExecuteUpdateAsync để tránh race condition và stale cache data
+        await _dbContext.Comics
+            .Where(c => c.id == comicId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(
+                p => p.bookmark_count,
+                p => Math.Max(0, p.bookmark_count + delta)));
+        
+        // Invalidate cache của comic này
+        await _redisCache.RemoveAsync($"Comic:id:{comicId}");
+        await _redisCache.RemoveAsync($"Comic:slug:*"); // Invalidate slug cache nếu có
     }
 
     private async Task InvalidateCaches(long userId, long comicId)

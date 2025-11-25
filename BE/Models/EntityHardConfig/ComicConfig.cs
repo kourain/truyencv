@@ -21,6 +21,10 @@ public static class ComicConfig
             .Property(c => c.search_vector)
             .HasColumnType($"vector({EmbeddingDefaults.Dimensions})");
 
+        modelBuilder.Entity<Comic>()
+            .HasIndex(e => e.search_vector)
+            .HasMethod("ivfflat"); // Use approximate indexing (e.g., IVF_FLAT)
+
         // Relationships
         // Comic -> ComicChapters (1 - many)
         modelBuilder.Entity<Comic>()
