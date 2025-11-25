@@ -370,3 +370,8 @@ await context.Users
         ```cs
           var comicResults = await comicIds.SelectAsync(id => _comicRepository.GetByIdAsync(id));
         ```
+## WorkFlow
+- Tất cả các yêu cầu liên quan đến Admin Flow và User Flow đều phải được xử lý trong các tệp riêng biệt.
+- Mỗi lần có yêu cầu mới liên quan đến Admin Flow hoặc User Flow, hãy mở tệp tương ứng và thực hiện các chỉnh sửa cần thiết.
+- Admin: tệp Admin-Flows.md
+- User: tệp User-Flows.md
