@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TruyenCV.Models;
-
+using Serilog;
 namespace TruyenCV.BackgroundServices
 {
     public class TemplateBackgroundService : BackgroundService
@@ -28,13 +28,14 @@ namespace TruyenCV.BackgroundServices
             {
                 using (var _dataContext = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDataContext>())
                 {
-                    var list_cm = await _dataContext.Comics.Where(m => m.deleted_at == null).Select(m => m.id).ToListAsync(stoppingToken);
+                    var list_cm = await _dataContext.Comics.AsNoTracking().Where(m => m.deleted_at == null).Select(m => m.id).ToListAsync(stoppingToken);
+                    Serilog.Log.Error($"List cm: {string.Join(", ", list_cm)}");
                     foreach (var cm_id in list_cm)
                     {
                         await _dataContext.Comics
                             .ExecuteUpdateAsync(m => m.SetProperty(p =>
                             p.chapter_count,
-                            _dataContext.ComicChapters.Where(chap => chap.comic_id == cm_id && chap.deleted_at == null).Count())
+                            _dataContext.ComicChapters.AsNoTracking().Where(chap => chap.comic_id == cm_id && chap.deleted_at == null).Count())
                             , cancellationToken: stoppingToken);
                     }
                 }
