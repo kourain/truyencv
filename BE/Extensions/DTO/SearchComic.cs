@@ -1,17 +1,15 @@
-using TruyenCV.DTOs;
 using TruyenCV.DTOs.Response;
-using TruyenCV.Repositories;
+using TruyenCV.Models;
 
 namespace TruyenCV;
 
 public static partial class Extensions
 {
 	/// <summary>
-	/// Convert ComicSearchResult to SearchComicResponse DTO
+	/// Convert Comic to SearchComicResponse DTO
 	/// </summary>
-	public static SearchComicResponse ToSearchRespDTO(this ComicSearchResult result)
+	public static SearchComicResponse ToSearchRespDTO(this Comic comic)
 	{
-		var comic = result.Comic;
 		var mainCategory = categoryDict.TryGetValue(comic.main_category_id, out var cat)
 			? cat
 			: "Unknown";
@@ -27,8 +25,7 @@ public static partial class Extensions
 			main_category = mainCategory,
 			chap_count = comic.chapter_count,
 			rate = comic.rate,
-			rate_count = comic.rate_count,
-			match_score = result.Score
+			rate_count = comic.rate_count
 		};
 	}
 }

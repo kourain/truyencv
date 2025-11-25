@@ -1,5 +1,4 @@
 using Pgvector;
-using TruyenCV.DTOs;
 using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
@@ -38,7 +37,7 @@ public interface IComicRepository : IRepository<Comic>
 	/// <param name="limit">Giới hạn kết quả</param>
 	/// <param name="minScore">Ngưỡng điểm tương đồng (0-1)</param>
 	/// <returns>Danh sách comic</returns>
-	Task<IEnumerable<ComicSearchResult>> SearchAsync(Vector? vector, string keyword, int limit, double minScore);
+	Task<IEnumerable<Comic>> SearchAsync(Vector? vector, string keyword, int limit, double minScore);
 
 	/// <summary>
 	/// Lấy danh sách comic theo tác giả

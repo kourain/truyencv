@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using TruyenCV.DTOs;
 using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -30,14 +29,14 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 		);
 	}
 
-	public async Task<IEnumerable<ComicSearchResult>> SearchAsync(Vector? vector, string keyword, int limit, double minScore)
+	public async Task<IEnumerable<Comic>> SearchAsync(Vector? vector, string keyword, int limit, double minScore)
 	{
 		if (string.IsNullOrWhiteSpace(keyword))
 			return [];
 
 		limit = Math.Clamp(limit, 1, 50);
 		minScore = Math.Clamp(minScore, 0.0, 0.99);
-		var results = new List<ComicSearchResult>(capacity: limit);
+		var results = new List<Comic>(capacity: limit);
 
 		if (vector is { } vectorQuery)
 		{
@@ -48,15 +47,15 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 		if (results.Count < limit)
 		{
 			var remaining = limit - results.Count;
-			var excluded = results.Count > 0 ? results.Select(r => r.Comic.id).ToArray() : Array.Empty<long>();
+			var excluded = results.Count > 0 ? results.Select(c => c.id).ToArray() : Array.Empty<long>();
 			var fallback = await SearchFallbackAsync(keyword, remaining, excluded);
 			results.AddRange(fallback);
 		}
 
-		return results;
+		return results.DistinctBy(c => c.id); // Ensure unique comics if both vector and fallback return same ones
 	}
 
-	private async Task<List<ComicSearchResult>> QueryByVectorAsync(Vector queryVector, int limit, double minScore)
+	private async Task<List<Comic>> QueryByVectorAsync(Vector queryVector, int limit, double minScore)
 	{
 		var query = _dbSet.AsNoTracking()
 			.Where(c => c.search_vector != null && c.deleted_at == null);
@@ -67,14 +66,8 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 			query = query.Where(c => c.search_vector!.CosineDistance(queryVector) <= distanceThreshold);
 		}
 
-		// Select with score calculation
 		var results = await query
-			.Select(c => new ComicSearchResult
-			{
-				Comic = c,
-				Score = 1.0 - (double)c.search_vector!.CosineDistance(queryVector)
-			})
-			.OrderByDescending(r => r.Score)
+			.OrderBy(c => c.search_vector!.CosineDistance(queryVector))
 			.Take(limit)
 			.ToListAsync();
 
@@ -83,12 +76,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 		{
 			results = await _dbSet.AsNoTracking()
 				.Where(c => c.search_vector != null && c.deleted_at == null)
-				.Select(c => new ComicSearchResult
-				{
-					Comic = c,
-					Score = 1.0 - (double)c.search_vector!.CosineDistance(queryVector)
-				})
-				.OrderByDescending(r => r.Score)
+				.OrderBy(c => c.search_vector!.CosineDistance(queryVector))
 				.Take(limit)
 				.ToListAsync();
 		}
@@ -96,10 +84,10 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 		return results;
 	}
 
-	private async Task<List<ComicSearchResult>> SearchFallbackAsync(string keyword, int limit, long[]? excludedIds)
+	private async Task<List<Comic>> SearchFallbackAsync(string keyword, int limit, long[]? excludedIds)
 	{
 		if (limit <= 0)
-			return new List<ComicSearchResult>();
+			return new List<Comic>();
 
 		var sanitized = SanitizeKeyword(keyword);
 		var pattern = $"%{sanitized}%";
@@ -115,18 +103,11 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 			query = query.Where(c => !excludedIds.Contains(c.id));
 		}
 
-		var comics = await query
+		return await query
 			.OrderByDescending(c => c.updated_at)
 			.ThenBy(c => c.id)
 			.Take(limit)
 			.ToListAsync();
-
-		// Text search fallback có score mặc định là 0.5
-		return comics.Select(c => new ComicSearchResult
-		{
-			Comic = c,
-			Score = 0.5 // Default score for text-based matches
-		}).ToList();
 	}
 
 	private static string SanitizeKeyword(string keyword)
