@@ -101,7 +101,7 @@ public class ComicDetailComicResponse
 	public int rate_count { get; set; }
 	public int bookmark_count { get; set; }
 	public int weekly_chapter_count { get; set; }
-	public int weekly_recommendations { get; set; }
+	public int monthly_recommendations { get; set; }
 	public int? user_last_read_chapter { get; set; }
 	public IReadOnlyList<ComicDetailCategoryResponse> categories { get; set; } = Array.Empty<ComicDetailCategoryResponse>();
 }

@@ -160,7 +160,7 @@ public class ComicService : IComicService
 
         var recommendEntries = recommendationsTask.ToList();
         var currentUtc = DateTime.UtcNow;
-        var weeklyRecommendations = (int)Math.Clamp(
+        var monthlyRecommendations = (int)Math.Clamp(
             recommendEntries
                 .Where(entry => entry.year == currentUtc.Year && entry.month == currentUtc.Month)
                 .Sum(entry => entry.rcm_count),
@@ -237,7 +237,7 @@ public class ComicService : IComicService
             rate_count = comic.rate_count,
             bookmark_count = comic.bookmark_count,
             weekly_chapter_count = weeklyChapterCount,
-            weekly_recommendations = weeklyRecommendations,
+            monthly_recommendations = monthlyRecommendations,
             user_last_read_chapter = userLastReadChapter,
             categories = categoryResponses
         };
@@ -638,9 +638,9 @@ public class ComicService : IComicService
             highlights.Add($"Cập nhật {detailComic.weekly_chapter_count} chương trong 7 ngày qua");
         }
 
-        if (detailComic.weekly_recommendations > 0)
+        if (detailComic.monthly_recommendations > 0)
         {
-            highlights.Add($"{detailComic.weekly_recommendations} lượt đề cử trong tháng này");
+            highlights.Add($"{detailComic.monthly_recommendations} lượt đề cử trong tháng này");
         }
 
         if (detailComic.categories.Count > 0)
