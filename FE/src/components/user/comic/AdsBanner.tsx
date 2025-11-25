@@ -15,6 +15,9 @@ const variantStyles: Record<"primary" | "secondary" | "tertiary", string> = {
 };
 
 const AdsBanner = ({ advertisement, variant = "primary", isLoading = false }: AdsBannerProps) => {
+  if(advertisement){
+    return null;
+  }
   if (isLoading) {
     return <div className="h-48 w-full animate-pulse rounded-xl border border-surface-muted/50 bg-surface-muted/40" />;
   }
