@@ -55,13 +55,21 @@ const nextConfig: NextConfig = {
         source: "/user/profile/security_password",
         destination: "/user/profile?section=security_password",
       },
+      {
+        source: "/user/profile/security_sessions",
+        destination: "/user/profile?section=security_sessions",
+      },
+      {
+        source: "/user/profile/bookmarks",
+        destination: "/user/profile?section=bookmarks",
+      }
     ];
   },
   allowedDevOrigins: [
     ...FE_ADMIN.split(","),
     ...FE_USER.split(",")
   ],
-  productionBrowserSourceMaps : false,
+  productionBrowserSourceMaps: false,
   images: {
     remotePatterns: [
       {

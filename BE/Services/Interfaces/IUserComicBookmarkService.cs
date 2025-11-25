@@ -13,6 +13,11 @@ public interface IUserComicBookmarkService
     Task<IEnumerable<UserComicBookmarkResponse>> GetBookmarksByUserIdAsync(long userId);
 
     /// <summary>
+    /// Lấy danh sách bookmark kèm thông tin chi tiết truyện
+    /// </summary>
+    Task<IEnumerable<UserBookmarkWithComicDetailResponse>> GetBookmarksWithComicDetailsAsync(long userId);
+
+    /// <summary>
     /// Tạo bookmark mới
     /// </summary>
     Task<UserComicBookmarkResponse> CreateBookmarkAsync(long userId, long comicId);

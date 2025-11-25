@@ -146,10 +146,15 @@ public class UserComicUnlockHistoryService : IUserComicUnlockHistoryService
                         await transaction.CommitAsync(cancellationToken);
                         return created.ToRespDTO();
                     }
+                    catch (UserRequestException)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw;
+                    }
                     catch (Exception e)
                     {
                         await transaction.RollbackAsync(cancellationToken);
-                        throw new UserRequestException("Mở khóa chương thất bại, vui lòng thử lại sau" + e);
+                        throw new UserRequestException("Mở khóa chương thất bại, vui lòng thử lại sau.", e.Message);
                     }
                 }
             },

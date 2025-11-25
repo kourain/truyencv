@@ -124,3 +124,11 @@ interface ChangeEmailPayload {
 	new_email: string;
 	current_password?: string;
 };
+
+interface UserActiveSessionResponse {
+	id: string;
+	token: string;
+	is_active: boolean;
+	expires_at: string;
+	created_at: string;
+};

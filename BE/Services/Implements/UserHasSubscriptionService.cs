@@ -76,57 +76,73 @@ public class UserHasSubscriptionService : IUserHasSubscriptionService
             throw new UserRequestException("Người dùng đã sở hữu gói này");
         }
 
-        using var transaction = await _dbcontext.Database.BeginTransactionAsync();
-        try
-        {
-            var entity = request.ToEntity();
-            entity.user_id = userId;
-            entity.subscription_id = subscriptionId;
-
-            var created = await _userHasSubscriptionRepository.AddAsync(entity);
-
-            var ticketAdded = subscription.ticket_added;
-            if (ticketAdded > 0)
+        // Use ExecutionStrategy to handle retry logic and transaction
+        var strategy = _dbcontext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<object?, UserSubscriptionResponse>(
+            null,
+            async (_, _, cancellationToken) =>
             {
-                var keyAdded = (long)ticketAdded;
-                var utcNow = DateTime.UtcNow;
-                var affectedRows = await _dbcontext.Users
-                    .Where(dbUser => dbUser.id == user.id)
-                    .ExecuteUpdateAsync(setters => setters
-                        .SetProperty(dbUser => dbUser.key, dbUser => dbUser.key + keyAdded)
-                        .SetProperty(dbUser => dbUser.updated_at, _ => utcNow));
-
-                if (affectedRows == 0)
+                using (var transaction = await _dbcontext.Database.BeginTransactionAsync(cancellationToken))
                 {
-                    throw new UserRequestException("Không thể cập nhật vé cho người dùng");
+                    try
+                    {
+                        var entity = request.ToEntity();
+                        entity.user_id = userId;
+                        entity.subscription_id = subscriptionId;
+
+                        var created = await _userHasSubscriptionRepository.AddAsync(entity);
+
+                        var ticketAdded = subscription.ticket_added;
+                        if (ticketAdded > 0)
+                        {
+                            var keyAdded = (long)ticketAdded;
+                            var utcNow = DateTime.UtcNow;
+                            var affectedRows = await _dbcontext.Users
+                                .Where(dbUser => dbUser.id == user.id)
+                                .ExecuteUpdateAsync(setters => setters
+                                    .SetProperty(dbUser => dbUser.key, dbUser => dbUser.key + keyAdded)
+                                    .SetProperty(dbUser => dbUser.updated_at, _ => utcNow), cancellationToken);
+
+                            if (affectedRows == 0)
+                            {
+                                throw new UserRequestException("Không thể cập nhật vé cho người dùng");
+                            }
+
+                            user.key += keyAdded;
+                            user.updated_at = utcNow;
+                            await _redisCache.AddOrUpdateInRedisAsync(user, UserCacheMinutes);
+
+                            var historyRequest = new CreateUserUseKeyHistoryRequest
+                            {
+                                user_id = user.id.ToString(),
+                                key = keyAdded,
+                                status = HistoryStatus.Add,
+                                note = $"Nhận vé mở từ gói {subscription.name}"
+                            };
+                            await _userUseKeyHistoryRepository.AddAsync(historyRequest.ToEntity());
+                            await _redisCache.RemoveFromRedisAsync<UserUseKeyHistory>($"user:{userId}");
+                        }
+
+                        await transaction.CommitAsync(cancellationToken);
+
+                        await _redisCache.RemoveFromRedisAsync<UserHasSubscription>($"user:{userId}");
+
+                        return created.ToRespDTO();
+                    }
+                    catch (UserRequestException)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw;
+                    }
+                    catch (Exception e)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        throw new UserRequestException("Không thể tạo gói thuê bao, vui lòng thử lại sau.", e.Message);
+                    }
                 }
-
-                user.key += keyAdded;
-                user.updated_at = utcNow;
-                await _redisCache.AddOrUpdateInRedisAsync(user, UserCacheMinutes);
-
-                var historyRequest = new CreateUserUseKeyHistoryRequest
-                {
-                    user_id = user.id.ToString(),
-                    key = keyAdded,
-                    status = HistoryStatus.Add,
-                    note = $"Nhận vé mở từ gói {subscription.name}"
-                };
-                await _userUseKeyHistoryRepository.AddAsync(historyRequest.ToEntity());
-                await _redisCache.RemoveFromRedisAsync<UserUseKeyHistory>($"user:{userId}");
-            }
-
-            await transaction.CommitAsync();
-
-            await _redisCache.RemoveFromRedisAsync<UserHasSubscription>($"user:{userId}");
-
-            return created.ToRespDTO();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+            },
+            null,
+            default);
     }
 
     public async Task<UserSubscriptionResponse?> UpdateAsync(long id, UpdateUserSubscriptionRequest request)

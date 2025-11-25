@@ -23,18 +23,19 @@ namespace TruyenCV.BackgroundServices
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Func<Task> task = null;
+            // Func<Task> task = null;
             while (!stoppingToken.IsCancellationRequested)
             {
                 using (var _dataContext = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDataContext>())
                 {
-                    var list_cm = await _dataContext.Comics.Where(m => m.deleted_at == null).Select(m => m.id).ToListAsync();
+                    var list_cm = await _dataContext.Comics.Where(m => m.deleted_at == null).Select(m => m.id).ToListAsync(stoppingToken);
                     foreach (var cm_id in list_cm)
                     {
                         await _dataContext.Comics
                             .ExecuteUpdateAsync(m => m.SetProperty(p =>
                             p.chapter_count,
-                            _dataContext.ComicChapters.Where(chap => chap.comic_id == cm_id && chap.deleted_at == null).Count()));
+                            _dataContext.ComicChapters.Where(chap => chap.comic_id == cm_id && chap.deleted_at == null).Count())
+                            , cancellationToken: stoppingToken);
                     }
                 }
                 await Task.Delay(TimeSpan.FromDays(7), stoppingToken); // Run every w

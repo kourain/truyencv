@@ -31,6 +31,19 @@ public sealed class BookmarkController : ControllerBase
         return Ok(bookmarks);
     }
 
+    [HttpGet("with-details")]
+    public async Task<IActionResult> GetBookmarksWithDetails()
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized(new { message = "Không thể xác định người dùng" });
+        }
+
+        var bookmarks = await _bookmarkService.GetBookmarksWithComicDetailsAsync(userId.Value);
+        return Ok(bookmarks);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserComicBookmarkRequest request)
     {

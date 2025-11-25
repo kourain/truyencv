@@ -109,6 +109,23 @@ def _filename_from_text(text: str, max_char: int = 50) -> str:
     return f"{timestamp}_{snippet or 'tts'}"
 
 
+def _resolve_output_filename(
+    output_name: str | None,
+    reference_audio: str,
+    text: str,
+) -> tuple[str, bool]:
+    """Create final filename f"<output>_<reference>.wav" and flag user-provided names."""
+
+    reference_slug = _filename_from_output_name(Path(reference_audio).stem or reference_audio)
+    cleaned_output = output_name.strip() if output_name else ""
+    has_custom_name = bool(cleaned_output)
+    if has_custom_name:
+        base_slug = _filename_from_output_name(cleaned_output)
+    else:
+        base_slug = _filename_from_text(text)
+    return f"{base_slug}_{reference_slug}.wav", has_custom_name
+
+
 def _split_sentences(text: str) -> list[str]:
     return [s for s in sent_tokenize(text) if s.strip()]
 
@@ -168,10 +185,12 @@ def _infer(
 
     audio = torch.cat(wav_chunks).unsqueeze(0)
     if output_name:
-        output_name = f"{_filename_from_output_name(output_name)}.wav"
+        safe_name = Path(output_name).name
+        if not safe_name.endswith(".wav"):
+            safe_name = f"{safe_name}.wav"
     else:
-        output_name = f"{_filename_from_text(text)}.wav"
-    output_path = f"{OUTPUT_DIR}/{output_name}"
+        safe_name = f"{_filename_from_text(text)}.wav"
+    output_path = str(Path(OUTPUT_DIR) / safe_name)
     torchaudio.save(str(output_path), audio, 24000)
     return output_path
 
@@ -314,18 +333,36 @@ async def synthesize(
     if not reference_path.exists():
         raise HTTPException(status_code=400, detail="Không tìm thấy tệp mẫu trong thư mục voices")
 
-    output_path = await run_in_threadpool(
+    final_filename, has_custom_name = _resolve_output_filename(
+        output_name,
+        reference_path.stem,
+        text,
+    )
+    final_path = Path(OUTPUT_DIR) / final_filename
+
+    if final_path.exists():
+        background_task: BackgroundTask | None = None if has_custom_name else BackgroundTask(
+            _cleanup_file, str(final_path)
+        )
+        return FileResponse(
+            path=str(final_path),
+            filename=final_path.name,
+            media_type="audio/wav",
+            background=background_task,
+        )
+
+    generated_path = await run_in_threadpool(
         _infer,
         text,
         reference_path,
         normalize,
-        f"{output_name}_{reference_audio}",
+        final_filename,
     )
 
-    background_task = BackgroundTask(_cleanup_file, output_path)
+    background_task = None if has_custom_name else BackgroundTask(_cleanup_file, generated_path)
     return FileResponse(
-        path=output_path,
-        filename=output_path,
+        path=generated_path,
+        filename=Path(generated_path).name,
         media_type="audio/wav",
         background=background_task,
     )

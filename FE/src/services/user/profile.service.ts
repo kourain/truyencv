@@ -61,6 +61,24 @@ export const unlinkFirebaseAccount = async (): Promise<UserProfileResponse> => {
   return response.data;
 };
 
+export const fetchUserActiveSessions = async (): Promise<UserActiveSessionResponse[]> => {
+  const client = getHttpClient();
+  const response = await client.get<UserActiveSessionResponse[]>("/user/profile/refresh-tokens");
+  return response.data.filter((session) => session.is_active);
+};
+
+export const revokeUserSession = async (sessionId: string): Promise<BaseResponse> => {
+  const client = getHttpClient();
+  const response = await client.delete<BaseResponse>(`/user/profile/refresh-tokens/${sessionId}`);
+  return response.data;
+};
+
+export const revokeAllUserSessions = async (): Promise<BaseResponse> => {
+  const client = getHttpClient();
+  const response = await client.delete<BaseResponse>("/user/profile/refresh-tokens");
+  return response.data;
+};
+
 export const fetchUserCoinHistory = async (): Promise<UserUseCoinHistoryResponse[]> => {
   const client = getHttpClient();
   const response = await client.get<UserUseCoinHistoryResponse[]>("/User/CoinHistory");
@@ -130,5 +148,14 @@ export const useUserCommentHistoryQuery = () => {
     queryKey: ["user-profile", "comment-history"],
     queryFn: fetchUserCommentHistory,
     staleTime: 60 * 1000,
+  });
+};
+
+export const useUserActiveSessionsQuery = (options?: { enabled?: boolean }) => {
+  return useQuery<UserActiveSessionResponse[]>({
+    queryKey: ["user-profile", "active-sessions"],
+    queryFn: fetchUserActiveSessions,
+    staleTime: 30 * 1000,
+    enabled: options?.enabled ?? true,
   });
 };

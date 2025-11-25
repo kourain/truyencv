@@ -5,7 +5,7 @@ uv.lock
 .vscode
 #winsuft
 .plan
-
+*.pdf
 # Environment variables
 .env
 .env.local

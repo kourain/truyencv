@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Link2Off, Loader2, MailCheck, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Link2Off, Loader2, LogOut, MailCheck, ShieldCheck } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,6 +11,7 @@ import ProfileHeader from "@components/user/profile/ProfileHeader";
 import ProfileStatsGrid from "@components/user/profile/ProfileStatsGrid";
 import EmailVerificationCard from "@components/user/profile/EmailVerificationCard";
 import ChangePasswordForm from "@components/user/profile/ChangePasswordForm";
+import BookmarkedComicsSection from "@components/user/profile/BookmarkedComicsSection";
 import {
   useUserProfileQuery,
   verifyEmail,
@@ -21,9 +22,13 @@ import {
   useUserCommentHistoryQuery,
   changeEmail,
   unlinkFirebaseAccount,
+  useUserActiveSessionsQuery,
+  revokeUserSession,
+  revokeAllUserSessions,
 } from "@services/user/profile.service";
 import { formatNumber, formatRelativeTime } from "@helpers/format";
 import { HistoryStatus } from "@const/enum/history-status";
+import { useAuth } from "@hooks/useAuth";
 
 const ActivityCard = ({ label, value }: { label: string; value: number }) => {
   return (
@@ -58,15 +63,16 @@ const EmptyState = ({ message }: { message: string }) => (
   </div>
 );
 
-type MainTabKey = "info" | "payment" | "read" | "comment" | "security";
+type MainTabKey = "info" | "payment" | "read" | "comment" | "bookmarks" | "security";
 type PaymentTabKey = "coin" | "deposit" | "ticket";
-type SecurityTabKey = "email" | "password";
+type SecurityTabKey = "email" | "password" | "sessions";
 
 const mainTabs: Array<{ key: MainTabKey; label: string }> = [
   { key: "info", label: "Thông tin" },
   { key: "payment", label: "Lịch sử thanh toán" },
   { key: "read", label: "Lịch sử đọc" },
   { key: "comment", label: "Lịch sử bình luận" },
+  { key: "bookmarks", label: "Truyện theo dõi" },
   { key: "security", label: "Bảo mật" },
 ];
 
@@ -79,6 +85,7 @@ const paymentTabs: Array<{ key: PaymentTabKey; label: string }> = [
 const securityTabs: Array<{ key: SecurityTabKey; label: string }> = [
   { key: "email", label: "Email" },
   { key: "password", label: "Mật khẩu" },
+  { key: "sessions", label: "Lịch sử đăng nhập" },
 ];
 
 const paymentTabPaths: Record<PaymentTabKey, string> = {
@@ -90,6 +97,7 @@ const paymentTabPaths: Record<PaymentTabKey, string> = {
 const securityTabPaths: Record<SecurityTabKey, string> = {
   email: "/user/profile/security_email",
   password: "/user/profile/security_password",
+  sessions: "/user/profile/security_sessions",
 };
 
 const mainTabDefaultPaths: Record<MainTabKey, string> = {
@@ -97,6 +105,7 @@ const mainTabDefaultPaths: Record<MainTabKey, string> = {
   payment: paymentTabPaths.coin,
   read: "/user/profile/history_read",
   comment: "/user/profile/history_comment",
+  bookmarks: "/user/profile/bookmarks",
   security: securityTabPaths.email,
 };
 
@@ -130,10 +139,14 @@ const resolveTabsFromSection = (section: string | null): { main: MainTabKey; pay
       return { main: "read" };
     case "history_comment":
       return { main: "comment" };
+    case "bookmarks":
+      return { main: "bookmarks" };
     case "security_password":
       return { main: "security", security: "password" };
     case "security_email":
       return { main: "security", security: "email" };
+    case "security_sessions":
+      return { main: "security", security: "sessions" };
     default:
       return { main: "info", payment: "coin" };
   }
@@ -153,7 +166,15 @@ const formatCurrency = (value: number) => {
   return formatNumber(value, { style: "currency", currency: "VND" });
 };
 
+const maskToken = (token: string) => {
+  if (token.length <= 10) {
+    return token;
+  }
+  return `${token.slice(0, 4)}...${token.slice(-4)}`;
+};
+
 const UserProfilePage = () => {
+  const auth = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -166,12 +187,15 @@ const UserProfilePage = () => {
   const [confirmEmail, setConfirmEmail] = useState<string>("");
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [emailFormError, setEmailFormError] = useState<string | null>(null);
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
   const { pushToast } = useToast();
   const coinHistoryQuery = useUserCoinHistoryQuery();
   const paymentHistoryQuery = useUserPaymentHistoryQuery();
   const keyHistoryQuery = useUserKeyHistoryQuery();
   const readHistoryQuery = useUserReadHistoryQuery(50);
   const commentHistoryQuery = useUserCommentHistoryQuery();
+  const isSessionsTabActive = activeMainTab === "security" && activeSecurityTab === "sessions";
+  const activeSessionsQuery = useUserActiveSessionsQuery({ enabled: isSessionsTabActive });
 
   const updateProfileCache = (data: UserProfileResponse) => {
     queryClient.setQueryData(["user-profile"], (prev: (UserProfileResponse & AuthTokensResponse) | undefined) => {
@@ -259,6 +283,54 @@ const UserProfilePage = () => {
       const message = getErrorMessage(error, fallbackMessage);
       pushToast({
         title: "Hủy liên kết thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+  });
+
+  const revokeSessionMutation = useMutation({
+    mutationFn: (sessionId: string) => revokeUserSession(sessionId),
+    onMutate: (sessionId: string) => {
+      setRevokingSessionId(sessionId);
+    },
+    onSuccess: () => {
+      pushToast({
+        title: "Đã hủy phiên đăng nhập",
+        description: "Phiên đã được vô hiệu hóa ngay lập tức.",
+        variant: "success",
+      });
+      activeSessionsQuery.refetch();
+    },
+    onError: (error: unknown) => {
+      const fallbackMessage = "Không thể hủy phiên đăng nhập. Vui lòng thử lại sau.";
+      const message = getErrorMessage(error, fallbackMessage);
+      pushToast({
+        title: "Hủy phiên thất bại",
+        description: message,
+        variant: "error",
+      });
+    },
+    onSettled: () => {
+      setRevokingSessionId(null);
+    },
+  });
+
+  const revokeAllSessionsMutation = useMutation({
+    mutationFn: revokeAllUserSessions,
+    onSuccess: () => {
+      pushToast({
+        title: "Đã hủy tất cả phiên",
+        description: "Mọi phiên đăng nhập đang hoạt động đã bị vô hiệu hóa.",
+        variant: "success",
+      });
+      activeSessionsQuery.refetch();
+    },
+    onError: (error: unknown) => {
+      const fallbackMessage = "Không thể hủy tất cả phiên. Vui lòng thử lại sau.";
+      const message = getErrorMessage(error, fallbackMessage);
+      pushToast({
+        title: "Hủy phiên thất bại",
         description: message,
         variant: "error",
       });
@@ -508,6 +580,69 @@ const UserProfilePage = () => {
     );
   };
 
+  const renderActiveSessions = () => {
+    if (!isSessionsTabActive) {
+      return null;
+    }
+
+    if (activeSessionsQuery.isLoading) {
+      return <LoadingState />;
+    }
+
+    if (activeSessionsQuery.isError) {
+      return <InlineError message="Không thể tải danh sách phiên đăng nhập." />;
+    }
+
+    const sessions = activeSessionsQuery.data ?? [];
+    if (sessions.length === 0) {
+      return <EmptyState message="Không có phiên đăng nhập nào đang hoạt động." />;
+    }
+
+    return (
+      <ul className="space-y-3">
+        {sessions.map((session) => {
+          const currentRefreshToken = auth.refresh_token ?? "";
+          const isCurrentSession = Boolean(currentRefreshToken) && session.token === currentRefreshToken;
+          const isRevoking = (!isCurrentSession && revokingSessionId === session.id) || revokeAllSessionsMutation.isPending;
+          return (
+            <li key={session.id} className="flex flex-col gap-3 rounded-2xl border border-surface-muted/60 bg-surface/80 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-primary-foreground">Phiên #{session.id}</p>
+                    {isCurrentSession && <span className="rounded-full bg-emerald-500/15 px-3 py-0.5 text-xs font-semibold text-emerald-200">Phiên hiện tại</span>}
+                  </div>
+                  <p className="text-xs text-surface-foreground/60">Token: {maskToken(session.token)}</p>
+                </div>
+                <button
+                  type="button"
+                  disabled={isRevoking || isCurrentSession}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${isCurrentSession ? "border border-surface-muted/60 text-surface-foreground/60" : "border border-rose-500/60 text-rose-200 hover:bg-rose-500/10"
+                    }`}
+                  onClick={() => {
+                    if (isCurrentSession) {
+                      return;
+                    }
+                    revokeSessionMutation.mutate(session.id);
+                  }}
+                >
+                  {isRevoking && <span className="h-3 w-3 animate-spin rounded-full border border-rose-200 border-t-transparent" />}
+                  {isCurrentSession ? "Đang sử dụng" : "Hủy phiên"}
+                </button>
+              </div>
+              <div className="grid gap-2 text-xs text-surface-foreground/70 md:grid-cols-2">
+                <p>Khởi tạo: {formatDateTime(session.created_at)}</p>
+                <p>Hết hạn: {formatDateTime(session.expires_at)}</p>
+                <p className="text-surface-foreground/50">Tạo: {formatRelativeTime(session.created_at)}</p>
+                <p className="text-surface-foreground/50">Hết hạn: {formatRelativeTime(session.expires_at)}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   if (isLoading) {
     return (
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10">
@@ -571,11 +706,10 @@ const UserProfilePage = () => {
             <button
               key={tab.key}
               type="button"
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-lg"
-                  : "border border-transparent text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
-              }`}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${isActive
+                ? "bg-primary text-primary-foreground shadow-lg"
+                : "border border-transparent text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
+                }`}
               onClick={() => handleMainTabChange(tab.key)}
             >
               {tab.label}
@@ -623,11 +757,10 @@ const UserProfilePage = () => {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
-                  }`}
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${isActive
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
+                    }`}
                   onClick={() => handleSecurityTabChange(tab.key)}
                 >
                   {tab.label}
@@ -734,11 +867,10 @@ const UserProfilePage = () => {
                   <button
                     type="button"
                     disabled={unlinkFirebaseDisabled}
-                    className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition ${
-                      profile.has_firebase_linked
-                        ? "bg-rose-600 text-white hover:bg-rose-500"
-                        : "bg-slate-700 text-slate-300"
-                    } disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition ${profile.has_firebase_linked
+                      ? "bg-rose-600 text-white hover:bg-rose-500"
+                      : "bg-slate-700 text-slate-300"
+                      } disabled:cursor-not-allowed disabled:opacity-70`}
                     onClick={() => {
                       if (!profile.has_firebase_linked || unlinkFirebaseDisabled) {
                         return;
@@ -763,6 +895,48 @@ const UserProfilePage = () => {
                 />
               </div>
             )}
+
+            {activeSecurityTab === "sessions" && (
+              <div className="space-y-6">
+                <div className="flex flex-col gap-4 rounded-3xl border border-surface-muted/70 bg-surface/80 p-6 shadow-lg md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-3 text-primary-foreground">
+                    <LogOut className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold">Phiên đăng nhập đang hoạt động</p>
+                      <p className="text-xs text-surface-foreground/60">
+                        {activeSessionsQuery.data?.length ?? 0} phiên hợp lệ. Hãy hủy các thiết bị không còn sử dụng.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      className="rounded-full border border-surface-muted/60 px-4 py-2 text-xs font-semibold text-surface-foreground/70 transition hover:border-primary/40 hover:text-primary"
+                      onClick={() => activeSessionsQuery.refetch()}
+                      disabled={activeSessionsQuery.isFetching}
+                    >
+                      {activeSessionsQuery.isFetching && (
+                        <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent" />
+                      )}
+                      Tải lại
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-70"
+                      disabled={(activeSessionsQuery.data?.length ?? 0) === 0 || revokeAllSessionsMutation.isPending}
+                      onClick={() => revokeAllSessionsMutation.mutate()}
+                    >
+                      {revokeAllSessionsMutation.isPending && (
+                        <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
+                      )}
+                      Hủy tất cả phiên
+                    </button>
+                  </div>
+                </div>
+
+                {renderActiveSessions()}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -776,11 +950,10 @@ const UserProfilePage = () => {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
-                  }`}
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${isActive
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
+                    }`}
                   onClick={() => handlePaymentTabChange(tab.key)}
                 >
                   {tab.label}
@@ -805,6 +978,12 @@ const UserProfilePage = () => {
       {activeMainTab === "comment" && (
         <section className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg">
           {renderCommentHistory()}
+        </section>
+      )}
+
+      {activeMainTab === "bookmarks" && (
+        <section className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg">
+          <BookmarkedComicsSection />
         </section>
       )}
     </main>

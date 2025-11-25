@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Elfie.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -103,7 +104,8 @@ public sealed class ChapterEnhancementService : IChapterEnhancementService
         {
             { new StringContent(content, Encoding.UTF8), "text" },
             { new StringContent(referenceAudio, Encoding.UTF8), "reference_audio" },
-            { new StringContent(_ttsOptions.Normalize ? "true" : "false", Encoding.UTF8), "normalize" }
+            { new StringContent(_ttsOptions.Normalize ? "true" : "false", Encoding.UTF8), "normalize" },
+            { new StringContent(content.ToSHA256String(), Encoding.UTF8), "output_name" }
         };
 
         using var response = await client.PostAsync(_ttsOptions.ServiceUrl, form, cancellationToken);
