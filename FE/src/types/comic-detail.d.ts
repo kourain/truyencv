@@ -65,7 +65,7 @@ interface Comic {
   rate_count: number;
   bookmark_count: number;
   weekly_chapter_count: number;
-  weekly_recommendations: number;
+  monthly_recommendations: number;
   user_last_read_chapter?: number;
   categories: ComicDetailCategory[];
 };

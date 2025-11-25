@@ -56,7 +56,7 @@ public interface IRepository<T> where T : BaseEntity
     /// Xóa entity
     /// </summary>
     /// <param name="entity">Entity cần xóa</param>
-    Task DeleteAsync(T entity);
+    Task DeleteAsync(T entity, bool softDelete = true);
 
     /// <summary>
     /// Đếm số lượng entity

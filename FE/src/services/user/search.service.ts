@@ -3,17 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { getHttpClient } from "@helpers/httpClient";
 
 export type SearchComicResult = {
-  comic_id: number;
-  comic_title: string;
+  id: string;
+  name: string;
+  slug: string;
   cover_url?: string;
-  author_name?: string;
-  latest_chapter?: number;
-  total_chapters?: number;
-  short_description?: string;
-  genres?: string[];
-  updated_at?: string;
-  status_label?: string;
-  rating?: number;
+  author?: string;
+  description?: string;
+  main_category?: string;
+  chap_count: number;
+  rate: number;
+  rate_count: number;
+  match_score: number; // 0.0 - 1.0, similarity score
 };
 
 export type SearchComicResponse = {
@@ -64,17 +64,17 @@ const buildMockSearchData = (keyword: string, page: number, pageSize: number): S
   const results = Array.from({ length: pageSize }).map((_, index) => {
     const comicIndex = startIndex + index + 1;
     return {
-      comic_id: 900 + comicIndex,
-      comic_title: `${normalizedKeyword} hấp dẫn ${comicIndex}`,
+      id: `${900 + comicIndex}`,
+      name: `${normalizedKeyword} hấp dẫn ${comicIndex}`,
+      slug: `${normalizedKeyword.toLowerCase()}-hap-dan-${comicIndex}`,
       cover_url: `https://picsum.photos/seed/search-${comicIndex}/160/220`,
-      author_name: `Tác giả ${comicIndex}`,
-      latest_chapter: 50 + index,
-      total_chapters: 120 + index,
-      short_description: "Câu chuyện kỳ ảo với nhịp độ nhanh, nhân vật cá tính và những biến chuyển bất ngờ.",
-      genres: ["Huyền huyễn", "Hành động", index % 2 === 0 ? "Phiêu lưu" : "Kỳ ảo"],
-      updated_at: new Date(Date.now() - index * 3600 * 1000).toISOString(),
-      status_label: index % 3 === 0 ? "Đang ra" : "Hoàn thành",
-      rating: 3.5 + (index % 5) * 0.3,
+      author: `Tác giả ${comicIndex}`,
+      description: "Câu chuyện kỳ ảo với nhịp độ nhanh, nhân vật cá tính và những biến chuyển bất ngờ.",
+      main_category: index % 3 === 0 ? "Tiên Hiệp" : index % 3 === 1 ? "Huyền Huyễn" : "Kỳ Ảo",
+      chap_count: 120 + index,
+      rate: parseFloat((3.5 + (index % 5) * 0.3).toFixed(1)),
+      rate_count: 100 + index * 10,
+      match_score: parseFloat((0.95 - index * 0.05).toFixed(2)),
     } satisfies SearchComicResult;
   });
 

@@ -72,7 +72,7 @@ const createMockComicDetail = (slug: string): ComicDetailResponse => {
       rate_count: 1280,
       bookmark_count: 45230,
       weekly_chapter_count: 6,
-      weekly_recommendations: 320,
+      monthly_recommendations: 320,
       user_last_read_chapter: 110,
       categories: [
         { id: "1", name: "Huyền Huyễn" },

@@ -152,7 +152,7 @@ const HeroSection = ({ comic, slug, isLoading = false }: HeroSectionProps) => {
 
         <div className="grid gap-3 sm:grid-cols-3">
           <StatCard label="Chương / tuần" value={`${comic?.weekly_chapter_count}`} icon={<BookOpen className="h-4 w-4" />} />
-          <StatCard label="Đề cử tuần" value={formatNumber(comic?.weekly_recommendations ?? 0)} icon={<Star className="h-4 w-4" />} />
+          <StatCard label="Đề cử tháng" value={formatNumber(comic?.monthly_recommendations ?? 0)} icon={<Star className="h-4 w-4" />} />
           <StatCard label="Đánh dấu" value={formatNumber(comic?.bookmark_count ?? 0)} icon={<BookmarkPlus className="h-4 w-4" />} />
         </div>
 

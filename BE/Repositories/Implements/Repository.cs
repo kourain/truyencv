@@ -72,8 +72,10 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         await _redisCache.AddOrUpdateInRedisAsync(entity, DefaultCacheMinutes);
     }
 
-    public virtual async Task DeleteAsync(T entity)
+    public virtual async Task DeleteAsync(T entity, bool softDelete = true)
     {
+        if (softDelete == false)
+            _dbcontext.NotSoftDelete();
         _dbSet.Remove(entity);
         await _dbcontext.SaveChangesAsync();
         await _redisCache.RemoveFromRedisAsync<T>(entity.id);

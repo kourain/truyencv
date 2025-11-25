@@ -91,12 +91,22 @@ public class UserComicBookmarkService : IUserComicBookmarkService
         {
             user_id = userId,
             comic_id = comicId,
-            created_at = DateTime.UtcNow,
-            updated_at = DateTime.UtcNow
         };
-
+        
         var newBookmark = await _bookmarkRepository.AddAsync(bookmark);
-
+        var user = await _dbContext.Users.AsNoTracking()
+            .Where(u => u.id == userId)
+            .FirstOrDefaultAsync();
+        if(user != null)
+        {
+            await _dbContext.Users
+            .Where(u => u.id == userId)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(p => p.bookmark_count, p => p.bookmark_count + 1));
+            await _dbContext.SaveChangesAsync();
+            user.bookmark_count += 1;
+            await _redisCache.AddOrUpdateInRedisAsync(user, 5);
+        }
         await UpdateComicBookmarkCount(comicId, 1);
         await InvalidateCaches(userId, comicId);
 
@@ -117,7 +127,7 @@ public class UserComicBookmarkService : IUserComicBookmarkService
             return false;
         }
 
-        await _bookmarkRepository.DeleteAsync(bookmark);
+        await _bookmarkRepository.DeleteAsync(bookmark, false);
         await UpdateComicBookmarkCount(comicId, -1);
         await InvalidateCaches(userId, comicId);
 
