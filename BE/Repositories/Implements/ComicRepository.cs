@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using TruyenCV.DTOs;
 using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;

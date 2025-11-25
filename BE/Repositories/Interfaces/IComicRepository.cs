@@ -1,4 +1,5 @@
 using Pgvector;
+using TruyenCV.DTOs;
 using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;

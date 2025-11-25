@@ -1,3 +1,4 @@
+using TruyenCV.DTOs;
 using TruyenCV.DTOs.Response;
 using TruyenCV.Repositories;
 
@@ -5,22 +6,6 @@ namespace TruyenCV;
 
 public static partial class Extensions
 {
-	private static readonly Dictionary<long, string> categoryDict = new()
-	{
-		{ 1001, "Tiên Hiệp" },
-		{ 1002, "Huyền Huyễn" },
-		{ 1003, "Khoa Huyễn" },
-		{ 1004, "Võng Du" },
-		{ 1005, "Đô Thị" },
-		{ 1006, "Đồng Nhân" },
-		{ 1007, "Dã Sử" },
-		{ 1008, "Cạnh Kỹ" },
-		{ 1009, "Huyền Nghi" },
-		{ 1010, "Kiếm Hiệp" },
-		{ 1011, "Kỳ Ảo" },
-		{ 1012, "Light Novel" }
-	};
-
 	/// <summary>
 	/// Convert ComicSearchResult to SearchComicResponse DTO
 	/// </summary>
