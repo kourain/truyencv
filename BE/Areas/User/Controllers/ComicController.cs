@@ -47,6 +47,30 @@ public sealed class ComicController : ControllerBase
     }
 
     [AllowAnonymous]
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchComics([FromQuery] string keyword, [FromQuery] int page = 1, [FromQuery] int page_size = 12)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            return BadRequest(new { message = "Từ khóa tìm kiếm không được để trống" });
+        }
+
+        // URL Decode keyword để xử lý các ký tự đặc biệt (tiếng Việt có dấu)
+        keyword = System.Web.HttpUtility.UrlDecode(keyword);
+
+        var results = await _comicService.SearchComicsAsync(keyword, limit: page_size);
+        var resultsList = results.ToList();
+        
+        return Ok(new
+        {
+            results = resultsList,
+            total = resultsList.Count,
+            page,
+            page_size
+        });
+    }
+
+    [AllowAnonymous]
     [HttpGet("{slug}/embedded")]
     public async Task<IActionResult> GetComicsEmbeddedBySameUser([FromRoute] string slug)
     {

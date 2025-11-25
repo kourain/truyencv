@@ -58,7 +58,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 	private async Task<List<Comic>> QueryByVectorAsync(Vector queryVector, int limit, double minScore)
 	{
 		var query = _dbSet.AsNoTracking()
-			.Where(c => c.search_vector != null);
+			.Where(c => c.search_vector != null && c.deleted_at == null);
 
 		if (minScore > 0)
 		{
@@ -71,10 +71,11 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 			.Take(limit);
 
 		var candidates = await orderedQuery.ToListAsync();
+		// Fallback: nếu không có kết quả và có minScore, thử lại không filter score
 		if (candidates.Count == 0 && minScore > 0)
 		{
 			candidates = await _dbSet.AsNoTracking()
-				.Where(c => c.search_vector != null)
+				.Where(c => c.search_vector != null && c.deleted_at == null)
 				.OrderBy(c => c.search_vector!.CosineDistance(queryVector))
 				.Take(limit)
 				.ToListAsync();
@@ -92,9 +93,10 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 		var pattern = $"%{sanitized}%";
 
 		var query = _dbSet.AsNoTracking()
-			.Where(c => EF.Functions.ILike(c.name, pattern, "\\")
+			.Where(c => c.deleted_at == null
+				&& (EF.Functions.ILike(c.name, pattern, "\\")
 				|| EF.Functions.ILike(c.description, pattern, "\\")
-				|| EF.Functions.ILike(c.author, pattern, "\\"));
+				|| EF.Functions.ILike(c.author, pattern, "\\")));
 
 		if (excludedIds is { Length: > 0 })
 		{
