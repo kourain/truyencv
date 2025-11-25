@@ -15,5 +15,4 @@ public class SearchComicResponse
 	public int chap_count { get; set; }
 	public float rate { get; set; }
 	public int rate_count { get; set; }
-	public double match_score { get; set; } // 0.0 - 1.0, similarity score
 }

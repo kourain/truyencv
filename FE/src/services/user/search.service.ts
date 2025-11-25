@@ -13,7 +13,6 @@ export type SearchComicResult = {
   chap_count: number;
   rate: number;
   rate_count: number;
-  match_score: number; // 0.0 - 1.0, similarity score
 };
 
 export type SearchComicResponse = {
@@ -74,7 +73,6 @@ const buildMockSearchData = (keyword: string, page: number, pageSize: number): S
       chap_count: 120 + index,
       rate: parseFloat((3.5 + (index % 5) * 0.3).toFixed(1)),
       rate_count: 100 + index * 10,
-      match_score: parseFloat((0.95 - index * 0.05).toFixed(2)),
     } satisfies SearchComicResult;
   });
 

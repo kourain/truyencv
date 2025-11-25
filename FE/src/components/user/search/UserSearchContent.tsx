@@ -182,11 +182,6 @@ const SearchResultCard = ({ comic }: { comic: SearchComicResult }) => (
             {comic.rate.toFixed(1)} ({formatNumber(comic.rate_count)})
           </span>
         </span>
-
-        <span className="flex items-center gap-1 text-primary">
-          <Tag className="h-3.5 w-3.5" />
-          {(comic.match_score * 100).toFixed(0)}%
-        </span>
       </div>
     </article>
   </Link>

@@ -1,7 +1,7 @@
 "use client";
 import clsx from "clsx";
 import { SearchIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 type SearchBarProps = {
@@ -9,8 +9,10 @@ type SearchBarProps = {
 };
 
 export const SearchBar = ({ className }: SearchBarProps) => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState(searchParams.get("keyword") ?? "");
 
   const trimmedValue = useMemo(() => searchValue.trim(), [searchValue]);
   const canSearch = trimmedValue.length > 0;
@@ -21,7 +23,7 @@ export const SearchBar = ({ className }: SearchBarProps) => {
       return;
     }
 
-    const href = `/user/search?keyword=${encodeURIComponent(value)}`;
+    const href = pathname === "/user/search" ? `?keyword=${encodeURIComponent(value)}` : `/user/search?keyword=${encodeURIComponent(value)}`;
     router.push(href);
   };
 

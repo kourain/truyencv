@@ -340,8 +340,8 @@ public class ComicService : IComicService
             queryVector = new Vector(embeddingValues[0]);
         }
 
-        var results = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
-        return results.Select(r => r.ToSearchRespDTO());
+        var comics = await _comicRepository.SearchAsync(queryVector, normalizedKeyword, limit, minScore);
+        return comics.Select(c => c.ToSearchRespDTO());
     }
 
     public async Task<IEnumerable<ComicResponse>> GetComicsByAuthorAsync(string author)
