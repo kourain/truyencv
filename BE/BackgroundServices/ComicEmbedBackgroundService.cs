@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol;
 using Pgvector;
 using TruyenCV.Models;
 using TruyenCV.Services;
@@ -31,14 +32,14 @@ namespace TruyenCV.BackgroundServices
             {
                 using (var _dataContext = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDataContext>())
                 {
-                    (int comicId, string content)? task = null;
-                    lock (_lock)
+                    try
                     {
-                        task = _tasks.TryDequeue(out var dequeuedTask) ? dequeuedTask : null;
-                    }
-                    if (task != null)
-                    {
-                        try
+                        (int comicId, string content)? task = null;
+                        lock (_lock)
+                        {
+                            task = _tasks.TryDequeue(out var dequeuedTask) ? dequeuedTask : null;
+                        }
+                        if (task != null)
                         {
                             var embeddingVector = new Vector((await _textEmbeddingService.CreateEmbeddingAsync(task.Value.content))[0]);
                             await _dataContext.Comics.Where(c => c.id == task.Value.comicId).ExecuteUpdateAsync(
@@ -49,37 +50,47 @@ namespace TruyenCV.BackgroundServices
                             );
                             await _dataContext.SaveChangesAsync(stoppingToken);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            _logger.LogError(ex, "Error executing background task");
-                        }
-                    }
-                    else
-                    {
-                        var ListEmpty = await _dataContext.Comics
-                            .Where(c => c.search_vector == null && !c.deleted_at.HasValue)
-                            .Take(10)
-                            .ToListAsync(cancellationToken: stoppingToken);
-                        if (ListEmpty.Count > 0)
-                        {
-                            List<long> ids = ListEmpty.Select(c => c.id).ToList();
-                            float[][] embeddings = await _textEmbeddingService.CreateEmbeddingAsync(ListEmpty.Select(c => $"{c.name}, {c.description}").ToArray());
-                            foreach (var (comic, embedding) in ListEmpty.Zip(embeddings))
+                            var ListEmpty = await _dataContext.Comics
+                                .AsNoTracking()
+                                .Where(c => c.search_vector == null && !c.deleted_at.HasValue)
+                                .Take(10)
+                                .ToListAsync(cancellationToken: stoppingToken);
+                            Serilog.Log.Error("ListEmpty: {ListEmpty}", ListEmpty.Count);
+                            // Serilog.Log.Error("First: {First}", ListEmpty.First().ToJson());
+                            if (ListEmpty.Count > 0)
                             {
-                                var embeddingVector = new Vector(embedding);
-                                comic.search_vector = embeddingVector;
-                                _dataContext.Comics.Update(comic);
+                                IEnumerable<long> ids = ListEmpty.Select(c => c.id);
+                                float[][] embeddings = await _textEmbeddingService.CreateEmbeddingAsync(ListEmpty.Select(c => $"{c.name}, {c.description}").ToArray());
+                                foreach (var (comic, embedding) in ListEmpty.Zip(embeddings))
+                                {
+                                    var embeddingVector = new Vector(embedding);
+                                    await _dataContext.Comics.ExecuteUpdateAsync(
+                                        c => c.SetProperty(c => c.search_vector,
+                                            c => embeddingVector
+                                        ),
+                                        cancellationToken: stoppingToken
+                                    );
+                                }
                             }
-                            await _dataContext.SaveChangesAsync(stoppingToken);
                         }
+                        //slug fix
+                        var listSlug = await _dataContext.Comics.Where(c => c.slug.Length < c.name.Length - 5).ToListAsync(stoppingToken);
+                        listSlug.ForEach(c => c.slug = c.name.ToSlug());
+                        _dataContext.Comics.UpdateRange(listSlug);
+                        await _dataContext.SaveChangesAsync(stoppingToken);
                     }
-                    //slug fix
-                    var listSlug = await _dataContext.Comics.Where(c => c.slug.Length < c.name.Length - 5).ToListAsync();
-                    listSlug.ForEach(c => c.slug = c.name.ToSlug());
-                    _dataContext.Comics.UpdateRange(listSlug);
-                    await _dataContext.SaveChangesAsync(stoppingToken);
-                    await Task.Delay(TimeSpan.FromDays(1), stoppingToken); // Run every minute
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error executing background task");
+                    }
+                    finally
+                    {
+                        await _dataContext.DisposeAsync();
+                    }
                 }
+                await Task.Delay(TimeSpan.FromDays(1), stoppingToken); // Run every minute
             }
         }
     }

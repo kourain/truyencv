@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using TruyenCV.Models;
 using Serilog;
+using TruyenCV.Models;
 
 namespace TruyenCV.BackgroundServices
 {
@@ -37,9 +37,9 @@ namespace TruyenCV.BackgroundServices
                         .Where(m => m.deleted_at == null)
                         .Select(m => m.id)
                         .ToListAsync(stoppingToken);
-                    
+
                     Log.Information($"Updating chapter_count for {list_cm.Count} comics");
-                    
+
                     foreach (var cm_id in list_cm)
                     {
                         // Phải tính count trước, EF Core không translate Count() trong SetProperty sang SQL đúng
@@ -47,17 +47,17 @@ namespace TruyenCV.BackgroundServices
                             .AsNoTracking()
                             .Where(chap => chap.comic_id == cm_id && chap.deleted_at == null)
                             .CountAsync(stoppingToken);
-                        
+
                         await _dataContext.Comics
                             .Where(m => m.id == cm_id)
                             .ExecuteUpdateAsync(setters => setters.SetProperty(
                                 p => p.chapter_count,
-                                chapterCount), 
+                                chapterCount),
                                 cancellationToken: stoppingToken);
-                        
+
                         Log.Debug($"Comic {cm_id}: chapter_count = {chapterCount}");
                     }
-                    
+
                     Log.Information("Completed updating chapter_count for all comics");
                 }
                 await Task.Delay(TimeSpan.FromDays(7), stoppingToken); // Run every week
