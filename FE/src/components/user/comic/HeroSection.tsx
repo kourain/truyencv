@@ -4,8 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookmarkPlus, BookOpen, ListTree, Star } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 import { formatNumber } from "@helpers/format";
+import { createBookmark, removeBookmark, checkBookmarkStatus } from "@services/user/bookmark.service";
+import { useToast } from "@components/providers/ToastProvider";
 
 interface HeroSectionProps {
   comic?: ComicDetailResponse["comic"];
@@ -14,6 +19,61 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ comic, slug, isLoading = false }: HeroSectionProps) => {
+  const router = useRouter();
+  const { pushToast } = useToast();
+  const queryClient = useQueryClient();
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCheckingBookmark, setIsCheckingBookmark] = useState(false);
+
+  // Check bookmark status when comic loads
+  useEffect(() => {
+    if (!comic?.id) return;
+    setIsCheckingBookmark(true);
+    checkBookmarkStatus(comic.id)
+      .then((response) => setIsBookmarked(response.is_bookmarked))
+      .catch(() => { })
+      .finally(() => setIsCheckingBookmark(false));
+  }, [comic?.id]);
+
+  const bookmarkMutation = useMutation({
+    mutationFn: async () => {
+      if (!comic?.id) throw new Error("Comic ID not found");
+      if (isBookmarked) {
+        return removeBookmark(comic.id);
+      } else {
+        return createBookmark(comic.id.toString());
+      }
+    },
+    onSuccess: () => {
+      setIsBookmarked(!isBookmarked);
+      queryClient.invalidateQueries({ queryKey: ["user-comic-detail", slug] });
+      pushToast({
+        title: isBookmarked ? "Đã xóa đánh dấu" : "Đã đánh dấu",
+        description: isBookmarked ? "Truyện đã được xóa khỏi danh sách đánh dấu" : "Truyện đã được thêm vào danh sách đánh dấu",
+        variant: "success"
+      });
+    },
+    onError: (error: any) => {
+      pushToast({
+        title: "Thao tác thất bại",
+        description: error.response?.data?.message || "Vui lòng thử lại sau",
+        variant: "error"
+      });
+    }
+  });
+
+  const handleReadContinue = () => {
+    if (!slug) return;
+
+    // Navigate to last read chapter or first chapter
+    const chapterNumber = comic?.user_last_read_chapter || 1;
+    router.push(`/user/comic/${slug}/chapter/${chapterNumber}`);
+  };
+
+  const handleBookmark = () => {
+    bookmarkMutation.mutate();
+  };
+
   if (isLoading) {
     return (
       <section className="grid gap-8 rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg lg:grid-cols-[320px_1fr] lg:p-8">
@@ -41,9 +101,6 @@ const HeroSection = ({ comic, slug, isLoading = false }: HeroSectionProps) => {
     );
   }
 
-  // if (!comic) {
-  //   return null;
-  // }
   const chaptersHref = slug ? `/user/comic/${slug}/chapters` : null;
   const ratingDescriptor = `${comic?.rate.toFixed(1)}/5 (${formatNumber(comic?.rate_count || 0)} đánh giá)`;
 
@@ -102,17 +159,23 @@ const HeroSection = ({ comic, slug, isLoading = false }: HeroSectionProps) => {
         <div className="mt-auto grid gap-3 sm:grid-cols-3">
           <button
             type="button"
+            onClick={handleReadContinue}
             className="flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             <BookOpen className="h-4 w-4" />
-            Đọc tiếp
+            {comic?.user_last_read_chapter ? `Đọc tiếp (Ch.${comic.user_last_read_chapter})` : "Đọc từ đầu"}
           </button>
           <button
             type="button"
-            className="flex items-center justify-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-5 py-3 text-sm font-semibold text-primary transition hover:bg-primary/20"
+            onClick={handleBookmark}
+            disabled={bookmarkMutation.isPending || isCheckingBookmark}
+            className={`flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${isBookmarked
+              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+              : "border border-primary/50 bg-primary/10 text-primary hover:bg-primary/20"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             <BookmarkPlus className="h-4 w-4" />
-            Đánh dấu
+            {bookmarkMutation.isPending ? "Đang xử lý..." : isBookmarked ? "Đã đánh dấu" : "Đánh dấu"}
           </button>
           {chaptersHref ? (
             <Link

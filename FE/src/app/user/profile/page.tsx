@@ -11,6 +11,7 @@ import ProfileHeader from "@components/user/profile/ProfileHeader";
 import ProfileStatsGrid from "@components/user/profile/ProfileStatsGrid";
 import EmailVerificationCard from "@components/user/profile/EmailVerificationCard";
 import ChangePasswordForm from "@components/user/profile/ChangePasswordForm";
+import BookmarkedComicsSection from "@components/user/profile/BookmarkedComicsSection";
 import {
   useUserProfileQuery,
   verifyEmail,
@@ -62,7 +63,7 @@ const EmptyState = ({ message }: { message: string }) => (
   </div>
 );
 
-type MainTabKey = "info" | "payment" | "read" | "comment" | "security";
+type MainTabKey = "info" | "payment" | "read" | "comment" | "bookmarks" | "security";
 type PaymentTabKey = "coin" | "deposit" | "ticket";
 type SecurityTabKey = "email" | "password" | "sessions";
 
@@ -71,6 +72,7 @@ const mainTabs: Array<{ key: MainTabKey; label: string }> = [
   { key: "payment", label: "Lịch sử thanh toán" },
   { key: "read", label: "Lịch sử đọc" },
   { key: "comment", label: "Lịch sử bình luận" },
+  { key: "bookmarks", label: "Truyện theo dõi" },
   { key: "security", label: "Bảo mật" },
 ];
 
@@ -103,6 +105,7 @@ const mainTabDefaultPaths: Record<MainTabKey, string> = {
   payment: paymentTabPaths.coin,
   read: "/user/profile/history_read",
   comment: "/user/profile/history_comment",
+  bookmarks: "/user/profile/bookmarks",
   security: securityTabPaths.email,
 };
 
@@ -136,6 +139,8 @@ const resolveTabsFromSection = (section: string | null): { main: MainTabKey; pay
       return { main: "read" };
     case "history_comment":
       return { main: "comment" };
+    case "bookmarks":
+      return { main: "bookmarks" };
     case "security_password":
       return { main: "security", security: "password" };
     case "security_email":
@@ -612,9 +617,8 @@ const UserProfilePage = () => {
                 <button
                   type="button"
                   disabled={isRevoking || isCurrentSession}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${
-                    isCurrentSession ? "border border-surface-muted/60 text-surface-foreground/60" : "border border-rose-500/60 text-rose-200 hover:bg-rose-500/10"
-                  }`}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-70 ${isCurrentSession ? "border border-surface-muted/60 text-surface-foreground/60" : "border border-rose-500/60 text-rose-200 hover:bg-rose-500/10"
+                    }`}
                   onClick={() => {
                     if (isCurrentSession) {
                       return;
@@ -629,8 +633,8 @@ const UserProfilePage = () => {
               <div className="grid gap-2 text-xs text-surface-foreground/70 md:grid-cols-2">
                 <p>Khởi tạo: {formatDateTime(session.created_at)}</p>
                 <p>Hết hạn: {formatDateTime(session.expires_at)}</p>
-                <p className="text-surface-foreground/50">{formatRelativeTime(session.created_at)} tạo</p>
-                <p className="text-surface-foreground/50">{formatRelativeTime(session.expires_at)} hết hạn</p>
+                <p className="text-surface-foreground/50">Tạo: {formatRelativeTime(session.created_at)}</p>
+                <p className="text-surface-foreground/50">Hết hạn: {formatRelativeTime(session.expires_at)}</p>
               </div>
             </li>
           );
@@ -702,11 +706,10 @@ const UserProfilePage = () => {
             <button
               key={tab.key}
               type="button"
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-lg"
-                  : "border border-transparent text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
-              }`}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition ${isActive
+                ? "bg-primary text-primary-foreground shadow-lg"
+                : "border border-transparent text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
+                }`}
               onClick={() => handleMainTabChange(tab.key)}
             >
               {tab.label}
@@ -754,11 +757,10 @@ const UserProfilePage = () => {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
-                  }`}
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${isActive
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
+                    }`}
                   onClick={() => handleSecurityTabChange(tab.key)}
                 >
                   {tab.label}
@@ -865,11 +867,10 @@ const UserProfilePage = () => {
                   <button
                     type="button"
                     disabled={unlinkFirebaseDisabled}
-                    className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition ${
-                      profile.has_firebase_linked
-                        ? "bg-rose-600 text-white hover:bg-rose-500"
-                        : "bg-slate-700 text-slate-300"
-                    } disabled:cursor-not-allowed disabled:opacity-70`}
+                    className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition ${profile.has_firebase_linked
+                      ? "bg-rose-600 text-white hover:bg-rose-500"
+                      : "bg-slate-700 text-slate-300"
+                      } disabled:cursor-not-allowed disabled:opacity-70`}
                     onClick={() => {
                       if (!profile.has_firebase_linked || unlinkFirebaseDisabled) {
                         return;
@@ -949,11 +950,10 @@ const UserProfilePage = () => {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
-                  }`}
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${isActive
+                    ? "bg-primary text-primary-foreground shadow-lg"
+                    : "border border-surface-muted/60 text-surface-foreground/70 hover:border-primary/40 hover:text-primary"
+                    }`}
                   onClick={() => handlePaymentTabChange(tab.key)}
                 >
                   {tab.label}
@@ -978,6 +978,12 @@ const UserProfilePage = () => {
       {activeMainTab === "comment" && (
         <section className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg">
           {renderCommentHistory()}
+        </section>
+      )}
+
+      {activeMainTab === "bookmarks" && (
+        <section className="rounded-3xl border border-surface-muted/60 bg-surface/80 p-6 shadow-lg">
+          <BookmarkedComicsSection />
         </section>
       )}
     </main>
