@@ -1,14 +1,14 @@
-using TruyenCV.DTOs.Request;
-using TruyenCV.Services;
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using TruyenCV.Helpers;
 using Serilog;
+using TruyenCV.DTOs.Request;
+using TruyenCV.Helpers;
+using TruyenCV.Services;
 
 namespace TruyenCV.Controllers
 {
@@ -130,6 +130,7 @@ namespace TruyenCV.Controllers
         /// API đăng nhập - trả về access token và refresh token
         /// </summary>
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             // Xác thực thông tin đăng nhập
@@ -200,6 +201,7 @@ namespace TruyenCV.Controllers
         /// API làm mới token - sử dụng refresh token để lấy access token mới
         /// </summary>
         [HttpPost("refresh-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             Log.Information($"Refreshing token for user {request.refresh_token}");

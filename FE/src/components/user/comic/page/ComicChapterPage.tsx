@@ -16,6 +16,8 @@ import { ApiError } from "@helpers/httpClient";
 import { recommendComic } from "@services/user/comic-recommend.service";
 import { useUnlockComicChapterMutation } from "@services/user/comic-unlock.service";
 import { convertChapterToTv, fetchTtsVoices, requestChapterTts } from "@services/user/comic-tools.service";
+import ReadingSettingsPanel from "@components/user/comic/ReadingSettingsPanel";
+import { loadReadingSettings, getReadingSettingsClassName, DEFAULT_READING_SETTINGS } from "@helpers/reading-settings";
 
 const tooltipContent = "Mỗi lượt đề cử tiêu tốn 10 coin và bạn chỉ có thể đề cử một lần mỗi tháng.";
 
@@ -37,6 +39,8 @@ const ComicChapterPage = () => {
   const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
   const [selectedVoice, setSelectedVoice] = useState("");
   const [activeContentTab, setActiveContentTab] = useState<"original" | "converted">("original");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [readingSettings, setReadingSettings] = useState<ReadingSettings>(DEFAULT_READING_SETTINGS);
   const queryClient = useQueryClient();
 
   const slug = useMemo(() => params?.slug ?? "", [params]);
@@ -118,6 +122,12 @@ const ComicChapterPage = () => {
     }
     setSelectedVoice(voiceList[0]);
   }, [voiceList, selectedVoice]);
+
+  // Load reading settings from localStorage on mount
+  useEffect(() => {
+    const settings = loadReadingSettings();
+    setReadingSettings(settings);
+  }, []);
 
   useEffect(() => {
     setConvertedContent(null);
@@ -351,23 +361,27 @@ const ComicChapterPage = () => {
             <p className="text-sm text-surface-foreground/70">Tác giả: {authorName || "Đang cập nhật"}</p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-            <NavButton disabled={!previousHref} href={previousHref} label="Chương trước" />
-            <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-white">
-              Chương {chapterNumber}: {displayChapterTitle}
-            </span>
-            <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
-            <NavButton href={`/user/comic/${slug}/chapters`} label="Mục lục" />
-            <button className="rounded-full border border-primary px-4 py-1 text-primary transition hover:bg-primary/10">
-              Đánh dấu bookmark
-            </button>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+              <NavButton disabled={!previousHref} href={previousHref} label="Chương trước" />
+              <span className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-white">
+                Chương {chapterNumber}: {displayChapterTitle}
+              </span>
+              <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+              <NavButton href={`/user/comic/${slug}/chapters`} label="Mục lục" />
+              <button className="rounded-full border border-primary px-5 py-2 text-sm font-medium text-primary transition hover:bg-primary/10">
+                Đánh dấu bookmark
+              </button>
+            </div>
           </div>
         </section>
 
         <section className="grid gap-6 rounded-3xl border border-surface-muted/60 bg-surface px-6 py-6 shadow-sm md:grid-cols-2">
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-semibold text-primary-foreground">Convert2TV</p>
+              <p className="text-sm font-semibold text-primary-foreground">Dịch sang thuần Việt</p>
               <p className="text-xs text-surface-foreground/70">Chuyển nội dung chương sang thuần Việt dễ đọc.</p>
             </div>
             <button
@@ -434,39 +448,49 @@ const ComicChapterPage = () => {
           />
         ) : (
           <section className="rounded-3xl border border-surface-muted/60 bg-surface px-6 py-6 shadow-sm">
-            <div className="flex flex-wrap gap-3 text-sm font-medium">
-              <button
-                type="button"
-                onClick={() => setActiveContentTab("original")}
-                className={`rounded-full px-4 py-2 transition ${
-                  activeContentTab === "original"
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm font-medium">
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveContentTab("original")}
+                  className={`rounded-full px-4 py-2 transition ${activeContentTab === "original"
                     ? "bg-primary text-white"
                     : "border border-primary text-primary hover:bg-primary/10"
-                }`}
-              >
-                Bản gốc
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!convertedContent) {
-                    return;
-                  }
-                  setActiveContentTab("converted");
-                }}
-                className={`rounded-full px-4 py-2 transition ${
-                  activeContentTab === "converted"
+                    }`}
+                >
+                  Bản gốc
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!convertedContent) {
+                      return;
+                    }
+                    setActiveContentTab("converted");
+                  }}
+                  className={`rounded-full px-4 py-2 transition ${activeContentTab === "converted"
                     ? "bg-primary text-white"
                     : convertedContent
                       ? "border border-primary text-primary hover:bg-primary/10"
                       : "border border-surface-muted/60 text-surface-foreground/50 cursor-not-allowed"
-                }`}
-                disabled={!convertedContent}
+                    }`}
+                  disabled={!convertedContent}
+                >
+                  Thuần Việt
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="rounded-full border border-primary px-4 py-2 text-primary transition hover:bg-primary/10"
               >
-                Thuần Việt
+                Cấu hình hiển thị
               </button>
             </div>
-            <article className="mt-4 rounded-2xl border border-surface-muted/60 bg-surface px-4 py-6 text-base leading-7 text-surface-foreground/90 whitespace-pre-wrap">
+            <article
+              className={`mt-4 rounded-2xl border border-surface-muted/60 px-4 py-6 whitespace-pre-wrap transition-all duration-200 ${getReadingSettingsClassName(readingSettings)}`}
+              style={{ fontSize: `${readingSettings.font_size}px` }}
+            >
               {activeContentTab === "converted" && !convertedContent
                 ? "Chưa có phiên bản thuần Việt. Hãy chọn \"Dịch sang thuần Việt\" để tạo nội dung."
                 : isLoading
@@ -521,11 +545,10 @@ const ComicChapterPage = () => {
               onClick={openConfirmDialog}
               disabled={isRecommendDisabled}
               title={tooltipContent}
-              className={`rounded-full px-5 py-2 text-sm font-medium transition ${
-                hasRecommended
-                  ? "bg-surface-muted/60 cursor-not-allowed text-surface-foreground/50"
-                  : "bg-primary text-white hover:bg-primary/90"
-              }`}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition ${hasRecommended
+                ? "bg-surface-muted/60 cursor-not-allowed text-surface-foreground/50"
+                : "bg-primary text-white hover:bg-primary/90"
+                }`}
             >
               {recommendLabel}
             </button>
@@ -537,7 +560,7 @@ const ComicChapterPage = () => {
           <NavButton disabled={!nextHref} href={nextHref} label="Chương sau" />
         </section>
 
-        <DiscussionsPanel discussions={detailData?.discussions} isLoading={isLoading} slug={slug} comicId={comicId}/>
+        <DiscussionsPanel discussions={detailData?.discussions} isLoading={isLoading} slug={slug} comicId={comicId} />
       </main>
 
       {isConfirmOpen && (
@@ -612,6 +635,13 @@ const ComicChapterPage = () => {
           </div>
         </div>
       )}
+
+      <ReadingSettingsPanel
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={readingSettings}
+        onSettingsChange={setReadingSettings}
+      />
     </>
   );
 };
