@@ -19,7 +19,7 @@ import { convertChapterToTv, fetchTtsVoices, requestChapterTts } from "@services
 import ReadingSettingsPanel from "@components/user/comic/ReadingSettingsPanel";
 import { loadReadingSettings, getReadingSettingsClassName, DEFAULT_READING_SETTINGS } from "@helpers/reading-settings";
 
-const tooltipContent = "Mỗi lượt đề cử tiêu tốn 10 coin và bạn chỉ có thể đề cử một lần mỗi tháng.";
+const tooltipContent = "Mỗi lượt đề cử tiêu tốn 10 coin và bạn chỉ có thể đề cử mỗi truyện một lần mỗi tháng.";
 
 const useRecommendComicMutation = (
   options?: UseMutationOptions<ComicRecommendResponse, ApiError, string | number>,

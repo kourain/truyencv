@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace TruyenCV.Models;
 
 [Table("user_comic_recommends")]
-[Index(nameof(user_id), nameof(month), nameof(year), IsUnique = true)]
+[Index(nameof(user_id), nameof(comic_id), nameof(month), nameof(year), IsUnique = true)]
 [Index(nameof(comic_id))]
 public class UserComicRecommend : BaseEntity
 {

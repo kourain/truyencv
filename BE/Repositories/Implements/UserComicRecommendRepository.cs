@@ -13,4 +13,9 @@ public class UserComicRecommendRepository : Repository<UserComicRecommend>, IUse
     {
         return await _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.user_id == userId && r.month == month && r.year == year);
     }
+
+    public async Task<UserComicRecommend?> GetByUserComicAndPeriodAsync(long userId, long comicId, int month, int year)
+    {
+        return await _dbSet.AsNoTracking().FirstOrDefaultAsync(r => r.user_id == userId && r.comic_id == comicId && r.month == month && r.year == year);
+    }
 }
