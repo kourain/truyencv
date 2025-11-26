@@ -34,3 +34,33 @@ body {
 main {
   @apply min-h-screen;
 }
+
+/* Reading Settings Font Families */
+.font-palatino {
+  font-family: "Palatino Linotype", Palatino, serif;
+}
+
+.font-times {
+  font-family: "Times New Roman", Times, serif;
+}
+
+.font-arial {
+  font-family: Arial, sans-serif;
+}
+
+.font-verdana {
+  font-family: Verdana, sans-serif;
+}
+
+.font-tahoma {
+  font-family: Tahoma, sans-serif;
+}
+
+.font-comic {
+  font-family: "Comic Sans MS", cursive;
+}
+
+.font-courier {
+  font-family: "Courier New", Courier, monospace;
+}
+

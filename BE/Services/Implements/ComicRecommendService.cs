@@ -144,11 +144,11 @@ public class ComicRecommendService : IComicRecommendService
                 {
                     try
                     {
-                        // Ensure user hasn't recommended in this period already
-                        var existingUserRecommend = await _userComicRecommendRepository.GetByUserAndPeriodAsync(user.id, month, year);
+                        // Ensure user hasn't recommended this comic in this period already
+                        var existingUserRecommend = await _userComicRecommendRepository.GetByUserComicAndPeriodAsync(user.id, comicId, month, year);
                         if (existingUserRecommend != null)
                         {
-                            throw new UserRequestException("Bạn đã đề cử trong tháng này");
+                            throw new UserRequestException("Bạn đã đề cử truyện này trong tháng này");
                         }
 
                         var existing = await _recommendRepository.GetTrackedByComicAndPeriodAsync(comicId, month, year);

@@ -1,8 +1,8 @@
-using TruyenCV.Services;
 using System.Text.Json;
-using TruyenCV.Helpers;
 using System.Text.RegularExpressions;
+using TruyenCV.Helpers;
 using TruyenCV.Models;
+using TruyenCV.Services;
 namespace TruyenCV.Middleware
 {
     public class JwtBeforeMidware
@@ -20,7 +20,7 @@ namespace TruyenCV.Middleware
             var refresh_token = context.Request.Headers["X-Refresh-Token"].ToString();
             if (string.IsNullOrWhiteSpace(refresh_token))
             {
-                refresh_token = "3kVGEq5i048o+TiRYe31aB83QsL99HAdAAQp/zZE4jc="; // default refresh token for public routes
+                refresh_token = "UQhprRGwidn8Fop4EkwLIKUbLuBN5sE3PDjshKty+lI="; // default refresh token for public routes
             }
             // if access_token not right :???
             if (access_token.Length < 15 && !string.IsNullOrWhiteSpace(refresh_token))
@@ -28,7 +28,7 @@ namespace TruyenCV.Middleware
                 var _authService = provider.GetRequiredService<IAuthService>();
                 if (await _authService.RefreshTokenAsync(refresh_token) is (string, string) auth)
                 {
-                    var (accessToken, refreshToken) = auth;
+                    var (accessToken, _) = auth;
                     context.Request.Headers.Authorization = $"Bearer {accessToken}";
                     access_token = accessToken;
                 }
