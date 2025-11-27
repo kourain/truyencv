@@ -21,6 +21,6 @@ public class UserUseCoinHistoryRepository : Repository<UserUseCoinHistory>, IUse
             $"user:{userId}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserUseCoinHistory>();
+        return result ?? [];
     }
 }

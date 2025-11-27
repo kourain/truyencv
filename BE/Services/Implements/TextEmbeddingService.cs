@@ -204,5 +204,5 @@ public class EmbeddingResponse
 }
 public class EmbeddingVector
 {
-    public float[] values { get; set; } = Array.Empty<float>();
+    public float[] values { get; set; } = [];
 }

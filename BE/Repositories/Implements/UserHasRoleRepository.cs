@@ -1,6 +1,6 @@
-using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
 
@@ -20,7 +20,7 @@ public class UserHasRoleRepository : Repository<UserHasRole>, IUserHasRoleReposi
             $"user:{userId}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserHasRole>();
+        return result ?? [];
     }
 
     public async Task<IEnumerable<UserHasRole>> GetByRoleNameAsync(string roleName)
@@ -30,6 +30,6 @@ public class UserHasRoleRepository : Repository<UserHasRole>, IUserHasRoleReposi
             $"role:{roleName}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserHasRole>();
+        return result ?? [];
     }
 }

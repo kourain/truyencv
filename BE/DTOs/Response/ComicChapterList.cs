@@ -26,7 +26,7 @@ public class ComicChapterListItemResponse
 public class ComicChaptersListResponse
 {
     public ComicChapterListComicResponse comic { get; set; } = new();
-    public IReadOnlyList<ComicChapterListItemResponse> chapters { get; set; } = Array.Empty<ComicChapterListItemResponse>();
+    public IReadOnlyList<ComicChapterListItemResponse> chapters { get; set; } = [];
     public int total_chapters { get; set; }
     public int? user_last_read_chapter { get; set; }
 }

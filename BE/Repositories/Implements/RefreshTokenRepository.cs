@@ -1,6 +1,6 @@
-using TruyenCV.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using TruyenCV.Models;
 
 namespace TruyenCV.Repositories;
 
@@ -48,7 +48,7 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
         var userTokens = await _dbSet
             .Where(r => r.user_id == userId && r.revoked_at == null)
             .ToListAsync();
-        if (!userTokens.Any()) return 0;
+        if (userTokens.Count == 0) return 0;
         var now = DateTime.UtcNow;
         await Task.WhenAll(userTokens.Select(async token =>
         {

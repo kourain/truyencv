@@ -237,9 +237,9 @@ public class ComicReportService : IComicReportService
 
     private static ComicReportResponse MapReport(
         ComicReport report,
-        IDictionary<long, Comic> comicDict,
-        IDictionary<long, ComicComment> commentDict,
-        IDictionary<long, User> reporterDict)
+        Dictionary<long, Comic> comicDict,
+        Dictionary<long, ComicComment> commentDict,
+        Dictionary<long, User> reporterDict)
     {
         var response = report.ToRespDTO();
 

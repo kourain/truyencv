@@ -31,7 +31,7 @@ public class UserComicUnlockHistoryRepository : Repository<UserComicUnlockHistor
             $"user:{userId}",
             DefaultCacheMinutes
         );
-        return histories ?? Enumerable.Empty<UserComicUnlockHistory>();
+        return histories ?? [];
     }
 
     public async Task<IEnumerable<UserComicUnlockHistory>> GetByComicIdAsync(long comicId)
@@ -44,6 +44,6 @@ public class UserComicUnlockHistoryRepository : Repository<UserComicUnlockHistor
             $"comic:{comicId}",
             DefaultCacheMinutes
         );
-        return histories ?? Enumerable.Empty<UserComicUnlockHistory>();
+        return histories ?? [];
     }
 }

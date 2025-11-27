@@ -33,7 +33,7 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
             $"user:{userId}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserComicBookmark>();
+        return result ?? [];
     }
 
     public async Task<IEnumerable<UserComicBookmark>> GetByComicIdAsync(long comicId)
@@ -45,6 +45,6 @@ public class UserComicBookmarkRepository : Repository<UserComicBookmark>, IUserC
             $"comic:{comicId}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserComicBookmark>();
+        return result ?? [];
     }
 }

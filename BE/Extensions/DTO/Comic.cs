@@ -27,7 +27,7 @@ public static partial class Extensions
             status = request.status
         };
     }
-    private static Dictionary<long, string> categoryDict = new Dictionary<long, string>()
+    private static readonly Dictionary<long, string> categoryDict = new Dictionary<long, string>()
     {
         {1001, "Tiên Hiệp"},
         {1002, "Huyền Huyễn"},
