@@ -42,7 +42,7 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
             $"user:{userId}:lm{safeLimit}",
             DefaultCacheMinutes
         );
-        return (result ?? Enumerable.Empty<UserComicReadHistory>()).Take(safeLimit);
+        return (result ?? []).Take(safeLimit);
     }
 
     public async Task<IEnumerable<UserComicReadAggregate>> GetTopByUpdatedAtAsync(DateTime fromUtc, int limit)
@@ -68,7 +68,7 @@ public class UserComicReadHistoryRepository : Repository<UserComicReadHistory>, 
 
     public async Task<IDictionary<long, long>> GetReaderCountsAsync(IEnumerable<long> comicIds, int month = 3)
     {
-        var ids = comicIds?.Distinct().ToArray() ?? Array.Empty<long>();
+        var ids = comicIds?.Distinct().ToArray() ?? [];
         if (ids.Length == 0)
         {
             return new Dictionary<long, long>();

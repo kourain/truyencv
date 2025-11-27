@@ -23,7 +23,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
             $"user:{userId}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserHasPermission>();
+        return result ?? [];
     }
 
     public async Task<IEnumerable<UserHasPermission>> GetByPermissionAsync(Permissions permission)
@@ -35,7 +35,7 @@ public class UserHasPermissionRepository : Repository<UserHasPermission>, IUserH
             $"permission:{(int)permission}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserHasPermission>();
+        return result ?? [];
     }
 
     public async Task<UserHasPermission?> GetByUserPermissionAsync(long userId, Permissions permission)

@@ -21,6 +21,6 @@ public class UserHasSubscriptionRepository : Repository<UserHasSubscription>, IU
             $"user:{userId}",
             DefaultCacheMinutes
         );
-        return result ?? Enumerable.Empty<UserHasSubscription>();
+        return result ?? [];
     }
 }

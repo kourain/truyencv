@@ -31,7 +31,7 @@ public class UserUseKeyHistoryService : IUserUseKeyHistoryService
 
         if (histories.Count == 0)
         {
-            return Enumerable.Empty<UserUseKeyHistoryResponse>();
+            return [];
         }
 
         var responses = histories.Select(history => history.ToRespDTO()).ToList();

@@ -22,6 +22,6 @@ public class UserProfileResponse
     public string coin { get; set; } = string.Empty;
     public string key { get; set; } = string.Empty;
     public string? active_subscription_name { get; set; }
-    public IReadOnlyCollection<string> roles { get; set; } = Array.Empty<string>();
-    public IReadOnlyCollection<string> permissions { get; set; } = Array.Empty<string>();
+    public IReadOnlyCollection<string> roles { get; set; } = [];
+    public IReadOnlyCollection<string> permissions { get; set; } = [];
 }

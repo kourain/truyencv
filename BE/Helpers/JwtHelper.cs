@@ -1,9 +1,9 @@
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Linq;
-using System.Text;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 namespace TruyenCV.Helpers
@@ -67,11 +67,11 @@ namespace TruyenCV.Helpers
             };
 
             // Thêm nhiều role nếu có
-            if (roles.Count() == 0)
+            if (!roles.Any())
             {
                 roles = user.Roles.Select(r => r.role_name);
             }
-            if (permissions.Count() == 0)
+            if (!permissions.Any())
             {
                 permissions = user.Permissions.Select(p => p.permissions);
             }

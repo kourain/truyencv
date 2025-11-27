@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
-using TruyenCV.Models;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using TruyenCV.Models;
 
 public static partial class IDistributedCacheExtensions
 {
@@ -186,9 +186,8 @@ public static partial class IDistributedCacheExtensions
     /// <param name="QueryMany"></param>
     /// <param name="Pos"></param>
     /// <param name="Limit"></param>
-    /// <param name="CacheMinutes"></param>
     /// <returns></returns>
-    public static async Task<IEnumerable<T>> GetFromRedisAsync<T>(this IDistributedCache RedisCache, Func<Task<List<T>>>? QueryFactory, long Pos, long Limit, double CacheMinutes) where T : BaseEntity
+    public static async Task<IEnumerable<T>> GetFromRedisAsync<T>(this IDistributedCache RedisCache, Func<Task<List<T>>>? QueryFactory, long Pos, long Limit) where T : BaseEntity
     {
         try
         {

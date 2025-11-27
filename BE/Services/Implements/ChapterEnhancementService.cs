@@ -135,7 +135,7 @@ public sealed class ChapterEnhancementService : IChapterEnhancementService
     {
         if (string.IsNullOrWhiteSpace(_ttsOptions.SoundListUrl))
         {
-            return Array.Empty<string>();
+            return [];
         }
 
         var client = _httpClientFactory.CreateClient(nameof(ChapterEnhancementService) + ":tts-voices");
@@ -146,7 +146,7 @@ public sealed class ChapterEnhancementService : IChapterEnhancementService
         {
             var raw = await response.Content.ReadAsStringAsync(cancellationToken);
             _logger.LogWarning("TTS voice list error {Status}: {Body}", (int)response.StatusCode, Truncate(raw));
-            return Array.Empty<string>();
+            return [];
         }
 
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -158,7 +158,7 @@ public sealed class ChapterEnhancementService : IChapterEnhancementService
         catch (Exception exception)
         {
             _logger.LogError(exception, "Không thể parse danh sách giọng đọc");
-            return Array.Empty<string>();
+            return [];
         }
     }
 

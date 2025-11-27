@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Caching.Distributed;
+using Pgvector;
 using TruyenCV.DTOs.Request;
 using TruyenCV.DTOs.Response;
 using TruyenCV.Models;
 using TruyenCV.Repositories;
-using Microsoft.Extensions.Caching.Distributed;
-using Pgvector;
 
 namespace TruyenCV.Services;
 
@@ -371,7 +371,7 @@ public class ComicService : IComicService
     {
         var comicEntity = await _comicRepository.GetBySlugAsync(slug);
         if (comicEntity == null)
-            return Array.Empty<ComicResponse>();
+            return [];
 
         var embeddedBy = comicEntity.embedded_by;
         var comics = await _comicRepository.GetByEmbeddedByAsync(embeddedBy);

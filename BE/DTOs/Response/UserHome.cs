@@ -71,11 +71,11 @@ public class UserHomeReviewResponse
 
 public class UserHomeResponse
 {
-    public IEnumerable<UserHomeHistoryResponse> history { get; set; } = Array.Empty<UserHomeHistoryResponse>();
-    public IEnumerable<UserHomeHighlightedComicResponse> editor_picks { get; set; } = Array.Empty<UserHomeHighlightedComicResponse>();
-    public IEnumerable<UserHomeRankingComicResponse> top_recommended { get; set; } = Array.Empty<UserHomeRankingComicResponse>();
-    public IEnumerable<UserHomeRankingComicResponse> top_weekly_reads { get; set; } = Array.Empty<UserHomeRankingComicResponse>();
-    public IEnumerable<UserHomeComicUpdateResponse> latest_updates { get; set; } = Array.Empty<UserHomeComicUpdateResponse>();
-    public IEnumerable<UserHomeCompletedComicResponse> recently_completed { get; set; } = Array.Empty<UserHomeCompletedComicResponse>();
-    public IEnumerable<UserHomeReviewResponse> latest_reviews { get; set; } = Array.Empty<UserHomeReviewResponse>();
+    public IEnumerable<UserHomeHistoryResponse> history { get; set; } = [];
+    public IEnumerable<UserHomeHighlightedComicResponse> editor_picks { get; set; } = [];
+    public IEnumerable<UserHomeRankingComicResponse> top_recommended { get; set; } = [];
+    public IEnumerable<UserHomeRankingComicResponse> top_weekly_reads { get; set; } = [];
+    public IEnumerable<UserHomeComicUpdateResponse> latest_updates { get; set; } = [];
+    public IEnumerable<UserHomeCompletedComicResponse> recently_completed { get; set; } = [];
+    public IEnumerable<UserHomeReviewResponse> latest_reviews { get; set; } = [];
 }
