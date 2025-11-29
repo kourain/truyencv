@@ -1,0 +1,62 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Information",
+      "Serilog": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "Cors": {
+    "AllowedOrigins": [
+      "localhost:3000",
+      "admin-truyencv.maiquyen.name.vn",
+      "truyencv.maiquyen.name.vn"
+    ]
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=db.cdms.io.vn;Port=5432;Database=truyencv_db;Username=kourain;Password=db-kr_cdms.io_vn;Timeout=60;",
+    "Enable": true
+  },
+  "MailEndPoint": "http://localhost:16503/send",
+  "Snowflake": {
+    "MachineId": 1
+  },
+  "Firebase": {
+    "ProjectId": "kourain-FIREBASE_PROJECT_ID",
+    "CredentialsPath": "kourain-FIREBASE_PROJECT_ID-firebase-adminsdk-fbsvc-aaaaaaaa.json",
+    "CredentialsBase64": ""
+  },
+  "JWT": {
+    "ValidIssuer": "TruyenCV",
+    "ValidAudience": "TruyenCV_USER",
+    "SecretKey": "EX_maiquyen_JWT_TruyenCV_USER_AaMMMMMAMMAMA",
+    "AccessTokenExpiryMinutes": 5,
+    "RefreshTokenExpiryDays": 30
+  },
+  "Redis": {
+    "RedisConnection": "localhost:6379",
+    "RedisInstanceName": "TruyenCV"
+  },
+  "Search": {
+    "ComicVector": {
+      "Dimensions": 768,
+      "MaxResults": 20,
+      "MinScore": 0.4,
+      "ServiceUrl": "https://pgvector-embed_test.domain.name.vn/embed",
+      "TimeoutSeconds": 15,
+      "RetryCount": 2,
+      "RetryDelayMilliseconds": 1000
+    }
+  },
+  "Convert2TV":{
+    "ServiceUrl": "https://chat-ai.domain.name.vn/api/chat",
+    "TimeoutSeconds": 60
+  },
+  "TTS": {
+    "ServiceUrl": "http://localhost:8000/tts",
+    "SoundListUrl": "http://localhost:8000/sounds",
+    "TimeoutSeconds": 30
+  }
+}
