@@ -1,5 +1,6 @@
 *.pth
 outputs/
+*temp*
 
 WadaSNR/
 .idea/
