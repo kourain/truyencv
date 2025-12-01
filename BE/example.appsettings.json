@@ -16,7 +16,7 @@
     ]
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Host=127.0.0.1;Port=5432;Database=truyencv_db;Username=kourain;Password=db-kr_cdms.io_vn;Timeout=60;",
+    "DefaultConnection": "ConnectionStrings_PLACEHOLDER",
     "Enable": true
   },
   "MailEndPoint": "http://localhost:16503/send",
