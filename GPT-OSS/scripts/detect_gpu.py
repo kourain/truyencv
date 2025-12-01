@@ -27,35 +27,30 @@ def recommend_config(gpu_name, gpu_memory):
             "batch_size": 1,
             "grad_accum": 16,
             "max_seq_len": 1024,
-            "estimated_time": "~3 days",
         },
         "t4": {
             "config": "training_config_t4.yaml",
             "batch_size": 2,
             "grad_accum": 8,
             "max_seq_len": 2048,
-            "estimated_time": "~1.5 days",
         },
         "v100": {
             "config": "training_config_v100.yaml",
             "batch_size": 4,
             "grad_accum": 4,
             "max_seq_len": 2048,
-            "estimated_time": "~1 day",
         },
         "a100": {
             "config": "training_config_a100.yaml",
             "batch_size": 8,
             "grad_accum": 2,
             "max_seq_len": 4096,
-            "estimated_time": "~15 hours",
         },
         "rtx 4090": {
             "config": "training_config_4090.yaml",
             "batch_size": 4,
             "grad_accum": 4,
             "max_seq_len": 2048,
-            "estimated_time": "~18 hours",
         },
     }
 
@@ -108,7 +103,6 @@ def main():
     print(f"   Batch size: {config['batch_size']}")
     print(f"   Gradient accumulation: {config['grad_accum']}")
     print(f"   Max sequence length: {config['max_seq_len']}")
-    print(f"   Thời gian ước tính: {config['estimated_time']}")
     print()
 
     # Command to run
