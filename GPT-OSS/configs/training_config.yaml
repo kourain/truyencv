@@ -1,0 +1,143 @@
+# Training Configuration for GPT-OSS 20B Fine-tuning
+# Optimized for RTX 3050 Laptop (4GB VRAM + 16GB Shared)
+
+# Model Configuration
+model:
+  name: "openai/gpt-oss-20b"
+  cache_dir: "./models/cache"
+  torch_dtype: "bfloat16"
+  device_map: "auto"
+  
+# LoRA Configuration
+lora:
+  r: 16                          # LoRA rank (lower = less memory, faster training)
+  lora_alpha: 32                 # LoRA scaling factor
+  lora_dropout: 0.05
+  target_modules:                # Apply LoRA to these modules
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  bias: "none"
+  task_type: "CAUSAL_LM"
+
+# Quantization Configuration (QLoRA)
+quantization:
+  load_in_4bit: true             # 4-bit quantization
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_quant_type: "nf4"
+
+# Training Arguments
+training:
+  output_dir: "./models/lora_adapters"
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16  # Effective batch size = 16
+  gradient_checkpointing: true
+  
+  # Optimization
+  optim: "paged_adamw_8bit"      # Memory-efficient optimizer
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  
+  # Precision
+  fp16: false
+  bf16: true
+  
+  # Logging
+  logging_steps: 10
+  logging_dir: "./outputs/logs"
+  report_to: "tensorboard"
+  
+  # Saving
+  save_strategy: "steps"
+  save_steps: 100
+  save_total_limit: 3
+  
+  # Evaluation
+  evaluation_strategy: "steps"
+  eval_steps: 100
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_loss"
+  
+  # Other
+  remove_unused_columns: false
+  ddp_find_unused_parameters: false
+  group_by_length: true
+
+# Data Configuration
+data:
+  input_dir: "./truyen"          # Thư mục chứa truyện gốc
+  output_dir: "./data"           # Thư mục output dataset
+  train_file: "./data/train.jsonl"
+  val_file: "./data/val.jsonl"
+  test_file: "./data/test.jsonl"
+  max_seq_length: 1024           # Giảm xuống nếu OOM
+  preprocessing_num_workers: 4
+  
+# Dataset Split Ratios
+split:
+  train: 0.8
+  validation: 0.1
+  test: 0.1
+
+# Instruction Template
+instruction:
+  system_prompt: |- 
+    Bạn là một chuyên gia dịch thuật văn học, chuyên cải thiện chất lượng bản dịch truyện convert từ tiếng Trung sang tiếng Việt. Nhiệm vụ của bạn là biến đổi văn phong máy móc, sát nghĩa thành văn học tự nhiên, giữ nguyên ý nghĩa và phong cách tiểu thuyết.Bạn là một mô hình chuyển đổi văn bản. Bạn được tạo ra nhằm mục đích dịch truyện từ văn phong Hán Việt sang tiếng Việt hiện đại. 
+    1. Một số từ đặc biệt:
+    - các danh xưng cổ như "tiểu thư", "quản gia", "lão gia", "phu nhân"; các chức danh như "chủ tịch", "ngài", v.v.; các danh xưng người trẻ tuổi như "thiếu niên", "thiếu nữ", "tiểu nữ" được giữ nguyên
+    - Danh sách một số cụm từ đặc biệt [Hán Việt] = [Thuần Việt]: 
+      khôi hài = buồn cười,
+      thô bỉ = thô tục,
+      nam nhân = đàn ông,
+      muội muội = em gái,
+      biểu muội = em họ,
+      biểu tỷ = chị họ,
+      luân lạc = lưu lạc,
+      tiền năng lực = năng lực đồng tiền,
+      bất quá = nhưng mà,
+      bảo tiêu = vệ sĩ,
+      diệu a = tuyệt vời,
+      ta thần tài = thần tài của ta
+    
+    2. Cấm:
+    - Cấm viết ngắn gọn lại 2 3 câu từ thành 1 câu. Nếu viết ngắn gọn thì hãy chỉ làm gọn câu đó. Không làm ảnh hưởng tới các câu khác.
+    - Cấm mở ngoặc giải thích các từ, hãy giải thích ở phần <exp> trong phản hồi
+
+    3. Các đoạn văn bản truyện sẽ được gửi đến trong tag <message>, các thông tin khác sẽ được gửi bên ngoài tag <message>:
+    <message> Văn Bản truyện </message>
+
+    4. Kết quả sẽ được trả về trong định dạng sau:
+    <exp> Các giải thích về bản dịch </exp>
+    <short_result> Tóm tắt văn bản </short_result>
+    <resulttag> Văn bản tiếng Việt hiện đại </resulttag>
+
+    5. Mọi phản hồi đều sử dụng tiếng Việt."
+  instruction_template: "Cải thiện chất lượng bản dịch sau đây, làm cho nó tự nhiên và văn học hơn:"
+  
+# Synthetic Data Generation (for prepare_data.py)
+synthetic:
+  degradation_strategies:
+    - "simplify_vocabulary"      # Đơn giản hóa từ vựng
+    - "literal_translation"      # Dịch sát nghĩa
+    - "remove_literary_elements" # Loại bỏ yếu tố văn học
+    - "awkward_phrasing"         # Cấu trúc câu vụng về
+  num_variations: 1              # Số biến thể cho mỗi đoạn văn
+
+# Inference Configuration
+inference:
+  max_new_tokens: 512
+  temperature: 0.7
+  top_p: 0.9
+  top_k: 50
+  repetition_penalty: 1.1
+  do_sample: true
