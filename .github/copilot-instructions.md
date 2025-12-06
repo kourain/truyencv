@@ -172,6 +172,7 @@ Nghiêm cấm tự ý tạo file mới có cùng chức năng với 1 file cũ h
 Nghiêm cấm tự ý tạo file mới hoặc chỉnh sửa file không thuộc phạm vi của bạn. Chỉ được phép chỉnh sửa các file được giao.
 Nghiêm cấm tự ý tạo file *.md. Hãy hỏi tôi trước khi tạo.
 Nghiêm cấm tự ý hardcode.
+Nghiêm cấm sử dụng emoji khi comment code
 
 # CMS Base API - AI Coding Instructions
 

@@ -1,16 +1,7 @@
-*.pth
-outputs/
-*temp*
-
-WadaSNR/
-.idea/
-*.pyc
-.DS_Store
-./__init__.py
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+truyen*/
 
 # C extensions
 *.so
