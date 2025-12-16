@@ -1,3 +1,9 @@
+# Vietnamese XTTS FastAPI Service
+
+## Download models
+[Google Drive](https://drive.usercontent.google.com/download?id=1g5zUcsLaOIsUo9gDxISbMxBrzyzJAX30&export=download)
+
+
 @app.py#L145 Hàm infer
 
 Tham số đầu vào:
