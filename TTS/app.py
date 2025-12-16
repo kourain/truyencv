@@ -43,8 +43,9 @@ def _load_model() -> Xtts:
     config = XttsConfig()
     config.load_json(f"{MODEL_DIR}/config.json")  # Cấu hình huấn luyện đã lưu của mô hình
     XTTS_MODEL = Xtts.init_from_config(config)
+    USE_DEEPSPEED = os.getenv("USE_DEEPSPEED", "true").lower() == "true"
     XTTS_MODEL.load_checkpoint(
-        config, checkpoint_dir=MODEL_DIR, use_deepspeed=False
+        config, checkpoint_dir=MODEL_DIR, use_deepspeed=USE_DEEPSPEED
     )
     if torch.cuda.is_available():
         _clear_gpu_cache()
@@ -78,6 +79,16 @@ def _normalize_text(text: str) -> str:
         .replace("'", "")
         .replace("AI", "Ây Ai")
         .replace("A.I", "Ây Ai")
+        .replace("năm 1.", "năm nhất.")
+        .replace("năm 2.", "năm hai.")
+        .replace("năm 3.", "năm ba.")
+        .replace("năm 4.", "năm bốn.")
+        .replace("năm 5.", "năm năm.")
+        .replace("năm 6.", "năm sáu.")
+        .replace("năm 7.", "năm bảy.")
+        .replace("năm 8.", "năm tám.")
+        .replace("năm 9.", "năm chín.")
+        .replace("năm 10.", "năm mười.")
     )
     return cleaned
 

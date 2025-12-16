@@ -1,18 +1,18 @@
-using TruyenCV.Helpers;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-using Serilog.Events;
-using Microsoft.Extensions.Configuration;
-using System.Net;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Pgvector.EntityFrameworkCore;
-using TruyenCV.Services;
+using System.Net;
+using System.Text;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
-using System.Text;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using Pgvector.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
+using TruyenCV.Helpers;
+using TruyenCV.Services;
 namespace TruyenCV
 {
     public class Program

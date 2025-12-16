@@ -1,11 +1,12 @@
 using Microsoft.CodeAnalysis.Elfie.Extensions;
 
 namespace TruyenCV.Helpers;
+
 public class SnowflakeIdGenerator
 {
     private static readonly DateTime Epoch = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    private static readonly object[] _lock = new object[1023];
+    private static readonly object _lock = new object();
     private static readonly ulong[] _lastTimestamp = new ulong[1023];
     private static readonly ulong[] _sequence = new ulong[4096];
 
@@ -20,16 +21,12 @@ public class SnowflakeIdGenerator
     public static void Init(uint _machineId)
     {
         MachineId = _machineId;
-        for (uint i = 0; i < 1023; i++)
-        {
-            _lock[i] = new object();
-        }
     }
     public static long NextId()
     {
         if (MachineId < 0 || MaxMachineId - MachineId < 0)
             throw new UserRequestException($"MachineId phải nằm trong khoảng 0 - {MaxMachineId}");
-        lock (_lock[MachineId])
+        lock (_lock)
         {
             var timestamp = GetCurrentTimestamp();
             if (timestamp == _lastTimestamp[MachineId])

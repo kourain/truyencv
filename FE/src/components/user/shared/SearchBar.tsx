@@ -9,7 +9,6 @@ type SearchBarProps = {
 };
 
 export const SearchBar = ({ className }: SearchBarProps) => {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchValue, setSearchValue] = useState(searchParams.get("keyword") ?? "");
@@ -23,7 +22,7 @@ export const SearchBar = ({ className }: SearchBarProps) => {
       return;
     }
 
-    const href = pathname === "/user/search" ? `?keyword=${encodeURIComponent(value)}` : `/user/search?keyword=${encodeURIComponent(value)}`;
+    const href = `/user/search?keyword=${encodeURIComponent(value)}`;
     router.push(href);
   };
 
