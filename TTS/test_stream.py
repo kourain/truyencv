@@ -30,7 +30,7 @@ Diệp Phong gật gật đầu: "Ta năm nay mới vừa lên đại học năm
 "Dạng này a. . ." Hạ Thu gật gật đầu, muốn nói lại thôi.
 Nhìn Diệp Phong mặc, gia đình điều kiện hẳn là rất bình thường. """,
         "normalize": True,
-        "reference_audio": "nu-calm.wav",
+        "reference_audio": "nam-calm.wav",
         "chunk_size": 20,
     }
 

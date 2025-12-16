@@ -1,6 +1,7 @@
 *.pth
 outputs/
 *temp*
+uv.lock
 
 WadaSNR/
 .idea/
