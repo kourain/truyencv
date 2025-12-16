@@ -6,6 +6,7 @@ requires-python = ">=3.11,<3.12"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
+    "deepspeed",
     "nvidia-cublas-cu12>=12.4",
     "nvidia-cuda-cupti-cu12>=12.4",
     "nvidia-cuda-nvrtc-cu12>=12.4",

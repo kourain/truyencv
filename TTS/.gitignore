@@ -1,4 +1,4 @@
-*.pth
+*model.pth
 outputs/
 *temp*
 uv.lock
@@ -120,7 +120,7 @@ venv.bak/
 *.swo
 
 # pytorch models
-*.pth
+# *.pth
 *.pth.tar
 !dummy_speakers.pth
 result/
