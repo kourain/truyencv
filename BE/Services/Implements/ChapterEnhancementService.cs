@@ -193,8 +193,20 @@ internal sealed class Content
     {
         get
         {
-            int pos0 = text.IndexOf("<resulttag>") + 11;
+            int pos0 = text.LastIndexOf("<resulttag>") + 11;
             int pos1 = text.IndexOf("</resulttag>");
+            if (pos1 - pos0 > 0)
+                return text.Substring(pos0, pos1 - pos0);
+            else return "";
+        }
+    }
+    [JsonIgnore]
+    public string textResponseComicShort
+    {
+        get
+        {
+            int pos0 = text.LastIndexOf("<short_result>") + 16;
+            int pos1 = text.IndexOf("</short_result>");
             if (pos1 - pos0 > 0)
                 return text.Substring(pos0, pos1 - pos0);
             else return "";
