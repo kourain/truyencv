@@ -4,9 +4,8 @@ import { ReactNode } from "react";
 import QueryProvider from "@components/providers/QueryProvider";
 import AuthProvider from "@components/providers/AuthProvider";
 import ToastProvider from "@components/providers/ToastProvider";
-
+import SearchProvider from "@components/providers/SearchProvider";
 import "./globals.css";
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { emptyServerAuthState } from "@const/val";
 
@@ -22,7 +21,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
   const headersList = await headers();
   const authStateBase64 = headersList.get("x-auth-state");
   let authState = emptyServerAuthState as { userProfile: UserProfileResponse; auth: AuthTokensResponse };
-  
+
   if (authStateBase64) {
     try {
       authState = JSON.parse(Buffer.from(authStateBase64, 'base64').toString('utf-8'));
@@ -39,11 +38,13 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
       </head>
       <body className="bg-white">
         <AuthProvider initialState={authState}>
-          <ToastProvider>
-            <QueryProvider>
-              {children}
-            </QueryProvider>
-          </ToastProvider>
+          <SearchProvider>
+            <ToastProvider>
+              <QueryProvider>
+                {children}
+              </QueryProvider>
+            </ToastProvider>
+          </SearchProvider>
         </AuthProvider>
       </body>
     </html>
