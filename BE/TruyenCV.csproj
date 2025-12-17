@@ -20,6 +20,8 @@
     <NoWarn>$(NoWarn);IDE0290</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE0310</NoWarn> <!-- IDE -->
     <NoWarn>$(NoWarn);IDE1006</NoWarn> <!-- IDE -->
+    <OutputType>Exe</OutputType>
+    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
