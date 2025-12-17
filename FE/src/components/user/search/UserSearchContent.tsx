@@ -1,73 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Route } from "next";
+import { useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 
-import { BookOpen, Filter, Search as SearchIcon, Star, Tag } from "lucide-react";
+import { BookOpen, Filter, Search as Star, Tag } from "lucide-react";
 
 import EmptyState from "@components/user/home/EmptyState";
 import { formatNumber } from "@helpers/format";
 import { useComicSearchQuery, type SearchComicResult } from "@services/user/search.service";
+import { useSearch } from "@components/providers/SearchProvider";
 
 const DEFAULT_PAGE_SIZE = 12;
 
 export const UserSearchContent = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const search = useSearch();
 
-  const keywordParam = searchParams.get("keyword") ?? "";
-  const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
-  const currentPage = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
-
-  const [searchValue, setSearchValue] = useState(keywordParam);
-
-  useEffect(() => {
-    setSearchValue(keywordParam);
-  }, [keywordParam]);
-
-  const { data, isLoading } = useComicSearchQuery({ keyword: keywordParam, page: currentPage, page_size: DEFAULT_PAGE_SIZE });
+  const { data, isLoading, refetch } = useComicSearchQuery({ keyword: search.keyword, page: search.page, page_size: DEFAULT_PAGE_SIZE });
 
   const results = data?.results ?? [];
   const total = data?.total ?? 0;
   const pageSize = data?.page_size ?? DEFAULT_PAGE_SIZE;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const handleSearch = useCallback(
-    (keyword: string) => {
-      const href = buildSearchRoute(keyword, 1);
-      router.push(href);
-    },
-    [router]
-  );
+  useEffect(() => {
+    refetch();
+  }, [search.page]);
 
-  const handleSubmit = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      if (!searchValue.trim()) {
-        return;
-      }
 
-      handleSearch(searchValue.trim());
-    },
-    [handleSearch, searchValue]
-  );
-  const handleChangePage = useCallback(
-    (page: number) => {
-      const href = buildSearchRoute(keywordParam, page);
-      router.push(href);
-    },
-    [keywordParam, router]
-  );
-
-  const pagination = useMemo(() => buildPagination(currentPage, totalPages), [currentPage, totalPages]);
+  const pagination = useMemo(() => buildPagination(search.page, totalPages), [search.page, totalPages]);
 
   return (
     <div className="relative flex min-h-screen flex-col bg-surface">
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
         <header className="rounded-lg border border-surface-muted/60 bg-surface/80 p-6 shadow-xl">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
+          <form onSubmit={() => { }} className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
             <div className="flex-1">
               <label htmlFor="search" className="text-xs uppercase tracking-[0.4em] text-surface-foreground/60">
                 Tìm kiếm truyện
@@ -79,7 +45,7 @@ export const UserSearchContent = () => {
                 {total > 0
                   ? `Có ${formatNumber(total)} kết quả cho `
                   : "Chưa tìm thấy truyện phù hợp. Thử với từ khóa khác."}
-                {keywordParam && total > 0 && <strong className="ml-1 text-primary">“{keywordParam}”</strong>}
+                {search.keyword && total > 0 && <strong className="ml-1 text-primary">“{search.keyword}”</strong>}
               </span>
             </div>
           </form>
@@ -97,14 +63,14 @@ export const UserSearchContent = () => {
         {totalPages > 1 && (
           <nav className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-surface-muted/60 bg-surface/80 px-4 py-3 text-sm text-surface-foreground/70">
             <div>
-              Trang {currentPage} / {totalPages}
+              Trang {search.page} / {totalPages}
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 className="rounded-md border border-surface-muted/60 px-3 py-1.5 transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
-                onClick={() => handleChangePage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                onClick={() => search.setPage(Math.max(1, search.page - 1))}
+                disabled={search.page === 1}
               >
                 Trước
               </button>
@@ -117,7 +83,7 @@ export const UserSearchContent = () => {
                     ? "bg-primary text-primary-foreground"
                     : "border border-surface-muted/60 hover:border-primary"
                     }`}
-                  onClick={() => item.page && handleChangePage(item.page)}
+                  onClick={() => item.page && search.setPage(item.page)}
                 >
                   {item.label}
                 </button>
@@ -125,8 +91,8 @@ export const UserSearchContent = () => {
               <button
                 type="button"
                 className="rounded-md border border-surface-muted/60 px-3 py-1.5 transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
-                onClick={() => handleChangePage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
+                onClick={() => search.setPage(Math.min(totalPages, search.page + 1))}
+                disabled={search.page === totalPages}
               >
                 Sau
               </button>
@@ -205,18 +171,6 @@ const SearchSkeletonCard = () => (
   </div>
 );
 
-const buildSearchRoute = (keyword: string, page: number): Route => {
-  const search = new URLSearchParams();
-  if (keyword.trim()) {
-    search.set("keyword", keyword.trim());
-  }
-  if (page > 1) {
-    search.set("page", page.toString());
-  }
-
-  const query = search.toString();
-  return (`/user/search${query ? `?${query}` : ""}`) as unknown as Route;
-};
 
 const buildPagination = (current: number, total: number): PaginationButton[] => {
   const buttons: PaginationButton[] = [];

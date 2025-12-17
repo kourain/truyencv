@@ -1,20 +1,18 @@
 "use client";
+import { useSearch } from "@components/providers/SearchProvider";
 import clsx from "clsx";
 import { SearchIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 
 type SearchBarProps = {
   className?: string;
 };
 
 export const SearchBar = ({ className }: SearchBarProps) => {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const [searchValue, setSearchValue] = useState(searchParams.get("keyword") ?? "");
-
-  const trimmedValue = useMemo(() => searchValue.trim(), [searchValue]);
-  const canSearch = trimmedValue.length > 0;
+  const search = useSearch()
+  const canSearch = search.keyword.length > 0;
 
   const handleSearch = (keyword: string) => {
     const value = keyword.trim();
@@ -22,7 +20,9 @@ export const SearchBar = ({ className }: SearchBarProps) => {
       return;
     }
 
-    const href = `/user/search?keyword=${encodeURIComponent(value)}`;
+    search.setKeyword(value);
+    search.setPage(1);
+    const href = `/user/search`;
     router.push(href);
   };
 
@@ -33,11 +33,11 @@ export const SearchBar = ({ className }: SearchBarProps) => {
         <input
           id="search"
           type="search"
-          value={searchValue}
-          onChange={(event) => setSearchValue(event.target.value)}
+          value={search.keyword}
+          onChange={(event) => search.setKeyword(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
-              handleSearch(searchValue);
+              handleSearch(search.keyword);
             }
           }}
           placeholder="Tìm kiếm truyện, tác giả hoặc thể loại..."
@@ -45,7 +45,7 @@ export const SearchBar = ({ className }: SearchBarProps) => {
         />
       </div>
       <button
-        onClick={() => handleSearch(searchValue)}
+        onClick={() => handleSearch(search.keyword)}
         type="submit"
         disabled={!canSearch}
         className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary/60 bg-primary text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
