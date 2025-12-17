@@ -18,10 +18,6 @@ namespace TruyenCV.Middleware
         {
             var access_token = context.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
             var refresh_token = context.Request.Headers["X-Refresh-Token"].ToString();
-            if (string.IsNullOrWhiteSpace(refresh_token))
-            {
-                refresh_token = "UQhprRGwidn8Fop4EkwLIKUbLuBN5sE3PDjshKty+lI="; // default refresh token for public routes
-            }
             // if access_token not right :???
             if (access_token.Length < 15 && !string.IsNullOrWhiteSpace(refresh_token))
             {
