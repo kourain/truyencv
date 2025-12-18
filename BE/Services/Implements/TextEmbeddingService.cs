@@ -82,6 +82,7 @@ public class TextEmbeddingService : ITextEmbeddingService
 
             try
             {
+                _logger.LogWarning("request: {request}", request.RequestUri);
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
                 _logger.LogWarning("Request Text: {Text}", payload);
                 _logger.LogWarning("Response from embedding service: {Body}", await response.Content.ReadAsStringAsync() ?? "null");

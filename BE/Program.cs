@@ -180,12 +180,8 @@ namespace TruyenCV
             var builder = WebApplication.CreateBuilder(args);
             SnowflakeIdGenerator.Init(uint.Parse(builder.Configuration.GetSection("Snowflake:MachineId").Value));
             Directory.CreateDirectory("logs"); // Tạo thư mục logs nếu chưa tồn tại
-            var errorLogPath = builder.Environment.IsProduction()
-                ? $"logs/{DateTime.Now:yyyyMMdd_HHmmss}_errors.log"
-                : "errors.log";
-            var warnLogPath = builder.Environment.IsProduction()
-                ? $"logs/{DateTime.Now:yyyyMMdd_HHmmss}_warnings.log"
-                : "warn.log";
+            var errorLogPath = builder.Configuration.GetSection("LoggingPaths:ErrorLogPath").Value ?? "errors.log";
+            var warnLogPath = builder.Configuration.GetSection("LoggingPaths:WarnLogPath").Value ?? "warn.log";
             if (builder.Environment.IsDevelopment())
             {
                 File.WriteAllText(errorLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
