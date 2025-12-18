@@ -23,7 +23,9 @@ export const UserSearchContent = () => {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   useEffect(() => {
-    refetch();
+    setTimeout(() => {
+      refetch();
+    }, 500);
   }, [search.page]);
 
 
