@@ -12,19 +12,20 @@ from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from starlette.background import BackgroundTask
 from starlette.concurrency import run_in_threadpool
-from underthesea import sent_tokenize,text_normalize
+from underthesea import sent_tokenize, text_normalize
 import numpy as np
 from unidecode import unidecode
 import dotenv
 from TTS.tts.configs.xtts_config import XttsConfig
 from TTS.tts.models.xtts import Xtts
+from TTS.vietnamese.text_processor import process_vietnamese_text
 APP_TITLE = "viXTTS FastAPI"
 SUMMARY = "REST API for Vietnamese XTTS inference (GPU-enabled)."
 
 dotenv.load_dotenv()
-MODEL_DIR = os.getenv("MODEL_DIR", "/home/kourain/truyencv/TTS/models")
-VOICES_DIR = os.getenv("VOICES_DIR", "/home/kourain/truyencv/TTS/voices")
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/home/kourain/truyencv/TTS/outputs")
+MODEL_DIR = os.getenv("MODEL_DIR", "./models")
+VOICES_DIR = os.getenv("VOICES_DIR", "./voices")
+OUTPUT_DIR = os.getenv("OUTPUT_DIR", "./outputs")
 LANGUAGE = "vi"
 REQUIRED_MODEL_FILES = {"model.pth", "config.json", "vocab.json"}
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -32,16 +33,21 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 XTTS_MODEL: Xtts | None = None
 
+
 def _clear_gpu_cache() -> None:
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
+
+
 def _load_model() -> Xtts:
     global XTTS_MODEL
     if XTTS_MODEL is not None:
         return XTTS_MODEL
-        
+
     config = XttsConfig()
-    config.load_json(f"{MODEL_DIR}/config.json")  # Cấu hình huấn luyện đã lưu của mô hình
+    config.load_json(
+        f"{MODEL_DIR}/config.json"
+    )  # Cấu hình huấn luyện đã lưu của mô hình
     XTTS_MODEL = Xtts.init_from_config(config)
     USE_DEEPSPEED = os.getenv("USE_DEEPSPEED", "true").lower() == "true"
     XTTS_MODEL.load_checkpoint(
@@ -56,7 +62,7 @@ def _load_model() -> Xtts:
         try:
             torch.set_float32_matmul_precision("high")
         except AttributeError:
-            pass # Old pytorch versions
+            pass  # Old pytorch versions
     else:
         raise RuntimeError("Không phát hiện được GPU. Hãy kiểm tra CUDA driver.")
 
@@ -66,7 +72,7 @@ def _load_model() -> Xtts:
 
 
 def _normalize_text(text: str) -> str:
-    text = text.replace("·","")
+    text = text.replace("·", "")
     open("temp.txt", "w", encoding="utf-8").write(text)
     cleaned = (
         text_normalize(text)
@@ -90,7 +96,7 @@ def _normalize_text(text: str) -> str:
         .replace("năm 9.", "năm chín.")
         .replace("năm 10.", "năm mười.")
     )
-    return cleaned
+    return process_vietnamese_text(cleaned)
 
 
 def _calculate_keep_len(text: str, lang: str) -> int:
@@ -106,15 +112,21 @@ def _calculate_keep_len(text: str, lang: str) -> int:
         return 13000 * word_count + 2000 * num_punct
     return -1
 
-def _filename_from_output_name(output_name: str,max_char: int = 50) -> str:
+
+def _filename_from_output_name(output_name: str, max_char: int = 50) -> str:
     snippet = output_name[:max_char].lower().replace(" ", "_")
-    snippet = snippet.translate(str.maketrans("", "", string.punctuation.replace("_", "")))
+    snippet = snippet.translate(
+        str.maketrans("", "", string.punctuation.replace("_", ""))
+    )
     snippet = unidecode(snippet)
     return f"{snippet or 'tts'}"
 
+
 def _filename_from_text(text: str, max_char: int = 50) -> str:
     snippet = text[:max_char].lower().replace(" ", "_")
-    snippet = snippet.translate(str.maketrans("", "", string.punctuation.replace("_", "")))
+    snippet = snippet.translate(
+        str.maketrans("", "", string.punctuation.replace("_", ""))
+    )
     snippet = unidecode(snippet)
     timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d%H%M%S")
     return f"{timestamp}_{snippet or 'tts'}"
@@ -127,7 +139,9 @@ def _resolve_output_filename(
 ) -> tuple[str, bool]:
     """Create final filename f"<output>_<reference>.wav" and flag user-provided names."""
 
-    reference_slug = _filename_from_output_name(Path(reference_audio).stem or reference_audio)
+    reference_slug = _filename_from_output_name(
+        Path(reference_audio).stem or reference_audio
+    )
     cleaned_output = output_name.strip() if output_name else ""
     has_custom_name = bool(cleaned_output)
     if has_custom_name:
@@ -282,7 +296,9 @@ async def app_lifespan(_: FastAPI):
     yield
     _clear_gpu_cache()
 
+
 app = FastAPI(title=APP_TITLE, description=SUMMARY, lifespan=app_lifespan)
+
 
 @app.get("/sounds")
 async def list_sounds() -> list[str]:
@@ -291,15 +307,20 @@ async def list_sounds() -> list[str]:
         raise HTTPException(status_code=500, detail="Thư mục voices không tồn tại")
 
     sound_files = [
-        f.name for f in voices_path.iterdir() if f.is_file() and f.suffix.lower() == ".wav"
+        f.name
+        for f in voices_path.iterdir()
+        if f.is_file() and f.suffix.lower() == ".wav"
     ]
     return sound_files
+
 
 @app.post("/tts/stream")
 async def synthesize_stream(
     text: str = Form(..., description="Văn bản cần đọc"),
     normalize: bool = Form(True, description="Chuẩn hóa tiếng Việt trước khi đọc"),
-    reference_audio: str = Form(..., description="Tên tệp WAV có sẵn trong thư mục voices"),
+    reference_audio: str = Form(
+        ..., description="Tên tệp WAV có sẵn trong thư mục voices"
+    ),
     chunk_size: int = Form(20, description="Kích thước chunk cho streaming"),
 ):
     if not reference_audio.strip():
@@ -309,7 +330,9 @@ async def synthesize_stream(
     if not reference_path.suffix:
         reference_path = reference_path.with_suffix(".wav")
     if not reference_path.exists():
-        raise HTTPException(status_code=400, detail="Không tìm thấy tệp mẫu trong thư mục voices")
+        raise HTTPException(
+            status_code=400, detail="Không tìm thấy tệp mẫu trong thư mục voices"
+        )
 
     stream_generator = await _stream_infer(
         text,
@@ -332,8 +355,10 @@ async def synthesize_stream(
 async def synthesize(
     text: str = Form(..., description="Văn bản cần đọc"),
     normalize: bool = Form(True, description="Chuẩn hóa tiếng Việt trước khi đọc"),
-    reference_audio: str = Form(..., description="Tên tệp WAV có sẵn trong thư mục voices"),
-    output_name: str = Form(None, description="Tên tệp đầu ra (không bắt buộc)")
+    reference_audio: str = Form(
+        ..., description="Tên tệp WAV có sẵn trong thư mục voices"
+    ),
+    output_name: str = Form(None, description="Tên tệp đầu ra (không bắt buộc)"),
 ):
     if not reference_audio.strip():
         raise HTTPException(status_code=400, detail="Thiếu tên tệp mẫu giọng nói")
@@ -342,7 +367,9 @@ async def synthesize(
     if not reference_path.suffix:
         reference_path = reference_path.with_suffix(".wav")
     if not reference_path.exists():
-        raise HTTPException(status_code=400, detail="Không tìm thấy tệp mẫu trong thư mục voices")
+        raise HTTPException(
+            status_code=400, detail="Không tìm thấy tệp mẫu trong thư mục voices"
+        )
 
     final_filename, has_custom_name = _resolve_output_filename(
         output_name,
@@ -352,8 +379,8 @@ async def synthesize(
     final_path = Path(OUTPUT_DIR) / final_filename
 
     if final_path.exists():
-        background_task: BackgroundTask | None = None if has_custom_name else BackgroundTask(
-            _cleanup_file, str(final_path)
+        background_task: BackgroundTask | None = (
+            None if has_custom_name else BackgroundTask(_cleanup_file, str(final_path))
         )
         return FileResponse(
             path=str(final_path),
@@ -370,7 +397,9 @@ async def synthesize(
         final_filename,
     )
 
-    background_task = None if has_custom_name else BackgroundTask(_cleanup_file, generated_path)
+    background_task = (
+        None if has_custom_name else BackgroundTask(_cleanup_file, generated_path)
+    )
     return FileResponse(
         path=generated_path,
         filename=Path(generated_path).name,
@@ -384,6 +413,9 @@ async def health_check() -> dict[str, str]:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     loaded = "yes" if XTTS_MODEL is not None else "no"
     return {"status": "ok", "device": device, "model_loaded": loaded}
+
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
