@@ -124,7 +124,7 @@ class ComicUploader:
                 logger.error(f"✗ Lỗi tạo truyện {payload['name']}: {error_msg}")
                 return None
             elif response.status_code == 401:
-                logger.error(f"✗ Lỗi xác thực - Token không hợp lệ hoặc thiếu quyền Converter")
+                logger.error("✗ Lỗi xác thực - Token không hợp lệ hoặc thiếu quyền Converter")
                 return None
             else:
                 logger.error(f"✗ Lỗi tạo truyện {payload['name']}: HTTP {response.status_code}")
@@ -153,7 +153,7 @@ class ComicUploader:
             "comic_id": str(comic_id),
             "chapter": chapter_num,
             "content": content,
-            "key_require": None,
+            "key_require": 0,
             "key_require_until": None
         }
         
@@ -345,7 +345,7 @@ def main():
     
     # Tổng kết
     logger.info(f"\n{'='*80}")
-    logger.info(f"HOÀN THÀNH!")
+    logger.info("HOÀN THÀNH!")
     logger.info(f"Tổng số truyện: {len(comic_dirs)}")
     logger.info(f"Thành công: {total_success}")
     logger.info(f"Thất bại: {total_failed}")

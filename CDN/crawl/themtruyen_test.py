@@ -10,7 +10,6 @@ Ví dụ:
 
 import sys
 import os
-from pathlib import Path
 
 # Import module chính
 import themtruyen
@@ -81,7 +80,7 @@ def main():
     
     # Tổng kết
     themtruyen.logger.info(f"\n{'='*80}")
-    themtruyen.logger.info(f"TEST HOÀN THÀNH!")
+    themtruyen.logger.info("TEST HOÀN THÀNH!")
     themtruyen.logger.info(f"Đã xử lý: {len(comic_slugs)} truyện")
     themtruyen.logger.info(f"Thành công: {success_count}")
     themtruyen.logger.info(f"Thất bại: {failed_count}")
