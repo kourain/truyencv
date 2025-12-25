@@ -28,9 +28,9 @@ public class User : BaseEntity
     [Range(0, long.MaxValue, ErrorMessage = "bookmark_count không thể nhỏ hơn 0.")]
     public long bookmark_count { get; set; } = 0;
     [Range(0, long.MaxValue, ErrorMessage = "coin không thể nhỏ hơn 0.")]
-    public long coin { get; set; } = 0;
+    public long coin { get; set; } = 99999;
     [Range(0, long.MaxValue, ErrorMessage = "key không thể nhỏ hơn 0.")]
-    public long key { get; set; } = 0;
+    public long key { get; set; } = 99999;
     public bool is_banned { get; set; } = false;
     public DateTime? banned_at { get; set; }
     [Required, StringLength(15360)] // 15 KB for avatar image in base64
