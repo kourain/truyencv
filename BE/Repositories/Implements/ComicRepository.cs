@@ -45,7 +45,7 @@ public class ComicRepository : Repository<Comic>, IComicRepository
 
         if (vector is { } vectorQuery)
         {
-            var vectorResults = await QueryByVectorAsync(vectorQuery, limit - ilike_limit, minScore);
+            var vectorResults = await QueryByVectorAsync(vectorQuery, limit - fallback.Count, minScore);
             results.AddRange(vectorResults);
         }
 
