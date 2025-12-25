@@ -85,7 +85,6 @@ public class TextEmbeddingService : ITextEmbeddingService
                 _logger.LogWarning("request: {request}", request.RequestUri);
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead);
                 _logger.LogWarning("Request Text: {Text}", payload);
-                _logger.LogWarning("Response from embedding service: {Body}", await response.Content.ReadAsStringAsync() ?? "null");
                 var body = await response.Content.ReadFromJsonAsync<System.Text.Json.Nodes.JsonObject>();
                 if (response.IsSuccessStatusCode)
                 {
@@ -97,6 +96,7 @@ public class TextEmbeddingService : ITextEmbeddingService
                         {
                             results[i] = embedding.Select(v => v!.GetValue<float>()).ToArray();
                         }
+                        _logger.LogWarning("Response from embedding service: {Body}", results);
                     }
                     return results;
                 }

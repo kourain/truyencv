@@ -73,9 +73,9 @@ def _load_model() -> Xtts:
 
 def _normalize_text(text: str) -> str:
     text = text.replace("·", "")
-    open("temp.txt", "w", encoding="utf-8").write(text)
+    # open("temp.txt", "w", encoding="utf-8").write(text)
     cleaned = (
-        text_normalize(text)
+        str(text_normalize(text))
         .replace("..", ".")
         .replace("!.", "!")
         .replace("?.", "?")
