@@ -96,8 +96,8 @@ public class TextEmbeddingService : ITextEmbeddingService
                         {
                             results[i] = embedding.Select(v => v!.GetValue<float>()).ToArray();
                         }
-                        _logger.LogWarning("Response from embedding service: {Body}", results);
                     }
+                    _logger.LogWarning("Response from embedding service: {Body}", results);
                     return results;
                 }
 
