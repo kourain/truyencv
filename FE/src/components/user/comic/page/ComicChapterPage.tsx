@@ -300,7 +300,11 @@ const ComicChapterPage = () => {
   };
 
   const handleGenerateTts = () => {
-    if (!slug || !chapterNumber || !chapterData?.content) {
+    const contentToRead = activeContentTab === "converted" && convertedContent
+      ? convertedContent
+      : chapterData?.content;
+
+    if (!slug || !chapterNumber || !contentToRead) {
       pushToast({
         title: "Không thể tạo audio",
         description: "Vui lòng tải lại chương trước khi đọc.",
@@ -318,7 +322,7 @@ const ComicChapterPage = () => {
       return;
     }
 
-    ttsMutation.mutate({ slug, chapterNumber, content: chapterData.content, reference_audio: selectedVoice });
+    ttsMutation.mutate({ slug, chapterNumber, content: contentToRead, reference_audio: selectedVoice });
   };
 
   if (!slug || !chapterNumber) {
@@ -429,7 +433,12 @@ const ComicChapterPage = () => {
               {ttsButtonLabel}
             </button>
             {ttsAudioUrl && (
-              <audio controls className="w-full rounded-2xl border border-surface-muted/60 bg-surface px-3 py-2">
+              <audio
+                key={ttsAudioUrl}
+                controls
+                autoPlay
+                className="w-full rounded-2xl border border-surface-muted/60 bg-surface px-3 py-2"
+              >
                 <source src={ttsAudioUrl} type="audio/wav" />
                 Trình duyệt của bạn không hỗ trợ audio.
               </audio>

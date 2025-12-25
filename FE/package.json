@@ -24,7 +24,7 @@
     "publish": true
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.14.6",
+    "@opennextjs/cloudflare": "^1.14.7",
     "@tanstack/react-query": "^5.90.12",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
@@ -53,6 +53,6 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
-    "wrangler": "^4.55.0"
+    "wrangler": "^4.54.0"
   }
 }

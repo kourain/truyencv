@@ -15,7 +15,7 @@
     "binding": "AI"
   },
   "main": "src/index.ts",
-  "compatibility_date": "2025-10-31",
+  "compatibility_date": "2025-11-17",
   "observability": {
     "enabled": true
   }
