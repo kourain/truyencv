@@ -15,7 +15,7 @@ const resource = "/admin/Comic";
 
 export const fetchComics = async (params: ComicListParams = {}) => {
 	const client = getHttpClient();
-	const response = await client.get<ComicResponse[]>(resource, { params });
+  const response = await client.get<ComicResponse[]>(`${resource}/search`, { params });
 
 	return response.data;
 };

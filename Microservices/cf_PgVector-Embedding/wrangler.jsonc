@@ -5,17 +5,19 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "pgvector-embedding-google-gemma",
-  "vectorize": [
-    {
-      "binding": "VECTORIZE",
-      "index_name": "embeddings-index"
-    }
-  ],
+  // "vectorize": [
+  //   {
+  //     "binding": "VECTORIZE",
+  //     "index_name": "embeddings-index"
+  //   }
+  // ],
   "ai": {
     "binding": "AI"
   },
+  "workers_dev": false,
+  "preview_urls": false,
   "main": "src/index.ts",
-  "compatibility_date": "2025-11-17",
+  "compatibility_date": "2025-12-25",
   "observability": {
     "enabled": true
   }
