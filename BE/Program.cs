@@ -182,11 +182,11 @@ namespace TruyenCV
             Directory.CreateDirectory("logs"); // Tạo thư mục logs nếu chưa tồn tại
             var errorLogPath = builder.Configuration.GetSection("LoggingPaths:ErrorLogPath").Value ?? "errors.log";
             var warnLogPath = builder.Configuration.GetSection("LoggingPaths:WarnLogPath").Value ?? "warn.log";
-            if (builder.Environment.IsDevelopment())
-            {
+            // if (builder.Environment.IsDevelopment())
+            // {
                 File.WriteAllText(errorLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
                 File.WriteAllText(warnLogPath, string.Empty); // Xóa nội dung file log cũ khi chạy ở môi trường Development
-            }
+            // }
             Log.Logger = new LoggerConfiguration()
                             .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose,
                                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")

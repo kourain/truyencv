@@ -74,6 +74,7 @@ namespace TruyenCV.BackgroundServices
                                     );
                                 }
                             }
+                            await _dataContext.SaveChangesAsync(stoppingToken);
                         }
                         //slug fix
                         var listSlug = await _dataContext.Comics.Where(c => c.slug.Length < c.name.Length - 5).ToListAsync(stoppingToken);
@@ -85,12 +86,8 @@ namespace TruyenCV.BackgroundServices
                     {
                         _logger.LogError(ex, "Error executing background task");
                     }
-                    finally
-                    {
-                        await _dataContext.DisposeAsync();
-                    }
                 }
-                await Task.Delay(TimeSpan.FromDays(1), stoppingToken); // Run every minute
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken); // Run every 5 minute
             }
         }
     }
