@@ -66,7 +66,7 @@ namespace TruyenCV.BackgroundServices
                                 foreach (var (comic, embedding) in ListEmpty.Zip(embeddings))
                                 {
                                     var embeddingVector = new Vector(embedding);
-                                    await _dataContext.Comics.ExecuteUpdateAsync(
+                                    await _dataContext.Comics.Where(c => c.id == comic.id).ExecuteUpdateAsync(
                                         c => c.SetProperty(c => c.search_vector,
                                             c => embeddingVector
                                         ),
