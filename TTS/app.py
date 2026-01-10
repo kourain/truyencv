@@ -253,6 +253,7 @@ async def _stream_infer(
         raise ValueError("Nội dung văn bản trống sau khi xử lý.")
 
     gpt_cond_len = int(getattr(model.config, "gpt_cond_len", 0)) or 0
+    gpt_cond_chunk_len = int(getattr(model.config, "gpt_cond_chunk_len", 0)) or 0
     max_ref_len = int(getattr(model.config, "max_ref_len", 0)) or 0
     sound_norm_refs = bool(getattr(model.config, "sound_norm_refs", True))
 
@@ -260,8 +261,10 @@ async def _stream_infer(
         model.get_conditioning_latents,
         audio_path=str(reference_path),
         gpt_cond_len=gpt_cond_len,
+        gpt_cond_chunk_len=gpt_cond_chunk_len,
         max_ref_length=max_ref_len,
         sound_norm_refs=sound_norm_refs,
+        load_sr=24000,
     )
 
     gpt_cond_latent = conditioning[0]
@@ -279,7 +282,7 @@ async def _stream_infer(
                 temperature=0.3,
                 length_penalty=1.0,
                 repetition_penalty=10.0,
-                top_k=30,
+                top_k=20,
                 top_p=0.85,
             )
 
