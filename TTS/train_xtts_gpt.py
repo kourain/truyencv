@@ -23,7 +23,7 @@ def main():
     
     # Training Parameters
     LANGUAGE = "vi"
-    NUM_EPOCHS = 10
+    NUM_EPOCHS = 3
     BATCH_SIZE = 1
     GRAD_ACCUM_STEPS = 3
     MAX_AUDIO_LENGTH = 455995  # ~20 seconds
