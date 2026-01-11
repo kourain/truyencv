@@ -30,7 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Cấu hình
-API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:44344')
+API_BASE_URL = os.getenv('API_BASE_URL', 'https://api-truyencv.maiquyen.name.vn')
 API_TOKEN = os.getenv('API_TOKEN', '')
 API_REFRESH_TOKEN = os.getenv('API_REFRESH_TOKEN', '')
 TRUYEN_DIR = Path(__file__).parent / 'truyen'

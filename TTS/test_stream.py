@@ -9,7 +9,7 @@ TTS_URL = "http://127.0.0.1:8000/tts/stream"
 
 SAMPLE_RATE = 24000
 CHANNELS = 1
-BUFFER_SIZE = 80
+BUFFER_SIZE = 40
 
 
 def speaker(stream:pyaudio.Stream, buffer: deque, *started: bool):
@@ -30,8 +30,8 @@ Diệp Phong gật gật đầu: "Ta năm nay mới vừa lên đại học năm
 "Dạng này a. . ." Hạ Thu gật gật đầu, muốn nói lại thôi.
 Nhìn Diệp Phong mặc, gia đình điều kiện hẳn là rất bình thường. """,
         "normalize": True,
-        "reference_audio": "nu-calm.wav",
-        "chunk_size": 10,
+        "reference_audio": "nu-thai-binh-tv-review-phim.wav",
+        "chunk_size": 30,
     }
 
     try:
