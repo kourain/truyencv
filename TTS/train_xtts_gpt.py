@@ -113,7 +113,6 @@ def main():
         dvae_checkpoint=str(DVAE_CHECKPOINT),
         xtts_checkpoint=str(XTTS_CHECKPOINT),
         tokenizer_file=str(TOKENIZER_FILE),
-        config_file=str(XTTS_CONFIG_FILE),
         gpt_num_audio_tokens=1026,
         gpt_start_audio_token=1024,
         gpt_stop_audio_token=1025,
