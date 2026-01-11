@@ -75,22 +75,22 @@ def main():
         )
     
     # XTTS v2.0 files
-    TOKENIZER_FILE_LINK = "https://coqui.gateway.scarf.sh/hf-coqui/XTTS-v2/main/vocab.json"
-    XTTS_CHECKPOINT_LINK = "https://coqui.gateway.scarf.sh/hf-coqui/XTTS-v2/main/model.pth"
-    XTTS_CONFIG_LINK = "https://coqui.gateway.scarf.sh/hf-coqui/XTTS-v2/main/config.json"
+    # TOKENIZER_FILE_LINK = "https://coqui.gateway.scarf.sh/hf-coqui/XTTS-v2/main/vocab.json"
+    # XTTS_CHECKPOINT_LINK = "https://coqui.gateway.scarf.sh/hf-coqui/XTTS-v2/main/model.pth"
+    # XTTS_CONFIG_LINK = "https://coqui.gateway.scarf.sh/hf-coqui/XTTS-v2/main/config.json"
     
     TOKENIZER_FILE = Path("models") / "vocab.json"
     XTTS_CHECKPOINT = Path("models") / "model.pth"
     XTTS_CONFIG_FILE = Path("models") / "config.json"
     
     # Download XTTS v2.0 files if needed
-    if not TOKENIZER_FILE.exists() or not XTTS_CHECKPOINT.exists():
-        print(" > Downloading XTTS v2.0 files...")
-        ModelManager._download_model_files(
-            [TOKENIZER_FILE_LINK, XTTS_CHECKPOINT_LINK, XTTS_CONFIG_LINK],
-            str(CHECKPOINTS_OUT_PATH),
-            progress_bar=True
-        )
+    # if not TOKENIZER_FILE.exists() or not XTTS_CHECKPOINT.exists():
+    #     print(" > Downloading XTTS v2.0 files...")
+    #     ModelManager._download_model_files(
+    #         [TOKENIZER_FILE_LINK, XTTS_CHECKPOINT_LINK, XTTS_CONFIG_LINK],
+    #         str(CHECKPOINTS_OUT_PATH),
+    #         progress_bar=True
+    #     )
     
     print("\n" + "="*50)
     print("XTTS Fine-tuning Configuration")
@@ -113,6 +113,7 @@ def main():
         dvae_checkpoint=str(DVAE_CHECKPOINT),
         xtts_checkpoint=str(XTTS_CHECKPOINT),
         tokenizer_file=str(TOKENIZER_FILE),
+        config_file=str(XTTS_CONFIG_FILE),
         gpt_num_audio_tokens=1026,
         gpt_start_audio_token=1024,
         gpt_stop_audio_token=1025,
